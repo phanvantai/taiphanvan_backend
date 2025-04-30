@@ -11,6 +11,7 @@ import (
 	"github.com/phanvantai/personal_blog_backend/internal/database"
 	"github.com/phanvantai/personal_blog_backend/internal/handlers"
 	"github.com/phanvantai/personal_blog_backend/internal/middleware"
+	"github.com/phanvantai/personal_blog_backend/pkg/utils"
 )
 
 func main() {
@@ -21,6 +22,9 @@ func main() {
 
 	// Initialize the database
 	database.Initialize()
+
+	// Start the token cleanup routine
+	utils.StartTokenCleanup()
 
 	// Set up Gin
 	r := gin.Default()
@@ -53,6 +57,7 @@ func main() {
 		{
 			auth.POST("/register", handlers.Register)
 			auth.POST("/login", handlers.Login)
+			auth.POST("/logout", middleware.AuthMiddleware(), handlers.Logout) // Protected logout endpoint
 		}
 
 		// Protected routes

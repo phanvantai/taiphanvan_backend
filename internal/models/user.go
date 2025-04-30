@@ -45,3 +45,12 @@ type RegisterRequest struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 }
+
+// BlacklistedToken represents a revoked JWT token
+type BlacklistedToken struct {
+	ID        uint           `json:"id" gorm:"primaryKey"`
+	Token     string         `json:"token" gorm:"size:500;not null;uniqueIndex"`
+	ExpiresAt time.Time      `json:"expires_at"`
+	CreatedAt time.Time      `json:"created_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
+}

@@ -50,3 +50,5 @@ tmp/
 
 # Database files
 *.db
+
+.auth_token

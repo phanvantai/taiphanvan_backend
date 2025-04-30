@@ -52,6 +52,7 @@ func autoMigrate() {
 		&models.Post{},
 		&models.Tag{},
 		&models.Comment{},
+		&models.BlacklistedToken{}, // Add BlacklistedToken model
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/phanvantai/personal_blog_backend/internal/database"
 	"github.com/phanvantai/personal_blog_backend/internal/models"
 )
 
@@ -17,19 +18,51 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  "error",
+				"error":   "Authorization required",
+				"message": "Authorization header is required",
+			})
 			c.Abort()
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header format must be Bearer {token}"})
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  "error",
+				"error":   "Invalid authorization format",
+				"message": "Authorization header format must be Bearer {token}",
+			})
 			c.Abort()
 			return
 		}
 
 		tokenString := parts[1]
+
+		// Check if token is blacklisted
+		var count int64
+		if err := database.DB.Model(&models.BlacklistedToken{}).
+			Where("token = ?", tokenString).Count(&count).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "error",
+				"error":   "Authentication error",
+				"message": "Failed to validate token",
+			})
+			c.Abort()
+			return
+		}
+
+		if count > 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  "error",
+				"error":   "Token revoked",
+				"message": "This token has been revoked. Please log in again",
+			})
+			c.Abort()
+			return
+		}
+
 		claims := &Claims{}
 
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
@@ -40,7 +73,11 @@ func AuthMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  "error",
+				"error":   "Invalid token",
+				"message": "Invalid or expired token",
+			})
 			c.Abort()
 			return
 		}
