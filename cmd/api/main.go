@@ -3,15 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/phanvantai/personal_blog_backend/internal/database"
 	"github.com/phanvantai/personal_blog_backend/internal/handlers"
 	"github.com/phanvantai/personal_blog_backend/internal/middleware"
-	"github.com/rs/cors"
 )
 
 func main() {
@@ -26,14 +25,18 @@ func main() {
 	// Set up Gin
 	r := gin.Default()
 
-	// Handle CORS
-	corsConfig := cors.New(cors.Options{
-		AllowedOrigins:   []string{os.Getenv("CORS_ALLOWED_ORIGINS")},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
+	// Handle CORS using Gin's native CORS middleware
+	corsOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if corsOrigins == "" {
+		corsOrigins = "*" // Default to allow all origins if not specified
+	}
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{corsOrigins},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,
-	})
-	r.Use(gin.WrapH(corsConfig.Handler(http.DefaultServeMux)))
+	}))
 
 	// Define API routes
 	api := r.Group("/api")

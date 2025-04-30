@@ -18,9 +18,10 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Check if user already exists
-	var existingUser models.User
-	if result := database.DB.Where("email = ?", request.Email).Or("username = ?", request.Username).First(&existingUser); result.RowsAffected > 0 {
+	// Check if user already exists - use Count instead of First to avoid "record not found" error
+	var count int64
+	database.DB.Model(&models.User{}).Where("email = ?", request.Email).Or("username = ?", request.Username).Count(&count)
+	if count > 0 {
 		c.JSON(http.StatusConflict, gin.H{"error": "Email or username already exists"})
 		return
 	}
