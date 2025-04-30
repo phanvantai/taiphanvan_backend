@@ -40,8 +40,8 @@ func main() {
 	{
 		// Public routes
 		api.GET("/posts", handlers.GetPosts)
-		api.GET("/posts/:slug", handlers.GetPostBySlug)
-		api.GET("/posts/:postID/comments", handlers.GetCommentsByPostID)
+		api.GET("/posts/slug/:slug", handlers.GetPostBySlug)         // Changed path to avoid conflict
+		api.GET("/posts/:id/comments", handlers.GetCommentsByPostID) // Changed parameter name to 'id'
 		api.GET("/tags", handlers.GetAllTags)
 		api.GET("/tags/popular", handlers.GetPopularTags)
 
@@ -66,7 +66,7 @@ func main() {
 			protected.DELETE("/posts/:id", handlers.DeletePost)
 
 			// Comment routes
-			protected.POST("/posts/:postID/comments", handlers.CreateComment)
+			protected.POST("/posts/:id/comments", handlers.CreateComment) // Changed parameter name to 'id'
 			protected.PUT("/comments/:commentID", handlers.UpdateComment)
 			protected.DELETE("/comments/:commentID", handlers.DeleteComment)
 		}

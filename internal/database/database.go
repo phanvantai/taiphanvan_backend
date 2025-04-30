@@ -20,8 +20,20 @@ func Initialize() {
 	dbName := os.Getenv("DB_NAME")
 	dbPort := os.Getenv("DB_PORT")
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",
-		dbHost, dbUser, dbPass, dbName, dbPort)
+	// Make sure we have the required database name - use blog_db as fallback
+	if dbName == "" {
+		dbName = "blog_db"
+		log.Println("DB_NAME not set in environment, using default: blog_db")
+	}
+
+	// Construct the connection string
+	dsn := fmt.Sprintf("host=%s user=%s dbname=%s port=%s sslmode=disable",
+		dbHost, dbUser, dbName, dbPort)
+
+	// Only add password parameter if one is set
+	if dbPass != "" {
+		dsn = fmt.Sprintf("%s password=%s", dsn, dbPass)
+	}
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
