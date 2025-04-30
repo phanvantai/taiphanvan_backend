@@ -38,24 +38,24 @@ personal_blog_backend/
 
 1. Clone the repository:
 
-```bash
-git clone https://github.com/yourusername/personal_blog_backend.git
-cd personal_blog_backend
-```
+    ```bash
+    git clone https://github.com/yourusername/personal_blog_backend.git
+    cd personal_blog_backend
+    ```
 
 2. Install dependencies:
 
-```bash
-go mod tidy
-```
+    ```bash
+    go mod tidy
+    ```
 
 3. Configure the environment variables (see Configuration section)
 
 4. Set up the database:
 
-```bash
-# Database setup commands or reference to migration scripts
-```
+    ```bash
+    # Database setup commands or reference to migration scripts
+    ```
 
 ### Running the Server
 
