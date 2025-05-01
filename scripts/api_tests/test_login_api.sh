@@ -5,8 +5,8 @@
 
 # Configuration
 API_URL="http://localhost:8080/api/auth/login"
-EMAIL="test@example.com"  # Replace with an actual user email in your database
-PASSWORD="password123"    # Replace with the correct password
+EMAIL="testuser_1746097040@example.com"  # Using the email from the registration test
+PASSWORD="securePassword123"    # Using the password from the registration test
 
 # Colors for output
 GREEN='\033[0;32m'
