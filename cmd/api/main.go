@@ -232,8 +232,17 @@ func requestIDMiddleware() gin.HandlerFunc {
 
 // setupRoutes configures all the routes for the API
 func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
-	// Add health check endpoint
+	// Add health check endpoints
 	r.GET("/health", handlers.HealthCheck)
+
+	// Simple health check for Railway that doesn't depend on the database
+	r.GET("/railway-health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "success",
+			"message": "Service is running",
+			"time":    time.Now().Format(time.RFC3339),
+		})
+	})
 
 	// Define API routes
 	api := r.Group("/api")
