@@ -200,41 +200,33 @@ func (c *Config) ValidateWithFallbacks() error {
 		} else {
 			log.Warn().Msg("DATABASE_URL not found in Railway environment, checking for individual database variables")
 
-			// If DATABASE_URL is not available, fall back to individual components
-			// Railway might provide these individually
-			pgHost := getEnv("PGHOST", c.Database.Host)
-			pgPort := getEnv("PGPORT", c.Database.Port)
-			pgUser := getEnv("PGUSER", c.Database.User)
-			pgPass := getEnv("PGPASSWORD", c.Database.Password)
-			pgDB := getEnv("PGDATABASE", c.Database.Name)
-
-			if pgHost != "" && pgUser != "" {
-				// Construct DSN from individual components
-				c.Database.Host = pgHost
-				c.Database.Port = pgPort
-				c.Database.User = pgUser
-				c.Database.Password = pgPass
-				c.Database.Name = pgDB
-
-				// Reconstruct the DSN
-				c.Database.DSN = fmt.Sprintf("host=%s user=%s dbname=%s port=%s sslmode=%s",
-					c.Database.Host, c.Database.User, c.Database.Name, c.Database.Port, c.Database.SSLMode)
-
-				if c.Database.Password != "" {
-					c.Database.DSN = fmt.Sprintf("%s password=%s", c.Database.DSN, c.Database.Password)
-				}
-
-				log.Info().Msg("Constructed database connection string from individual variables")
-			} else {
-				log.Warn().Msg("Database configuration incomplete, will try fallbacks")
+			// For Railway, we'll set default database connection values if they're not provided
+			// This prevents invalid connection strings
+			if c.Database.Host == "" {
+				log.Info().Msg("Setting default database host for Railway")
+				c.Database.Host = "localhost" // Default fallback
 			}
+
+			if c.Database.User == "" {
+				log.Info().Msg("Setting default database user for Railway")
+				c.Database.User = "postgres" // Common default for PostgreSQL
+			}
+
+			// Reconstruct the DSN with proper formatting
+			c.Database.DSN = fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s",
+				c.Database.Host, c.Database.Port, c.Database.User, c.Database.Name, c.Database.SSLMode)
+
+			if c.Database.Password != "" {
+				c.Database.DSN = fmt.Sprintf("%s password=%s", c.Database.DSN, c.Database.Password)
+			}
+
+			log.Info().Str("host", c.Database.Host).Str("dbname", c.Database.Name).
+				Msg("Using constructed database connection string")
 		}
 
 		// For Railway, ensure we have a JWT secret
 		if c.JWT.Secret == "" {
-			// Generate a temporary JWT secret if none is provided
-			// This is NOT recommended for production, but prevents immediate failure
-			log.Warn().Msg("No JWT_SECRET provided on Railway. Using a generated secret. It's recommended to set a persistent JWT_SECRET in your Railway environment.")
+			log.Warn().Msg("No JWT_SECRET provided on Railway. Using a generated secret. It's recommended to set a persistent JWT_SECRET.")
 			c.JWT.Secret = generateTemporarySecret()
 		}
 

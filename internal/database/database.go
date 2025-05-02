@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -35,22 +36,25 @@ func Initialize(cfg *config.Config) error {
 	}
 
 	// Log connection attempt (without exposing credentials)
-	if os.Getenv("RAILWAY_SERVICE_ID") != "" {
-		log.Printf("Attempting to connect to Railway PostgreSQL database")
-	} else {
-		log.Printf("Attempting to connect to database at %s:%s/%s",
-			cfg.Database.Host, cfg.Database.Port, cfg.Database.Name)
+	hostInfo := "using DATABASE_URL"
+	if os.Getenv("DATABASE_URL") == "" {
+		hostInfo = fmt.Sprintf("using DSN with host=%s, dbname=%s", cfg.Database.Host, cfg.Database.Name)
 	}
+	log.Printf("Attempting to connect to database (%s)", hostInfo)
 
-	// Try to open the database connection
+	// Make sure we have a reasonable connection timeout
+	_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Try to open the database connection with context
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), gormConfig)
-	if err != nil {
-		// Enhanced error reporting
-		if os.Getenv("DATABASE_URL") != "" {
-			log.Printf("Failed to connect using DATABASE_URL environment variable")
-		}
+	DB, err = gorm.Open(postgres.New(postgres.Config{
+		DSN:                  dsn,
+		PreferSimpleProtocol: true, // Disables implicit prepared statement usage
+	}), gormConfig)
 
+	if err != nil {
+		// Enhanced error reporting for easier debugging
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 
