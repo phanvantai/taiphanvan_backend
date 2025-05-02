@@ -12,6 +12,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/phanvantai/personal_blog_backend/docs"
 	"github.com/phanvantai/personal_blog_backend/internal/config"
 	"github.com/phanvantai/personal_blog_backend/internal/database"
 	"github.com/phanvantai/personal_blog_backend/internal/handlers"
@@ -21,9 +22,6 @@ import (
 	"github.com/rs/zerolog/log"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-
-	// Import Swagger docs
-	_ "github.com/phanvantai/personal_blog_backend/docs"
 )
 
 // @title           Personal Blog API
@@ -38,7 +36,7 @@ import (
 // @license.name  MIT
 // @license.url   https://opensource.org/licenses/MIT
 
-// @host      localhost:9876
+// @host      ${API_HOST}
 // @BasePath  /api
 
 // @securityDefinitions.apikey BearerAuth
@@ -93,6 +91,9 @@ func main() {
 
 	// Start the token cleanup routine in the background
 	utils.StartTokenCleanup()
+
+	// Initialize Swagger documentation
+	initSwagger()
 
 	// Initialize the router
 	r := gin.New()
@@ -152,8 +153,13 @@ func main() {
 		}
 	}()
 
-	// Log Swagger URL
-	swaggerURL := fmt.Sprintf("http://localhost:%s/swagger/index.html", cfg.Server.Port)
+	// Log Swagger URL with the correct protocol
+	host := docs.SwaggerInfo.Host
+	protocol := "http"
+	if os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true" || cfg.TLS.Enabled {
+		protocol = "https"
+	}
+	swaggerURL := fmt.Sprintf("%s://%s/swagger/index.html", protocol, host)
 	log.Info().Str("url", swaggerURL).Msg("Swagger documentation available at")
 
 	// Wait for interrupt signal to gracefully shutdown the server
@@ -230,16 +236,43 @@ func requestIDMiddleware() gin.HandlerFunc {
 	}
 }
 
+// initSwagger initializes the Swagger documentation with the correct host
+func initSwagger() {
+	// Get host from environment or use default
+	host := os.Getenv("API_HOST")
+	if host == "" {
+		// For Railway, use the PUBLIC_URL without scheme
+		if railwayURL := os.Getenv("RAILWAY_PUBLIC_DOMAIN"); railwayURL != "" {
+			host = railwayURL
+		} else if port := os.Getenv("API_PORT"); port != "" {
+			host = fmt.Sprintf("localhost:%s", port)
+		} else {
+			host = "localhost:9876" // Default fallback
+		}
+	}
+
+	// Set the host in the Swagger info
+	swaggerInfo := docs.SwaggerInfo
+	swaggerInfo.Host = host
+
+	// Set the scheme based on environment
+	isProduction := os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true"
+	if isProduction {
+		swaggerInfo.Schemes = []string{"https"}
+	} else {
+		swaggerInfo.Schemes = []string{"http"}
+	}
+
+	log.Info().
+		Str("host", host).
+		Strs("schemes", swaggerInfo.Schemes).
+		Msg("Swagger configuration initialized")
+}
+
 // setupRoutes configures all the routes for the API
 func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 	// Add health check endpoints
 	r.GET("/health", handlers.HealthCheck)
-
-	// Simple health check for Railway that doesn't depend on any external services
-	r.GET("/railway-health", func(c *gin.Context) {
-		// Immediately return 200 OK without any dependencies
-		c.Status(http.StatusOK)
-	})
 
 	// Define API routes
 	api := r.Group("/api")
@@ -295,18 +328,36 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 		}
 	}
 
-	// Add Swagger documentation endpoint with dynamic host replacement
+	// Add Swagger documentation endpoint with environment-aware configuration
 	r.GET("/swagger/*any", func(c *gin.Context) {
+		// Determine if we're running in Railway or other production environment
+		isProduction := os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true"
+
+		// Get host from environment or use default
 		host := os.Getenv("API_HOST")
 		if host == "" {
-			host = fmt.Sprintf("localhost:%s", os.Getenv("API_PORT"))
-			if os.Getenv("API_PORT") == "" {
+			// For Railway, use the PUBLIC_URL without scheme
+			if railwayURL := os.Getenv("RAILWAY_PUBLIC_DOMAIN"); railwayURL != "" {
+				host = railwayURL
+			} else if port := os.Getenv("API_PORT"); port != "" {
+				host = fmt.Sprintf("localhost:%s", port)
+			} else {
 				host = "localhost:9876" // Default fallback
 			}
 		}
 
+		// Determine the correct protocol based on environment
+		protocol := "http"
+		if isProduction {
+			protocol = "https"
+		}
+
+		// Configure Swagger with the correct URL
+		swaggerURL := fmt.Sprintf("%s://%s/swagger/doc.json", protocol, host)
+		log.Info().Str("swagger_url", swaggerURL).Msg("Configuring Swagger documentation URL")
+
 		ginSwagger.WrapHandler(swaggerFiles.Handler,
-			ginSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", host)),
+			ginSwagger.URL(swaggerURL),
 			ginSwagger.DeepLinking(true),
 		)(c)
 	})
