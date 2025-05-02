@@ -50,11 +50,11 @@ func main() {
 	// Initialize barebones logger for startup errors
 	initStartupLogger()
 
-	// Check if we're running in container and set appropriate config path
+	// Check if we're running in a cloud environment
 	var configPath string
-	if isContainerized() {
-		log.Info().Msg("Running in a containerized environment")
-		// In container, trust environment variables - no .env file needed
+	if isContainerized() || os.Getenv("RAILWAY_SERVICE_ID") != "" {
+		log.Info().Msg("Running in a containerized/cloud environment")
+		// In container or cloud, trust environment variables - no .env file needed
 		configPath = ""
 	} else {
 		log.Info().Msg("Running in a local environment")

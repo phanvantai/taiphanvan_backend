@@ -189,6 +189,18 @@ func Load(envFile string) (*Config, error) {
 
 // ValidateWithFallbacks checks if all required configuration is present, with better Docker support
 func (c *Config) ValidateWithFallbacks() error {
+	// Check for Railway deployment
+	if os.Getenv("RAILWAY") == "true" || os.Getenv("RAILWAY_SERVICE_ID") != "" {
+		log.Info().Msg("Running on Railway.app, applying platform-specific configuration")
+
+		// Use DATABASE_URL if available (provided by Railway)
+		if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
+			log.Info().Msg("Using DATABASE_URL from Railway")
+			c.Database.DSN = dbURL
+			return nil
+		}
+	}
+
 	// Check for Render.com deployment
 	if os.Getenv("RENDER") == "true" {
 		log.Info().Msg("Running on Render.com, applying platform-specific configuration")
