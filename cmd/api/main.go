@@ -123,9 +123,6 @@ func main() {
 	// Define API routes with rate limiting
 	setupRoutes(r, rateLimiter)
 
-	// Add Swagger documentation endpoint
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
 	// Create server with graceful shutdown
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", cfg.Server.Port),
