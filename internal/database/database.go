@@ -27,8 +27,15 @@ func Initialize(cfg *config.Config) error {
 		Logger: logger.Default.LogMode(logLevel),
 	}
 
+	// Check for Render-specific database URL
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		// Fall back to configuration-based DSN
+		dsn = cfg.Database.DSN
+	}
+
 	var err error
-	DB, err = gorm.Open(postgres.Open(cfg.Database.DSN), gormConfig)
+	DB, err = gorm.Open(postgres.Open(dsn), gormConfig)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}

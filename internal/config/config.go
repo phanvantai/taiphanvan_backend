@@ -189,6 +189,12 @@ func Load(envFile string) (*Config, error) {
 
 // ValidateWithFallbacks checks if all required configuration is present, with better Docker support
 func (c *Config) ValidateWithFallbacks() error {
+	// Check for Render.com deployment
+	if os.Getenv("RENDER") == "true" {
+		log.Info().Msg("Running on Render.com, applying platform-specific configuration")
+		return nil // Render provides all necessary environment variables
+	}
+
 	// Database validation
 	if c.Database.Host == "" {
 		// For Docker Compose setups, try the service name as fallback

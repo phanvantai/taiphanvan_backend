@@ -291,4 +291,20 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 			// Admin-specific routes can be added here
 		}
 	}
+
+	// Add Swagger documentation endpoint with dynamic host replacement
+	r.GET("/swagger/*any", func(c *gin.Context) {
+		host := os.Getenv("API_HOST")
+		if host == "" {
+			host = fmt.Sprintf("localhost:%s", os.Getenv("API_PORT"))
+			if os.Getenv("API_PORT") == "" {
+				host = "localhost:9876" // Default fallback
+			}
+		}
+
+		ginSwagger.WrapHandler(swaggerFiles.Handler,
+			ginSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", host)),
+			ginSwagger.DeepLinking(true),
+		)(c)
+	})
 }
