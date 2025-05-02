@@ -197,8 +197,48 @@ func (c *Config) ValidateWithFallbacks() error {
 		if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
 			log.Info().Msg("Using DATABASE_URL from Railway")
 			c.Database.DSN = dbURL
-			return nil
+		} else {
+			log.Warn().Msg("DATABASE_URL not found in Railway environment, checking for individual database variables")
+
+			// If DATABASE_URL is not available, fall back to individual components
+			// Railway might provide these individually
+			pgHost := getEnv("PGHOST", c.Database.Host)
+			pgPort := getEnv("PGPORT", c.Database.Port)
+			pgUser := getEnv("PGUSER", c.Database.User)
+			pgPass := getEnv("PGPASSWORD", c.Database.Password)
+			pgDB := getEnv("PGDATABASE", c.Database.Name)
+
+			if pgHost != "" && pgUser != "" {
+				// Construct DSN from individual components
+				c.Database.Host = pgHost
+				c.Database.Port = pgPort
+				c.Database.User = pgUser
+				c.Database.Password = pgPass
+				c.Database.Name = pgDB
+
+				// Reconstruct the DSN
+				c.Database.DSN = fmt.Sprintf("host=%s user=%s dbname=%s port=%s sslmode=%s",
+					c.Database.Host, c.Database.User, c.Database.Name, c.Database.Port, c.Database.SSLMode)
+
+				if c.Database.Password != "" {
+					c.Database.DSN = fmt.Sprintf("%s password=%s", c.Database.DSN, c.Database.Password)
+				}
+
+				log.Info().Msg("Constructed database connection string from individual variables")
+			} else {
+				log.Warn().Msg("Database configuration incomplete, will try fallbacks")
+			}
 		}
+
+		// For Railway, ensure we have a JWT secret
+		if c.JWT.Secret == "" {
+			// Generate a temporary JWT secret if none is provided
+			// This is NOT recommended for production, but prevents immediate failure
+			log.Warn().Msg("No JWT_SECRET provided on Railway. Using a generated secret. It's recommended to set a persistent JWT_SECRET in your Railway environment.")
+			c.JWT.Secret = generateTemporarySecret()
+		}
+
+		return nil
 	}
 
 	// Check for Render.com deployment
@@ -290,4 +330,15 @@ func (c *Config) setDefaults() {
 	if c.Server.Port == "" {
 		c.Server.Port = getEnv("API_PORT", "9876")
 	}
+}
+
+// generateTemporarySecret creates a more secure temporary secret
+func generateTemporarySecret() string {
+	// This is still not ideal for production, but better than a hardcoded value
+	// It creates a unique secret per application start
+	timestamp := time.Now().UnixNano()
+	hostname, _ := os.Hostname()
+	pid := os.Getpid()
+
+	return fmt.Sprintf("temporary_secret_%s_%d_%d", hostname, pid, timestamp)
 }

@@ -27,16 +27,30 @@ func Initialize(cfg *config.Config) error {
 		Logger: logger.Default.LogMode(logLevel),
 	}
 
-	// Check for Render-specific database URL
+	// Check for DATABASE_URL environment variable (provided by platforms like Railway and Render)
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		// Fall back to configuration-based DSN
 		dsn = cfg.Database.DSN
 	}
 
+	// Log connection attempt (without exposing credentials)
+	if os.Getenv("RAILWAY_SERVICE_ID") != "" {
+		log.Printf("Attempting to connect to Railway PostgreSQL database")
+	} else {
+		log.Printf("Attempting to connect to database at %s:%s/%s",
+			cfg.Database.Host, cfg.Database.Port, cfg.Database.Name)
+	}
+
+	// Try to open the database connection
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), gormConfig)
 	if err != nil {
+		// Enhanced error reporting
+		if os.Getenv("DATABASE_URL") != "" {
+			log.Printf("Failed to connect using DATABASE_URL environment variable")
+		}
+
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 
