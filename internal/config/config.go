@@ -193,6 +193,12 @@ func (c *Config) ValidateWithFallbacks() error {
 	if os.Getenv("RAILWAY") == "true" || os.Getenv("RAILWAY_SERVICE_ID") != "" {
 		log.Info().Msg("Running on Railway.app, applying platform-specific configuration")
 
+		// Use Railway's PORT environment variable for the server
+		if port := os.Getenv("PORT"); port != "" {
+			log.Info().Str("port", port).Msg("Using PORT from Railway environment")
+			c.Server.Port = port
+		}
+
 		// Use DATABASE_URL if available (provided by Railway)
 		if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
 			log.Info().Msg("Using DATABASE_URL from Railway")

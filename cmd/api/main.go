@@ -125,7 +125,7 @@ func main() {
 
 	// Create server with graceful shutdown
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%s", cfg.Server.Port),
+		Addr:    fmt.Sprintf("0.0.0.0:%s", cfg.Server.Port),
 		Handler: r,
 	}
 
@@ -235,13 +235,10 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 	// Add health check endpoints
 	r.GET("/health", handlers.HealthCheck)
 
-	// Simple health check for Railway that doesn't depend on the database
+	// Simple health check for Railway that doesn't depend on any external services
 	r.GET("/railway-health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "success",
-			"message": "Service is running",
-			"time":    time.Now().Format(time.RFC3339),
-		})
+		// Immediately return 200 OK without any dependencies
+		c.Status(http.StatusOK)
 	})
 
 	// Define API routes
