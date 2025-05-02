@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/phanvantai/personal_blog_backend/internal/database"
-	"github.com/phanvantai/personal_blog_backend/internal/models"
 )
 
 // FormatDate formats a time.Time to a human-readable date string
@@ -50,29 +49,43 @@ func ExtractExcerpt(content string, maxLength int) string {
 	return TruncateText(content, maxLength)
 }
 
-// StartTokenCleanup starts a goroutine to periodically clean up expired blacklisted tokens
+// StartTokenCleanup starts a background routine to clean up expired tokens
 func StartTokenCleanup() {
 	go func() {
-		ticker := time.NewTicker(12 * time.Hour) // Run cleanup every 12 hours
-		defer ticker.Stop()
-
-		// Run an immediate cleanup on startup
-		cleanupTokens()
-
-		// Then run on the ticker schedule
-		for range ticker.C {
-			cleanupTokens()
+		for {
+			// Run cleanup every hour
+			time.Sleep(1 * time.Hour)
+			CleanupExpiredTokens()
 		}
 	}()
 	log.Println("Token cleanup routine started")
 }
 
-// cleanupTokens removes expired tokens from the blacklist
-func cleanupTokens() {
-	result := database.DB.Where("expires_at < ?", time.Now()).Delete(&models.BlacklistedToken{})
-	if result.Error != nil {
-		log.Printf("Error cleaning up expired tokens: %v", result.Error)
-	} else if result.RowsAffected > 0 {
-		log.Printf("Cleaned up %d expired tokens", result.RowsAffected)
+// CleanupExpiredTokens removes expired tokens from the database
+func CleanupExpiredTokens() {
+	// Ensure database is initialized
+	if database.DB == nil {
+		log.Println("Database not initialized, skipping token cleanup")
+		return
+	}
+
+	now := time.Now()
+
+	// Clean up blacklisted tokens
+	if result := database.DB.Exec("DELETE FROM blacklisted_tokens WHERE expires_at < ?", now); result.Error != nil {
+		log.Printf("Error cleaning up blacklisted tokens: %v", result.Error)
+	} else {
+		if result.RowsAffected > 0 {
+			log.Printf("Cleaned up %d expired blacklisted tokens", result.RowsAffected)
+		}
+	}
+
+	// Clean up refresh tokens
+	if result := database.DB.Exec("DELETE FROM refresh_tokens WHERE expires_at < ? OR revoked = true", now); result.Error != nil {
+		log.Printf("Error cleaning up refresh tokens: %v", result.Error)
+	} else {
+		if result.RowsAffected > 0 {
+			log.Printf("Cleaned up %d expired refresh tokens", result.RowsAffected)
+		}
 	}
 }

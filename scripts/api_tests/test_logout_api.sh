@@ -1,7 +1,11 @@
 #!/bin/bash
 
+# Test logout API endpoint
+
+set -e
+
 # Set base URL - change this if your server runs on a different URL/port
-BASE_URL="http://localhost:8080/api"
+BASE_URL="http://localhost:9876/api"
 EMAIL="test@example.com"
 PASSWORD="password123"
 USERNAME="testuser"

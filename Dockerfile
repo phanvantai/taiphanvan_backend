@@ -1,0 +1,58 @@
+FROM golang:1.24.2-alpine AS builder
+
+# Install dependencies and apply security updates
+RUN apk update && apk upgrade && apk add --no-cache git ca-certificates tzdata && update-ca-certificates
+
+# Create appuser
+ENV USER=appuser
+ENV UID=10001
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+# Set working directory
+WORKDIR /app
+
+# Copy go.mod and go.sum files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Ensure configs directory exists and create empty .env file if it doesn't exist
+RUN mkdir -p /app/configs && touch /app/configs/.env
+
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /app/api ./cmd/api
+
+# Create a minimal production image
+FROM scratch
+
+# Import from builder
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+
+# Copy our binary
+COPY --from=builder /app/api /app/api
+
+# Copy configuration directory with empty .env file
+COPY --from=builder /app/configs /app/configs
+
+# Use non-root user
+USER appuser:appuser
+
+# Expose API port
+EXPOSE 9876
+
+# Set the entrypoint
+ENTRYPOINT ["/app/api"]

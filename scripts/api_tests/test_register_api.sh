@@ -1,13 +1,21 @@
 #!/bin/bash
 
+# Test the registration API endpoint
+set -e
+
 # Set color codes for better readability
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Generate a unique username and email
+TIMESTAMP=$(date +%s)
+USERNAME="testuser_$TIMESTAMP"
+EMAIL="testuser_$TIMESTAMP@example.com"
+
 # API URL - Change this to match your server
-API_URL="http://localhost:8080/api/auth/register"
+API_URL="http://localhost:9876/api/auth/register"
 
 echo -e "${BLUE}===== Testing Register API =====${NC}"
 echo -e "${BLUE}Sending request to: ${API_URL}${NC}"

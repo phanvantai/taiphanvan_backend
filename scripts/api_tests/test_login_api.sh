@@ -3,8 +3,10 @@
 # Test script for the login API endpoint
 # This script sends a login request and displays the response
 
+set -e
+
 # Configuration
-API_URL="http://localhost:8080/api/auth/login"
+API_URL="http://localhost:9876/api/auth/login"
 EMAIL="testuser_1746097040@example.com"  # Using the email from the registration test
 PASSWORD="securePassword123"    # Using the password from the registration test
 

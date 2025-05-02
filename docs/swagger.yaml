@@ -1,0 +1,306 @@
+basePath: /api
+definitions:
+  models.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+      - email
+      - password
+    type: object
+  models.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+      - refresh_token
+    type: object
+  models.RegisterRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      username:
+        maxLength: 30
+        minLength: 3
+        type: string
+    required:
+      - email
+      - password
+      - username
+    type: object
+  models.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        description: in seconds
+        type: integer
+      refresh_token:
+        type: string
+      token_type:
+        type: string
+    type: object
+  models.TokenRevokeRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+      - refresh_token
+    type: object
+host: localhost:9876
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: https://github.com/phanvantai/personal_blog_backend
+  description: This is a REST API server for a personal blog.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Personal Blog API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+        - application/json
+      description: Authenticate a user and return JWT tokens
+      parameters:
+        - description: Login Credentials
+          in: body
+          name: credentials
+          required: true
+          schema:
+            $ref: "#/definitions/models.LoginRequest"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            $ref: "#/definitions/models.TokenResponse"
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Authentication failed
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login to the application
+      tags:
+        - Auth
+  /auth/logout:
+    post:
+      consumes:
+        - application/json
+      description: Invalidate the current user's tokens
+      parameters:
+        - description: Logout options
+          in: body
+          name: body
+          schema:
+            type: object
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Successfully logged out
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+        - BearerAuth: []
+      summary: Logout from the application
+      tags:
+        - Auth
+  /auth/refresh:
+    post:
+      consumes:
+        - application/json
+      description: Get a new access token using a refresh token
+      parameters:
+        - description: Refresh Token
+          in: body
+          name: refresh_token
+          required: true
+          schema:
+            $ref: "#/definitions/models.RefreshTokenRequest"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Token refreshed successfully
+          schema:
+            $ref: "#/definitions/models.TokenResponse"
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid refresh token
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Refresh an access token
+      tags:
+        - Auth
+  /auth/register:
+    post:
+      consumes:
+        - application/json
+      description: Create a new user account
+      parameters:
+        - description: User Registration Data
+          in: body
+          name: user
+          required: true
+          schema:
+            $ref: "#/definitions/models.RegisterRequest"
+      produces:
+        - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Email or username already exists
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register a new user
+      tags:
+        - Auth
+  /auth/revoke:
+    post:
+      consumes:
+        - application/json
+      description: Invalidate a refresh token
+      parameters:
+        - description: Refresh Token
+          in: body
+          name: refresh_token
+          required: true
+          schema:
+            $ref: "#/definitions/models.TokenRevokeRequest"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Token revoked successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input or token revocation failed
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+        - BearerAuth: []
+      summary: Revoke a refresh token
+      tags:
+        - Auth
+  /profile:
+    get:
+      description: Retrieve the current user's profile information
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: User profile
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+        - BearerAuth: []
+      summary: Get user profile
+      tags:
+        - Users
+    put:
+      consumes:
+        - application/json
+      description: Update the current user's profile information
+      parameters:
+        - description: Profile Data
+          in: body
+          name: profile
+          required: true
+          schema:
+            type: object
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Profile updated successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+        - BearerAuth: []
+      summary: Update user profile
+      tags:
+        - Users
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and the JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

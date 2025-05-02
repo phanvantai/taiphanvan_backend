@@ -4,7 +4,7 @@
 # This script tests both GET and PUT operations on the profile endpoint
 
 # Configuration
-API_BASE_URL="http://localhost:8080/api"
+API_BASE_URL="http://localhost:9876/api"
 TOKEN_FILE=".auth_token"
 
 # Colors for output
