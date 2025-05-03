@@ -3,9 +3,10 @@
 set -e
 
 # Configuration
-APP_NAME="personal-blog-backend"
-DEPLOY_DIR="/opt/$APP_NAME"
-GIT_REPO="https://github.com/phanvantai/personal_blog_backend.git"
+APP_NAME="taiphanvan_backend"
+DEPLOY_DIR="/opt/taiphanvan_backend"
+BACKUP_DIR="/opt/backups/taiphanvan_backend"
+GIT_REPO="https://github.com/phanvantai/taiphanvan_backend.git"
 BRANCH="main"
 
 # Colors for output

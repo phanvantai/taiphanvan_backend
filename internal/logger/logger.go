@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/phanvantai/personal_blog_backend/internal/config"
+	"github.com/phanvantai/taiphanvan_backend/internal/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )

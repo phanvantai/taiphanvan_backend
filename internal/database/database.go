@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/phanvantai/personal_blog_backend/internal/config"
-	"github.com/phanvantai/personal_blog_backend/internal/models"
+	"github.com/phanvantai/taiphanvan_backend/internal/config"
+	"github.com/phanvantai/taiphanvan_backend/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

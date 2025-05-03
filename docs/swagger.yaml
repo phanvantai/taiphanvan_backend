@@ -60,9 +60,9 @@ definitions:
 host: localhost:9876
 info:
   contact:
-    email: support@example.com
+    email: taipv.swe@gmail.com
     name: API Support
-    url: https://github.com/phanvantai/personal_blog_backend
+    url: https://github.com/phanvantai/taiphanvan_backend
   description: This is a REST API server for a personal blog.
   license:
     name: MIT

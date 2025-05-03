@@ -6,19 +6,20 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/phanvantai/personal_blog_backend/docs"
-	"github.com/phanvantai/personal_blog_backend/internal/config"
-	"github.com/phanvantai/personal_blog_backend/internal/database"
-	"github.com/phanvantai/personal_blog_backend/internal/handlers"
-	"github.com/phanvantai/personal_blog_backend/internal/logger"
-	"github.com/phanvantai/personal_blog_backend/internal/middleware"
-	"github.com/phanvantai/personal_blog_backend/pkg/utils"
+	"github.com/phanvantai/taiphanvan_backend/docs"
+	"github.com/phanvantai/taiphanvan_backend/internal/config"
+	"github.com/phanvantai/taiphanvan_backend/internal/database"
+	"github.com/phanvantai/taiphanvan_backend/internal/handlers"
+	"github.com/phanvantai/taiphanvan_backend/internal/logger"
+	"github.com/phanvantai/taiphanvan_backend/internal/middleware"
+	"github.com/phanvantai/taiphanvan_backend/pkg/utils"
 	"github.com/rs/zerolog/log"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -30,7 +31,7 @@ import (
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   API Support
-// @contact.url    https://github.com/phanvantai/personal_blog_backend
+// @contact.url    https://github.com/phanvantai/taiphanvan_backend
 // @contact.email  support@example.com
 
 // @license.name  MIT
@@ -108,14 +109,26 @@ func main() {
 	r.Use(logger.GinMiddleware())
 
 	// Configure CORS
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     cfg.CORS.AllowedOrigins,
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Request-ID"},
-		ExposeHeaders:    []string{"Content-Length", "X-Request-ID"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+	corsConfig := cors.DefaultConfig()
+
+	// Add your custom domain to allowed origins
+	customDomains := []string{"https://api.taiphanvan.dev", "https://taiphanvan.dev"}
+
+	// Combine with existing allowed origins from config
+	corsConfig.AllowOrigins = append(customDomains, cfg.CORS.AllowedOrigins...)
+
+	// If in development mode, also allow localhost
+	if cfg.Server.GinMode != "release" {
+		corsConfig.AllowOrigins = append(corsConfig.AllowOrigins, "http://localhost:*")
+	}
+
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Request-ID"}
+	corsConfig.ExposeHeaders = []string{"Content-Length", "X-Request-ID"}
+	corsConfig.AllowCredentials = true
+	corsConfig.MaxAge = 12 * time.Hour
+
+	r.Use(cors.New(corsConfig))
 
 	// Initialize and apply rate limiter
 	rateLimiter := middleware.NewRateLimiter(100, time.Minute) // 100 requests per minute per IP
@@ -241,8 +254,12 @@ func initSwagger() {
 	// Get host from environment or use default
 	host := os.Getenv("API_HOST")
 	if host == "" {
-		// For Railway, use the PUBLIC_URL without scheme
-		if railwayURL := os.Getenv("RAILWAY_PUBLIC_DOMAIN"); railwayURL != "" {
+		// Check if we should use the custom domain
+		customDomain := os.Getenv("CUSTOM_DOMAIN")
+		if customDomain != "" {
+			host = customDomain
+		} else if railwayURL := os.Getenv("RAILWAY_PUBLIC_DOMAIN"); railwayURL != "" {
+			// For Railway, use the PUBLIC_URL without scheme
 			host = railwayURL
 		} else if port := os.Getenv("API_PORT"); port != "" {
 			host = fmt.Sprintf("localhost:%s", port)
@@ -257,7 +274,7 @@ func initSwagger() {
 
 	// Set the scheme based on environment
 	isProduction := os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true"
-	if isProduction {
+	if isProduction || strings.HasPrefix(host, "api.taiphanvan.dev") {
 		swaggerInfo.Schemes = []string{"https"}
 	} else {
 		swaggerInfo.Schemes = []string{"http"}
@@ -336,8 +353,11 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 		// Get host from environment or use default
 		host := os.Getenv("API_HOST")
 		if host == "" {
-			// For Railway, use the PUBLIC_URL without scheme
-			if railwayURL := os.Getenv("RAILWAY_PUBLIC_DOMAIN"); railwayURL != "" {
+			// Check if we should use the custom domain
+			customDomain := os.Getenv("CUSTOM_DOMAIN")
+			if customDomain != "" {
+				host = customDomain
+			} else if railwayURL := os.Getenv("RAILWAY_PUBLIC_DOMAIN"); railwayURL != "" {
 				host = railwayURL
 			} else if port := os.Getenv("API_PORT"); port != "" {
 				host = fmt.Sprintf("localhost:%s", port)
@@ -348,7 +368,7 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 
 		// Determine the correct protocol based on environment
 		protocol := "http"
-		if isProduction {
+		if isProduction || strings.HasPrefix(host, "api.taiphanvan.dev") {
 			protocol = "https"
 		}
 

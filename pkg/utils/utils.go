@@ -1,3 +1,4 @@
+// Package utils provides utility functions used across the application
 package utils
 
 import (
@@ -7,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/phanvantai/personal_blog_backend/internal/database"
+	"github.com/phanvantai/taiphanvan_backend/internal/database"
 )
 
 // FormatDate formats a time.Time to a human-readable date string

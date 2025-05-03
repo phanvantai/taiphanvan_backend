@@ -2,7 +2,7 @@
 package main
 
 import (
-	_ "github.com/phanvantai/personal_blog_backend/docs" // Import the docs package
+	_ "github.com/phanvantai/taiphanvan_backend/docs" // Import the docs package
 )
 
 // @title           Personal Blog API
@@ -11,7 +11,7 @@ import (
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   API Support
-// @contact.url    https://github.com/phanvantai/personal_blog_backend
+// @contact.url    https://github.com/phanvantai/taiphanvan_backend
 // @contact.email  support@example.com
 
 // @license.name  MIT

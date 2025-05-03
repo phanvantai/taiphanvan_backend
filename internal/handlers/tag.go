@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/phanvantai/personal_blog_backend/internal/database"
+	"github.com/phanvantai/taiphanvan_backend/internal/database"
 )
 
 // GetAllTags returns all tags with their post counts

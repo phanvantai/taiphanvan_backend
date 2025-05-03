@@ -1,4 +1,4 @@
-# Docker Compose configuration for Personal Blog Backend
+# Docker Compose configuration for TaiPhanVan Backend
 # Updated May 1, 2025
 
 services:
@@ -30,7 +30,7 @@ services:
       # Admin user creation configuration
       - CREATE_DEFAULT_ADMIN=true
       - DEFAULT_ADMIN_USERNAME=admin
-      - DEFAULT_ADMIN_EMAIL=admin@example.com
+      - DEFAULT_ADMIN_EMAIL=admin@admin.com
       - DEFAULT_ADMIN_PASSWORD=securePassword123
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:9876/health"]

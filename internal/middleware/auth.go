@@ -9,9 +9,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/phanvantai/personal_blog_backend/internal/config"
-	"github.com/phanvantai/personal_blog_backend/internal/database"
-	"github.com/phanvantai/personal_blog_backend/internal/models"
+	"github.com/phanvantai/taiphanvan_backend/internal/config"
+	"github.com/phanvantai/taiphanvan_backend/internal/database"
+	"github.com/phanvantai/taiphanvan_backend/internal/models"
 )
 
 // JWT claims structure

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/phanvantai/personal_blog_backend/internal/database"
+	"github.com/phanvantai/taiphanvan_backend/internal/database"
 )
 
 // HealthCheck provides a simple endpoint to verify the API is running

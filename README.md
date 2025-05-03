@@ -5,7 +5,7 @@ This repository contains the backend API service for a personal blog built with 
 ## Project Structure
 
 ```bash
-personal_blog_backend/
+taiphanvan_backend/
 ├── cmd/api/           # Application entrypoint and API documentation
 ├── configs/           # Configuration files
 ├── docs/              # Swagger documentation
@@ -45,8 +45,8 @@ personal_blog_backend/
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/phanvantai/personal_blog_backend.git
-    cd personal_blog_backend
+    git clone https://github.com/phanvantai/taiphanvan_backend.git
+    cd taiphanvan_backend
     ```
 
 2. Install dependencies:
@@ -203,10 +203,10 @@ The application can be deployed as a standalone binary or containerized with Doc
 
    ```bash
    # Build the Docker image
-   docker build -t personal-blog-api .
+   docker build -t taiphanvan-api .
 
    # Run the container (replace .env with your actual env file if needed)
-   docker run -p 9876:9876 --env-file .env personal-blog-api
+   docker run -p 9876:9876 --env-file .env taiphanvan-api
    ```
 
 2. **Using Docker Compose (recommended for local development):**
