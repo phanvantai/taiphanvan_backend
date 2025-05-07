@@ -14,13 +14,14 @@ import (
 
 // Config holds all configuration for the application
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	JWT      JWTConfig
-	CORS     CORSConfig
-	Logging  LoggingConfig
-	TLS      TLSConfig
-	Admin    AdminConfig
+	Server     ServerConfig
+	Database   DatabaseConfig
+	JWT        JWTConfig
+	CORS       CORSConfig
+	Logging    LoggingConfig
+	TLS        TLSConfig
+	Admin      AdminConfig
+	Cloudinary CloudinaryConfig
 }
 
 // ServerConfig holds all server-related configuration
@@ -71,6 +72,14 @@ type AdminConfig struct {
 	Username           string
 	Email              string
 	Password           string
+}
+
+// CloudinaryConfig holds configuration for Cloudinary
+type CloudinaryConfig struct {
+	CloudName    string
+	APIKey       string
+	APISecret    string
+	UploadFolder string
 }
 
 // Load loads the configuration from environment variables or .env file
@@ -192,6 +201,14 @@ func Load(envFile string) (*Config, error) {
 		Username:           getEnv("DEFAULT_ADMIN_USERNAME", ""),
 		Email:              getEnv("DEFAULT_ADMIN_EMAIL", ""),
 		Password:           getEnv("DEFAULT_ADMIN_PASSWORD", ""),
+	}
+
+	// Load Cloudinary config
+	config.Cloudinary = CloudinaryConfig{
+		CloudName:    getEnv("CLOUDINARY_CLOUD_NAME", ""),
+		APIKey:       getEnv("CLOUDINARY_API_KEY", ""),
+		APISecret:    getEnv("CLOUDINARY_API_SECRET", ""),
+		UploadFolder: getEnv("CLOUDINARY_UPLOAD_FOLDER", "avatars"),
 	}
 
 	// Validate configuration - but provide better fallbacks for Docker environment

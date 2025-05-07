@@ -102,6 +102,12 @@ LOG_LEVEL=info
 # Security
 RATE_LIMIT=100
 CORS_ALLOWED_ORIGINS=*
+
+# Cloudinary (for avatar uploads)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_UPLOAD_FOLDER=avatars
 ```
 
 ## API Documentation
@@ -119,6 +125,12 @@ http://localhost:9876/swagger/index.html
 - `POST /api/auth/register` - Register a new user
 - `POST /api/auth/login` - Login and get JWT token
 - `POST /api/auth/refresh` - Refresh JWT token
+
+### User Profile
+
+- `GET /api/profile` - Get user profile
+- `PUT /api/profile` - Update user profile
+- `POST /api/profile/avatar` - Upload user avatar (using Cloudinary)
 
 ### Blog Posts
 

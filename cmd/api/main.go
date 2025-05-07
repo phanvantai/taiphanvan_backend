@@ -325,6 +325,7 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 			// User routes
 			protected.GET("/profile", handlers.GetProfile)
 			protected.PUT("/profile", handlers.UpdateProfile)
+			protected.POST("/profile/avatar", handlers.UploadAvatar)
 
 			// Post routes
 			protected.POST("/posts", handlers.CreatePost)

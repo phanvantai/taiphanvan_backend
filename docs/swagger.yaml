@@ -8,15 +8,15 @@ definitions:
         minLength: 6
         type: string
     required:
-      - email
-      - password
+    - email
+    - password
     type: object
   models.RefreshTokenRequest:
     properties:
       refresh_token:
         type: string
     required:
-      - refresh_token
+    - refresh_token
     type: object
   models.RegisterRequest:
     properties:
@@ -34,9 +34,9 @@ definitions:
         minLength: 3
         type: string
     required:
-      - email
-      - password
-      - username
+    - email
+    - password
+    - username
     type: object
   models.TokenResponse:
     properties:
@@ -55,12 +55,12 @@ definitions:
       refresh_token:
         type: string
     required:
-      - refresh_token
+    - refresh_token
     type: object
-host: localhost:9876
+host: ${API_HOST}
 info:
   contact:
-    email: taipv.swe@gmail.com
+    email: support@example.com
     name: API Support
     url: https://github.com/phanvantai/taiphanvan_backend
   description: This is a REST API server for a personal blog.
@@ -74,22 +74,22 @@ paths:
   /auth/login:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Authenticate a user and return JWT tokens
       parameters:
-        - description: Login Credentials
-          in: body
-          name: credentials
-          required: true
-          schema:
-            $ref: "#/definitions/models.LoginRequest"
+      - description: Login Credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Login successful
           schema:
-            $ref: "#/definitions/models.TokenResponse"
+            $ref: '#/definitions/models.TokenResponse'
         "400":
           description: Invalid input
           schema:
@@ -107,20 +107,20 @@ paths:
             type: object
       summary: Login to the application
       tags:
-        - Auth
+      - Auth
   /auth/logout:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Invalidate the current user's tokens
       parameters:
-        - description: Logout options
-          in: body
-          name: body
-          schema:
-            type: object
+      - description: Logout options
+        in: body
+        name: body
+        schema:
+          type: object
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Successfully logged out
@@ -138,29 +138,29 @@ paths:
             additionalProperties: true
             type: object
       security:
-        - BearerAuth: []
+      - BearerAuth: []
       summary: Logout from the application
       tags:
-        - Auth
+      - Auth
   /auth/refresh:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Get a new access token using a refresh token
       parameters:
-        - description: Refresh Token
-          in: body
-          name: refresh_token
-          required: true
-          schema:
-            $ref: "#/definitions/models.RefreshTokenRequest"
+      - description: Refresh Token
+        in: body
+        name: refresh_token
+        required: true
+        schema:
+          $ref: '#/definitions/models.RefreshTokenRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Token refreshed successfully
           schema:
-            $ref: "#/definitions/models.TokenResponse"
+            $ref: '#/definitions/models.TokenResponse'
         "400":
           description: Invalid input
           schema:
@@ -173,21 +173,21 @@ paths:
             type: object
       summary: Refresh an access token
       tags:
-        - Auth
+      - Auth
   /auth/register:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new user account
       parameters:
-        - description: User Registration Data
-          in: body
-          name: user
-          required: true
-          schema:
-            $ref: "#/definitions/models.RegisterRequest"
+      - description: User Registration Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: User registered successfully
@@ -211,21 +211,21 @@ paths:
             type: object
       summary: Register a new user
       tags:
-        - Auth
+      - Auth
   /auth/revoke:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Invalidate a refresh token
       parameters:
-        - description: Refresh Token
-          in: body
-          name: refresh_token
-          required: true
-          schema:
-            $ref: "#/definitions/models.TokenRevokeRequest"
+      - description: Refresh Token
+        in: body
+        name: refresh_token
+        required: true
+        schema:
+          $ref: '#/definitions/models.TokenRevokeRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Token revoked successfully
@@ -238,15 +238,15 @@ paths:
             additionalProperties: true
             type: object
       security:
-        - BearerAuth: []
+      - BearerAuth: []
       summary: Revoke a refresh token
       tags:
-        - Auth
+      - Auth
   /profile:
     get:
       description: Retrieve the current user's profile information
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: User profile
@@ -259,23 +259,23 @@ paths:
             additionalProperties: true
             type: object
       security:
-        - BearerAuth: []
+      - BearerAuth: []
       summary: Get user profile
       tags:
-        - Users
+      - Users
     put:
       consumes:
-        - application/json
+      - application/json
       description: Update the current user's profile information
       parameters:
-        - description: Profile Data
-          in: body
-          name: profile
-          required: true
-          schema:
-            type: object
+      - description: Profile Data
+        in: body
+        name: profile
+        required: true
+        schema:
+          type: object
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Profile updated successfully
@@ -293,10 +293,49 @@ paths:
             additionalProperties: true
             type: object
       security:
-        - BearerAuth: []
+      - BearerAuth: []
       summary: Update user profile
       tags:
-        - Users
+      - Users
+  /profile/avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a new avatar image for the current user
+      parameters:
+      - description: Avatar image file (JPG, JPEG, PNG, max 2MB)
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Avatar uploaded successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upload user avatar
+      tags:
+      - Users
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and the JWT token.
