@@ -75,8 +75,18 @@ type AdminConfig struct {
 
 // Load loads the configuration from environment variables or .env file
 func Load(envFile string) (*Config, error) {
-	// Try to load .env file if provided
-	if envFile != "" {
+	// Try to load .env files in order of priority
+	loaded := false
+
+	// Try root directory .env first (takes precedence)
+	rootEnvFile := ".env"
+	if err := godotenv.Load(rootEnvFile); err == nil {
+		log.Info().Str("file", rootEnvFile).Msg("Loaded environment from root .env file")
+		loaded = true
+	}
+
+	// Try provided env file path as fallback
+	if envFile != "" && (!loaded || envFile != rootEnvFile) {
 		// First try direct path
 		err := godotenv.Load(envFile)
 		if err != nil {
@@ -90,14 +100,19 @@ func Load(envFile string) (*Config, error) {
 				err = godotenv.Load(relativePath)
 				if err != nil {
 					log.Warn().Err(err).Str("file", relativePath).Msg("Failed to load .env from relative path")
+				} else {
+					log.Info().Str("file", relativePath).Msg("Loaded environment from relative path")
+					loaded = true
 				}
 			}
-
-			// If we still fail, log but continue (we'll use env vars or defaults)
-			if err != nil {
-				log.Info().Msg("Continuing with environment variables and defaults")
-			}
+		} else {
+			log.Info().Str("file", envFile).Msg("Loaded environment from specified path")
+			loaded = true
 		}
+	}
+
+	if !loaded {
+		log.Info().Msg("No .env file loaded. Continuing with environment variables and defaults")
 	}
 
 	config := &Config{}
