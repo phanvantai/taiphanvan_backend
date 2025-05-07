@@ -1,4 +1,4 @@
-# Personal Blog Backend API
+# TaiPhanVan Blog Backend API
 
 This repository contains the backend API service for a personal blog built with Go. The API provides endpoints for blog post management, user authentication, comments, and tags.
 
@@ -16,6 +16,7 @@ taiphanvan_backend/
 │   ├── logger/        # Logging configuration
 │   ├── middleware/    # HTTP middleware components
 │   ├── models/        # Data models and business logic
+│   ├── services/      # External service integrations
 │   └── testutil/      # Testing utilities
 └── pkg/               # Reusable packages
     └── utils/         # Utility functions
@@ -24,13 +25,15 @@ taiphanvan_backend/
 ## Features
 
 - RESTful API endpoints for blog content management
-- JWT-based authentication and authorization
+- JWT-based authentication with access and refresh tokens
 - Database interactions with connection pooling using GORM
 - Input validation and error handling
 - Structured logging with zerolog
 - API documentation with Swagger
 - Security features (rate limiting, input sanitization, CORS support)
+- Cloudinary integration for image uploads
 - Containerization with Docker
+- Support for multiple deployment environments (local, Docker, Railway)
 
 ## Requirements
 
@@ -60,7 +63,9 @@ taiphanvan_backend/
 4. Set up the database:
 
     ```bash
-    # Database setup commands or reference to migration scripts
+    # The application will automatically create tables on first run
+    # For local development, you can use Docker Compose to set up PostgreSQL
+    docker-compose up -d postgres
     ```
 
 ### Running the Server
@@ -78,36 +83,49 @@ The server will start on `http://localhost:9876` by default (configurable in con
 
 ## Configuration
 
-The application uses environment variables for configuration. Create a `.env` file in the project root or configure these environment variables in your deployment environment:
+The application uses environment variables for configuration. Create a `.env` file in the project root or configure these environment variables in your deployment environment. You can use the provided `.env.example` as a template:
 
 ```bash
-# Server
-PORT=9876
-ENV=development
+# API Configuration
+API_PORT=9876
+GIN_MODE=debug # Use 'release' for production
 
-# Database
-DB_HOST=localhost
+# Database Configuration
+DB_HOST=postgres
 DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=password
-DB_NAME=personal_blog
+DB_USER=bloguser
+DB_PASS=your_secure_password_here
+DB_NAME=blog_db
+DB_SSL_MODE=disable # Use 'require' for production
 
-# JWT
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRATION=24h
+# JWT Configuration
+JWT_SECRET=replace_with_secure_random_string
+JWT_ACCESS_EXPIRY=15m
+JWT_REFRESH_EXPIRY=168h
 
-# Logging
-LOG_LEVEL=info
+# CORS Configuration
+CORS_ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
 
-# Security
-RATE_LIMIT=100
-CORS_ALLOWED_ORIGINS=*
+# Logging Configuration
+LOG_LEVEL=debug # Use 'info' for production
+LOG_FORMAT=console # Use 'json' for production
 
-# Cloudinary (for avatar uploads)
+# Admin User Configuration
+CREATE_DEFAULT_ADMIN=true
+DEFAULT_ADMIN_USERNAME=admin
+DEFAULT_ADMIN_EMAIL=admin@example.com
+DEFAULT_ADMIN_PASSWORD=replace_with_secure_password
+
+# PostgreSQL Configuration
+POSTGRES_USER=bloguser
+POSTGRES_PASSWORD=your_secure_password_here
+POSTGRES_DB=blog_db
+
+# Cloudinary Configuration
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-CLOUDINARY_UPLOAD_FOLDER=avatars
+CLOUDINARY_UPLOAD_FOLDER=blog_images
 ```
 
 ## API Documentation
@@ -123,35 +141,42 @@ http://localhost:9876/swagger/index.html
 ### Authentication
 
 - `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login and get JWT token
+- `POST /api/auth/login` - Login and get JWT tokens
 - `POST /api/auth/refresh` - Refresh JWT token
+- `POST /api/auth/revoke` - Revoke a refresh token (requires auth)
+- `POST /api/auth/logout` - Logout and invalidate tokens (requires auth)
 
 ### User Profile
 
-- `GET /api/profile` - Get user profile
-- `PUT /api/profile` - Update user profile
-- `POST /api/profile/avatar` - Upload user avatar (using Cloudinary)
+- `GET /api/profile` - Get user profile (requires auth)
+- `PUT /api/profile` - Update user profile (requires auth)
+- `POST /api/profile/avatar` - Upload user avatar using Cloudinary (requires auth)
 
 ### Blog Posts
 
-- `GET /api/posts` - Get all posts (with pagination)
-- `GET /api/posts/:id` - Get a specific post
+- `GET /api/posts` - Get all posts (with pagination and tag filtering)
+- `GET /api/posts/slug/:slug` - Get a specific post by slug
 - `POST /api/posts` - Create a new post (requires auth)
 - `PUT /api/posts/:id` - Update a post (requires auth)
 - `DELETE /api/posts/:id` - Delete a post (requires auth)
+- `POST /api/posts/:id/cover` - Upload post cover image (requires auth)
+- `DELETE /api/posts/:id/cover` - Delete post cover image (requires auth)
 
 ### Comments
 
 - `GET /api/posts/:id/comments` - Get comments for a post
 - `POST /api/posts/:id/comments` - Add a comment (requires auth)
-- `PUT /api/comments/:id` - Update a comment (requires auth)
-- `DELETE /api/comments/:id` - Delete a comment (requires auth)
+- `PUT /api/comments/:commentID` - Update a comment (requires auth)
+- `DELETE /api/comments/:commentID` - Delete a comment (requires auth)
 
 ### Tags
 
 - `GET /api/tags` - Get all tags
-- `POST /api/tags` - Create a new tag (requires auth)
-- `DELETE /api/tags/:id` - Delete a tag (requires auth)
+- `GET /api/tags/popular` - Get popular tags
+
+### Health Check
+
+- `GET /health` - Check API health status
 
 ## Development
 
@@ -243,15 +268,17 @@ The application can be deployed as a standalone binary or containerized with Doc
 
 #### Environment Variables in Docker
 
-When using Docker Compose, environment variables are already defined in the `docker-compose.yml` file:
+When using Docker Compose, environment variables are passed from your local environment or .env file to the containers as defined in the `docker-compose.yml` file:
 
 ```yaml
 environment:
-  - API_PORT=9876
-  - DB_HOST=postgres  # Uses the service name as hostname
-  - DB_USER=bloguser
-  - DB_PASS=blogpassword
-  - DB_NAME=blog_db
+  - API_PORT=${API_PORT}
+  - GIN_MODE=${GIN_MODE}
+  - DB_HOST=${DB_HOST}
+  - DB_PORT=${DB_PORT}
+  - DB_USER=${DB_USER}
+  - DB_PASS=${DB_PASS}
+  - DB_NAME=${DB_NAME}
   # ... other configurations
 ```
 
@@ -310,15 +337,25 @@ docker-compose up -d --build
    docker-compose restart
    ```
 
+### Cloud Deployment
+
+The application is configured to run on Railway.app and other cloud platforms with minimal configuration:
+
+- The application automatically detects when it's running in a cloud environment
+- It will use environment variables provided by the platform
+- For Railway, it will use the `PORT` and `DATABASE_URL` environment variables automatically
+
 ## Security Considerations
 
 - All endpoints requiring authentication are protected with JWT tokens
+- Separate access and refresh token mechanism for better security
 - Passwords are hashed using bcrypt with proper salting
 - Input sanitization and validation using gin-validator
-- Rate limiting is applied to public endpoints
-- CORS protection implemented
+- Rate limiting is applied to all API endpoints (stricter limits for auth endpoints)
+- CORS protection with configurable allowed origins
 - HTTPS is required for all communications in production
 - Database queries use prepared statements to prevent SQL injection
+- Request ID tracking for better debugging and audit trails
 
 ## License
 

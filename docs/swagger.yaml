@@ -1,5 +1,31 @@
 basePath: /api
 definitions:
+  models.Comment:
+    description: A comment made by a user on a specific post
+    properties:
+      content:
+        example: Great post!
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      post:
+        $ref: '#/definitions/models.Post'
+      post_id:
+        example: 1
+        type: integer
+      updated_at:
+        example: "2023-01-02T12:00:00Z"
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        example: 1
+        type: integer
+    type: object
   models.LoginRequest:
     properties:
       email:
@@ -10,6 +36,46 @@ definitions:
     required:
     - email
     - password
+    type: object
+  models.Post:
+    description: A blog post with content, metadata, and relationships
+    properties:
+      content:
+        example: This is the content of my blog post...
+        type: string
+      cover:
+        example: https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      excerpt:
+        example: A short summary of the post
+        type: string
+      id:
+        example: 1
+        type: integer
+      published_at:
+        example: "2023-01-03T12:00:00Z"
+        type: string
+      slug:
+        example: my-first-blog-post
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/models.Tag'
+        type: array
+      title:
+        example: My First Blog Post
+        type: string
+      updated_at:
+        example: "2023-01-02T12:00:00Z"
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        example: 1
+        type: integer
     type: object
   models.RefreshTokenRequest:
     properties:
@@ -38,6 +104,20 @@ definitions:
     - password
     - username
     type: object
+  models.Tag:
+    description: A tag that can be associated with multiple posts
+    properties:
+      id:
+        example: 1
+        type: integer
+      name:
+        example: technology
+        type: string
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+    type: object
   models.TokenResponse:
     properties:
       access_token:
@@ -57,18 +137,60 @@ definitions:
     required:
     - refresh_token
     type: object
-host: ${API_HOST}
+  models.User:
+    description: A user account with profile information and relationships
+    properties:
+      bio:
+        example: I'm a software developer interested in web technologies.
+        type: string
+      comments:
+        items:
+          $ref: '#/definitions/models.Comment'
+        type: array
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      id:
+        example: 1
+        type: integer
+      last_name:
+        example: Doe
+        type: string
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      profile_image:
+        example: https://res.cloudinary.com/demo/image/upload/v1234567890/avatars/user_1_1620000000.jpg
+        type: string
+      role:
+        example: user
+        type: string
+      updated_at:
+        example: "2023-01-02T12:00:00Z"
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+host: localhost:9876
 info:
   contact:
     email: support@example.com
     name: API Support
     url: https://github.com/phanvantai/taiphanvan_backend
-  description: This is a REST API server for a personal blog.
+  description: A RESTful API for the TaiPhanVan personal blog platform
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   termsOfService: http://swagger.io/terms/
-  title: Personal Blog API
+  title: TaiPhanVan Blog API
   version: "1.0"
 paths:
   /auth/login:
@@ -242,6 +364,497 @@ paths:
       summary: Revoke a refresh token
       tags:
       - Auth
+  /comments/{commentID}:
+    delete:
+      description: Removes a comment from a post
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Comment not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a comment
+      tags:
+      - Comments
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing comment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: integer
+      - description: Updated comment content
+        in: body
+        name: comment
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated comment
+          schema:
+            $ref: '#/definitions/models.Comment'
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Comment not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a comment
+      tags:
+      - Comments
+  /health:
+    get:
+      description: Provides a simple endpoint to verify the API and database are running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: API is healthy
+          schema:
+            additionalProperties: true
+            type: object
+        "503":
+          description: Database connection issues
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Check API health
+      tags:
+      - System
+  /posts:
+    get:
+      description: Returns a paginated list of blog posts with optional tag filtering
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 10)'
+        in: query
+        name: limit
+        type: integer
+      - description: Filter posts by tag name
+        in: query
+        name: tag
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Example response" {{"posts":[{"id":1,"title":"Sample Post","slug":"sample-post","content":"This
+            is a sample post content","excerpt":"Sample excerpt","cover":"https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg","user_id":1,"user":{"id":1,"username":"johndoe","first_name":"John","last_name":"Doe","profile_image":"https://example.com/avatar.jpg"},"tags":[{"id":1,"name":"technology"}],"created_at":"2023-01-01T12:00:00Z","updated_at":"2023-01-02T12:00:00Z","published_at":"2023-01-03T12:00:00Z"}],"meta":{"page":1,"limit":10,"total":1,"lastPage":1}}}
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get list of blog posts
+      tags:
+      - Posts
+    post:
+      consumes:
+      - application/json
+      description: Creates a new blog post with the provided details
+      parameters:
+      - description: Post details
+        in: body
+        name: post
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created post
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new blog post
+      tags:
+      - Posts
+  /posts/{id}:
+    delete:
+      description: Deletes a blog post by ID (soft delete)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Post not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a blog post
+      tags:
+      - Posts
+    put:
+      consumes:
+      - application/json
+      description: Updates a blog post with the provided details
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Post details
+        in: body
+        name: post
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated post
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Post not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update an existing blog post
+      tags:
+      - Posts
+  /posts/{id}/comments:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new comment to a post
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Comment content
+        in: body
+        name: comment
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created comment
+          schema:
+            $ref: '#/definitions/models.Comment'
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Post not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new comment
+      tags:
+      - Comments
+  /posts/{id}/cover:
+    delete:
+      description: Remove the cover image from a post
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Example response" {{"status":"success","message":"Cover deleted
+            successfully"}}
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Post not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete post cover image
+      tags:
+      - Posts
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a new cover image for a post
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Cover image file (JPG, JPEG, PNG, WEBP, max 5MB)
+        in: formData
+        name: cover
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Example response" {{"status":"success","message":"Cover uploaded
+            successfully","data":{"cover":"https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg"}}}
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Post not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upload post cover image
+      tags:
+      - Posts
+  /posts/{postID}/comments:
+    get:
+      description: Returns all comments for a specific post
+      parameters:
+      - description: Post ID
+        in: path
+        name: postID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of comments
+          schema:
+            items:
+              $ref: '#/definitions/models.Comment'
+            type: array
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get comments for a post
+      tags:
+      - Comments
+  /posts/slug/{slug}:
+    get:
+      description: Returns a single blog post by its slug
+      parameters:
+      - description: Post slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Post details
+          schema:
+            $ref: '#/definitions/models.Post'
+        "404":
+          description: Post not found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a blog post by slug
+      tags:
+      - Posts
   /profile:
     get:
       description: Retrieve the current user's profile information
@@ -336,6 +949,46 @@ paths:
       summary: Upload user avatar
       tags:
       - Users
+  /tags:
+    get:
+      description: Returns all tags with their post counts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tags with post counts" {[{"id":1,"name":"technology","post_count":5},{"id":2,"name":"programming","post_count":3}]}
+          schema:
+            items:
+              type: object
+            type: array
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all tags
+      tags:
+      - Tags
+  /tags/popular:
+    get:
+      description: Returns the most used tags with post counts (limited to 10)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of popular tags with post counts" {[{"id":1,"name":"technology","post_count":5},{"id":2,"name":"programming","post_count":3}]}
+          schema:
+            items:
+              type: object
+            type: array
+        "500":
+          description: Server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get popular tags
+      tags:
+      - Tags
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and the JWT token.

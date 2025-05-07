@@ -25,9 +25,9 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title           Personal Blog API
+// @title           TaiPhanVan Blog API
 // @version         1.0
-// @description     This is a REST API server for a personal blog.
+// @description     A RESTful API for the TaiPhanVan personal blog platform
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   API Support
@@ -37,7 +37,7 @@ import (
 // @license.name  MIT
 // @license.url   https://opensource.org/licenses/MIT
 
-// @host      ${API_HOST}
+// @host      localhost:9876
 // @BasePath  /api
 
 // @securityDefinitions.apikey BearerAuth
@@ -268,9 +268,13 @@ func initSwagger() {
 		}
 	}
 
-	// Set the host in the Swagger info
+	// Set the Swagger info
 	swaggerInfo := docs.SwaggerInfo
+	swaggerInfo.Title = "TaiPhanVan Blog API"
+	swaggerInfo.Description = "A RESTful API for the TaiPhanVan personal blog platform"
+	swaggerInfo.Version = "1.0"
 	swaggerInfo.Host = host
+	swaggerInfo.BasePath = "/api"
 
 	// Set the scheme based on environment
 	isProduction := os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true"
@@ -281,7 +285,10 @@ func initSwagger() {
 	}
 
 	log.Info().
+		Str("title", swaggerInfo.Title).
+		Str("version", swaggerInfo.Version).
 		Str("host", host).
+		Str("basePath", swaggerInfo.BasePath).
 		Strs("schemes", swaggerInfo.Schemes).
 		Msg("Swagger configuration initialized")
 }
@@ -331,6 +338,8 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 			protected.POST("/posts", handlers.CreatePost)
 			protected.PUT("/posts/:id", handlers.UpdatePost)
 			protected.DELETE("/posts/:id", handlers.DeletePost)
+			protected.POST("/posts/:id/cover", handlers.UploadPostCover)
+			protected.DELETE("/posts/:id/cover", handlers.DeletePostCover)
 
 			// Comment routes
 			protected.POST("/posts/:id/comments", handlers.CreateComment)

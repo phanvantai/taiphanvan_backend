@@ -12,7 +12,18 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetPosts returns a list of blog posts with pagination
+// GetPosts godoc
+// @Summary Get list of blog posts
+// @Description Returns a paginated list of blog posts with optional tag filtering
+// @Tags Posts
+// @Produce json
+// @Param page query int false "Page number (default: 1)"
+// @Param limit query int false "Number of items per page (default: 10)"
+// @Param tag query string false "Filter posts by tag name"
+// @Success 200 {object} map[string]interface{} "List of posts with pagination metadata"
+// @Success 200 {object} map[string]interface{} "Example response" {{"posts":[{"id":1,"title":"Sample Post","slug":"sample-post","content":"This is a sample post content","excerpt":"Sample excerpt","cover":"https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg","user_id":1,"user":{"id":1,"username":"johndoe","first_name":"John","last_name":"Doe","profile_image":"https://example.com/avatar.jpg"},"tags":[{"id":1,"name":"technology"}],"created_at":"2023-01-01T12:00:00Z","updated_at":"2023-01-02T12:00:00Z","published_at":"2023-01-03T12:00:00Z"}],"meta":{"page":1,"limit":10,"total":1,"lastPage":1}}}
+// @Failure 500 {object} map[string]interface{} "Server error"
+// @Router /posts [get]
 func GetPosts(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
@@ -50,7 +61,15 @@ func GetPosts(c *gin.Context) {
 	})
 }
 
-// GetPostBySlug returns a single blog post by its slug
+// GetPostBySlug godoc
+// @Summary Get a blog post by slug
+// @Description Returns a single blog post by its slug
+// @Tags Posts
+// @Produce json
+// @Param slug path string true "Post slug"
+// @Success 200 {object} models.Post "Post details"
+// @Failure 404 {object} map[string]interface{} "Post not found"
+// @Router /posts/slug/{slug} [get]
 func GetPostBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 
@@ -65,7 +84,19 @@ func GetPostBySlug(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
-// CreatePost creates a new blog post
+// CreatePost godoc
+// @Summary Create a new blog post
+// @Description Creates a new blog post with the provided details
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param post body object true "Post details" {{"title":"My New Post","content":"This is the content of my new post","excerpt":"A short excerpt","cover":"","tags":["technology","programming"],"published":true}}
+// @Success 201 {object} models.Post "Created post"
+// @Failure 400 {object} map[string]interface{} "Invalid input"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Server error"
+// @Security BearerAuth
+// @Router /posts [post]
 func CreatePost(c *gin.Context) {
 	userID, _ := c.Get("userID")
 
@@ -73,6 +104,7 @@ func CreatePost(c *gin.Context) {
 		Title     string   `json:"title" binding:"required"`
 		Content   string   `json:"content" binding:"required"`
 		Excerpt   string   `json:"excerpt"`
+		Cover     string   `json:"cover"`
 		Tags      []string `json:"tags"`
 		Published bool     `json:"published"`
 	}
@@ -97,6 +129,7 @@ func CreatePost(c *gin.Context) {
 		Title:   requestBody.Title,
 		Content: requestBody.Content,
 		Excerpt: requestBody.Excerpt,
+		Cover:   requestBody.Cover,
 		Slug:    slug,
 		UserID:  userID.(uint),
 	}
@@ -146,7 +179,22 @@ func CreatePost(c *gin.Context) {
 	c.JSON(http.StatusCreated, post)
 }
 
-// UpdatePost updates an existing blog post
+// UpdatePost godoc
+// @Summary Update an existing blog post
+// @Description Updates a blog post with the provided details
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Param post body object true "Post details" {{"title":"Updated Post Title","content":"Updated content","excerpt":"Updated excerpt","cover":"https://example.com/updated-cover.jpg","tags":["technology","programming","updated"],"published":true}}
+// @Success 200 {object} models.Post "Updated post"
+// @Failure 400 {object} map[string]interface{} "Invalid input"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 404 {object} map[string]interface{} "Post not found"
+// @Failure 500 {object} map[string]interface{} "Server error"
+// @Security BearerAuth
+// @Router /posts/{id} [put]
 func UpdatePost(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -172,6 +220,7 @@ func UpdatePost(c *gin.Context) {
 		Title     *string  `json:"title"`
 		Content   *string  `json:"content"`
 		Excerpt   *string  `json:"excerpt"`
+		Cover     *string  `json:"cover"`
 		Tags      []string `json:"tags"`
 		Published *bool    `json:"published"`
 	}
@@ -194,6 +243,9 @@ func UpdatePost(c *gin.Context) {
 	}
 	if requestBody.Excerpt != nil {
 		post.Excerpt = *requestBody.Excerpt
+	}
+	if requestBody.Cover != nil {
+		post.Cover = *requestBody.Cover
 	}
 	if requestBody.Published != nil {
 		if *requestBody.Published && post.PublishedAt == nil {
@@ -249,7 +301,20 @@ func UpdatePost(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
-// DeletePost removes a blog post
+// DeletePost godoc
+// @Summary Delete a blog post
+// @Description Deletes a blog post by ID (soft delete)
+// @Tags Posts
+// @Produce json
+// @Param id path int true "Post ID"
+// @Success 200 {object} map[string]interface{} "Success message"
+// @Failure 400 {object} map[string]interface{} "Invalid input"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 404 {object} map[string]interface{} "Post not found"
+// @Failure 500 {object} map[string]interface{} "Server error"
+// @Security BearerAuth
+// @Router /posts/{id} [delete]
 func DeletePost(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)

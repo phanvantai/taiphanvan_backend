@@ -208,7 +208,7 @@ func Load(envFile string) (*Config, error) {
 		CloudName:    getEnv("CLOUDINARY_CLOUD_NAME", ""),
 		APIKey:       getEnv("CLOUDINARY_API_KEY", ""),
 		APISecret:    getEnv("CLOUDINARY_API_SECRET", ""),
-		UploadFolder: getEnv("CLOUDINARY_UPLOAD_FOLDER", "avatars"),
+		UploadFolder: getEnv("CLOUDINARY_UPLOAD_FOLDER", "blog_images"),
 	}
 
 	// Validate configuration - but provide better fallbacks for Docker environment

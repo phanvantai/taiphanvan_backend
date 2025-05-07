@@ -7,7 +7,14 @@ import (
 	"github.com/phanvantai/taiphanvan_backend/internal/database"
 )
 
-// GetAllTags returns all tags with their post counts
+// GetAllTags godoc
+// @Summary Get all tags
+// @Description Returns all tags with their post counts
+// @Tags Tags
+// @Produce json
+// @Success 200 {array} object "List of tags with post counts" {[{"id":1,"name":"technology","post_count":5},{"id":2,"name":"programming","post_count":3}]}
+// @Failure 500 {object} map[string]interface{} "Server error"
+// @Router /tags [get]
 func GetAllTags(c *gin.Context) {
 	type TagWithCount struct {
 		ID        uint   `json:"id"`
@@ -42,7 +49,14 @@ func GetAllTags(c *gin.Context) {
 	c.JSON(http.StatusOK, tagsWithCount)
 }
 
-// GetPopularTags returns the most used tags with post counts
+// GetPopularTags godoc
+// @Summary Get popular tags
+// @Description Returns the most used tags with post counts (limited to 10)
+// @Tags Tags
+// @Produce json
+// @Success 200 {array} object "List of popular tags with post counts" {[{"id":1,"name":"technology","post_count":5},{"id":2,"name":"programming","post_count":3}]}
+// @Failure 500 {object} map[string]interface{} "Server error"
+// @Router /tags/popular [get]
 func GetPopularTags(c *gin.Context) {
 	limit := 10 // Default limit
 
