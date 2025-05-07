@@ -284,6 +284,10 @@ func initSwagger() {
 		swaggerInfo.Schemes = []string{"http"}
 	}
 
+	// Ensure the template variables are properly replaced in the Swagger JSON
+	docs.SwaggerInfo.Host = host
+	docs.SwaggerInfo.BasePath = "/api"
+
 	log.Info().
 		Str("title", swaggerInfo.Title).
 		Str("version", swaggerInfo.Version).
@@ -357,6 +361,12 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 
 	// Add Swagger documentation endpoint with environment-aware configuration
 	r.GET("/swagger/*any", func(c *gin.Context) {
+		// Handle doc.json with the custom handler
+		if c.Param("any") == "/doc.json" {
+			handlers.SwaggerDocHandler(c)
+			return
+		}
+
 		// Determine if we're running in Railway or other production environment
 		isProduction := os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true"
 
@@ -386,9 +396,15 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 		swaggerURL := fmt.Sprintf("%s://%s/swagger/doc.json", protocol, host)
 		log.Info().Str("swagger_url", swaggerURL).Msg("Configuring Swagger documentation URL")
 
+		// Update Swagger info again to ensure it's properly set
+		docs.SwaggerInfo.Host = host
+		docs.SwaggerInfo.BasePath = "/api"
+
 		ginSwagger.WrapHandler(swaggerFiles.Handler,
 			ginSwagger.URL(swaggerURL),
 			ginSwagger.DeepLinking(true),
+			ginSwagger.DefaultModelsExpandDepth(1), // Show models with depth 1
+			ginSwagger.DocExpansion("list"),        // Expand operation by default
 		)(c)
 	})
 }
