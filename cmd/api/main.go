@@ -299,13 +299,13 @@ func initSwagger() {
 
 // setupRoutes configures all the routes for the API
 func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
-	// Add health check endpoints
-	r.GET("/health", handlers.HealthCheck)
-
 	// Define API routes
 	api := r.Group("/api")
 	{
-		// Apply rate limiting to all API routes
+		// Health check endpoint
+		api.GET("/health", handlers.HealthCheck)
+
+		// Apply rate limiting to all other API routes
 		api.Use(rateLimiter.RateLimitMiddleware())
 
 		// Public routes
