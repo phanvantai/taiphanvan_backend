@@ -20,14 +20,10 @@ type CloudinaryService struct {
 	cfg config.CloudinaryConfig
 }
 
-// UploadType defines the type of upload (avatar or post cover)
-type UploadType string
-
 const (
-	// UploadTypeAvatar represents an avatar upload
-	UploadTypeAvatar UploadType = "avatar"
-	// UploadTypePostCover represents a post cover upload
-	UploadTypePostCover UploadType = "post_cover"
+	// Folder paths for different upload types
+	avatarFolder    = "avatars"
+	postCoverFolder = "post_covers"
 )
 
 // NewCloudinaryService creates a new Cloudinary service
@@ -58,17 +54,19 @@ func (s *CloudinaryService) UploadAvatar(ctx context.Context, file *multipart.Fi
 
 	// Create a unique public ID for the image
 	timestamp := time.Now().UnixNano()
-	publicID := fmt.Sprintf("%s/user_%d_%d", s.cfg.UploadFolder, userID, timestamp)
+	folderPath := fmt.Sprintf("%s/%s", s.cfg.UploadFolder, avatarFolder)
+	publicID := fmt.Sprintf("user_%d_%d", userID, timestamp)
 
 	// Upload the file to Cloudinary
 	uploadParams := uploader.UploadParams{
 		PublicID:     publicID,
 		ResourceType: "image",
-		Folder:       s.cfg.UploadFolder,
+		Folder:       folderPath,
 	}
 
 	log.Info().
 		Str("public_id", publicID).
+		Str("folder", folderPath).
 		Uint("user_id", userID).
 		Str("filename", file.Filename).
 		Msg("Uploading avatar to Cloudinary")
@@ -118,17 +116,19 @@ func (s *CloudinaryService) UploadPostCover(ctx context.Context, file *multipart
 
 	// Create a unique public ID for the image
 	timestamp := time.Now().UnixNano()
-	publicID := fmt.Sprintf("%s/post_%d_%d", s.cfg.UploadFolder, postID, timestamp)
+	folderPath := fmt.Sprintf("%s/%s", s.cfg.UploadFolder, postCoverFolder)
+	publicID := fmt.Sprintf("post_%d_%d", postID, timestamp)
 
 	// Upload the file to Cloudinary
 	uploadParams := uploader.UploadParams{
 		PublicID:     publicID,
 		ResourceType: "image",
-		Folder:       s.cfg.UploadFolder,
+		Folder:       folderPath,
 	}
 
 	log.Info().
 		Str("public_id", publicID).
+		Str("folder", folderPath).
 		Uint("post_id", postID).
 		Str("filename", file.Filename).
 		Msg("Uploading post cover to Cloudinary")
