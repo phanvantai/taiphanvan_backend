@@ -1128,6 +1128,39 @@ paths:
       summary: Get comments for a post
       tags:
       - Comments
+  /posts/me:
+    get:
+      description: Returns a paginated list of blog posts authored by the currently
+        authenticated user
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 10)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of the user's posts with pagination metadata
+          schema:
+            $ref: '#/definitions/models.SwaggerPostsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Get the current user's blog posts
+      tags:
+      - Posts
   /posts/slug/{slug}:
     get:
       description: Returns a single blog post by its slug

@@ -342,6 +342,7 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 			protected.POST("/posts", handlers.CreatePost)
 			protected.PUT("/posts/:id", handlers.UpdatePost)
 			protected.DELETE("/posts/:id", handlers.DeletePost)
+			protected.GET("/posts/me", handlers.GetMyPosts) // New endpoint for dashboard
 			protected.POST("/posts/:id/cover", handlers.UploadPostCover)
 			protected.DELETE("/posts/:id/cover", handlers.DeletePostCover)
 			protected.POST("/posts/:id/publish", handlers.PublishPost)

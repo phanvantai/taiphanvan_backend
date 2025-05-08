@@ -156,6 +156,7 @@ http://localhost:9876/swagger/index.html
 
 - `GET /api/posts` - Get all posts (with pagination, tag filtering, and status filtering)
 - `GET /api/posts/slug/:slug` - Get a specific post by slug
+- `GET /api/posts/me` - Get the current user's posts (requires auth)
 - `POST /api/posts` - Create a new post (requires auth)
 - `PUT /api/posts/:id` - Update a post (requires auth)
 - `DELETE /api/posts/:id` - Delete a post (requires auth)

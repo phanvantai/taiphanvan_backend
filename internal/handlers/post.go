@@ -629,6 +629,66 @@ func SetPostStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
+// GetMyPosts godoc
+// @Summary Get the current user's blog posts
+// @Description Returns a paginated list of blog posts authored by the currently authenticated user
+// @Tags Posts
+// @Produce json
+// @Param page query int false "Page number (default: 1)"
+// @Param limit query int false "Number of items per page (default: 10)"
+// @Success 200 {object} models.SwaggerPostsResponse "List of the user's posts with pagination metadata"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /posts/me [get]
+func GetMyPosts(c *gin.Context) {
+	// Get user ID from context (set by AuthMiddleware)
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":  "error",
+			"error":   "Unauthorized",
+			"message": "Authentication required",
+		})
+		return
+	}
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	offset := (page - 1) * limit
+	var posts []models.Post
+	query := database.DB.Model(&models.Post{}).Where("user_id = ?", userID).
+		Preload("User", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id, username, first_name, last_name, profile_image")
+		}).
+		Preload("Tags").
+		Order("created_at DESC")
+
+	var total int64
+	query.Count(&total)
+
+	if err := query.Limit(limit).Offset(offset).Find(&posts).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "error",
+			"error":   "Database error",
+			"message": "Failed to fetch posts",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"posts":  posts,
+		"meta": gin.H{
+			"page":     page,
+			"limit":    limit,
+			"total":    total,
+			"lastPage": (int(total) + limit - 1) / limit,
+		},
+	})
+}
+
 // Helper function to generate slug from title
 func generateSlug(title string) string {
 	// Convert to lowercase
