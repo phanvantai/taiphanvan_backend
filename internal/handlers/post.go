@@ -20,9 +20,8 @@ import (
 // @Param page query int false "Page number (default: 1)"
 // @Param limit query int false "Number of items per page (default: 10)"
 // @Param tag query string false "Filter posts by tag name"
-// @Success 200 {object} map[string]interface{} "List of posts with pagination metadata"
-// @Success 200 {object} map[string]interface{} "Example response" {{"posts":[{"id":1,"title":"Sample Post","slug":"sample-post","content":"This is a sample post content","excerpt":"Sample excerpt","cover":"https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg","user_id":1,"user":{"id":1,"username":"johndoe","first_name":"John","last_name":"Doe","profile_image":"https://example.com/avatar.jpg"},"tags":[{"id":1,"name":"technology"}],"created_at":"2023-01-01T12:00:00Z","updated_at":"2023-01-02T12:00:00Z","published_at":"2023-01-03T12:00:00Z"}],"meta":{"page":1,"limit":10,"total":1,"lastPage":1}}}
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Success 200 {object} models.SwaggerPostsResponse "List of posts with pagination metadata"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Router /posts [get]
 func GetPosts(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -68,7 +67,7 @@ func GetPosts(c *gin.Context) {
 // @Produce json
 // @Param slug path string true "Post slug"
 // @Success 200 {object} models.Post "Post details"
-// @Failure 404 {object} map[string]interface{} "Post not found"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
 // @Router /posts/slug/{slug} [get]
 func GetPostBySlug(c *gin.Context) {
 	slug := c.Param("slug")
@@ -90,24 +89,17 @@ func GetPostBySlug(c *gin.Context) {
 // @Tags Posts
 // @Accept json
 // @Produce json
-// @Param post body object true "Post details" {{"title":"My New Post","content":"This is the content of my new post","excerpt":"A short excerpt","cover":"","tags":["technology","programming"],"published":true}}
+// @Param request body models.CreatePostRequest true "Post details"
 // @Success 201 {object} models.Post "Created post"
-// @Failure 400 {object} map[string]interface{} "Invalid input"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts [post]
 func CreatePost(c *gin.Context) {
 	userID, _ := c.Get("userID")
 
-	var requestBody struct {
-		Title     string   `json:"title" binding:"required"`
-		Content   string   `json:"content" binding:"required"`
-		Excerpt   string   `json:"excerpt"`
-		Cover     string   `json:"cover"`
-		Tags      []string `json:"tags"`
-		Published bool     `json:"published"`
-	}
+	var requestBody models.CreatePostRequest
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -186,13 +178,13 @@ func CreatePost(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Post ID"
-// @Param post body object true "Post details" {{"title":"Updated Post Title","content":"Updated content","excerpt":"Updated excerpt","cover":"https://example.com/updated-cover.jpg","tags":["technology","programming","updated"],"published":true}}
+// @Param post body models.UpdatePostRequest true "Post details"
 // @Success 200 {object} models.Post "Updated post"
-// @Failure 400 {object} map[string]interface{} "Invalid input"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 403 {object} map[string]interface{} "Forbidden"
-// @Failure 404 {object} map[string]interface{} "Post not found"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id} [put]
 func UpdatePost(c *gin.Context) {
@@ -216,14 +208,7 @@ func UpdatePost(c *gin.Context) {
 		return
 	}
 
-	var requestBody struct {
-		Title     *string  `json:"title"`
-		Content   *string  `json:"content"`
-		Excerpt   *string  `json:"excerpt"`
-		Cover     *string  `json:"cover"`
-		Tags      []string `json:"tags"`
-		Published *bool    `json:"published"`
-	}
+	var requestBody models.UpdatePostRequest
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -307,12 +292,12 @@ func UpdatePost(c *gin.Context) {
 // @Tags Posts
 // @Produce json
 // @Param id path int true "Post ID"
-// @Success 200 {object} map[string]interface{} "Success message"
-// @Failure 400 {object} map[string]interface{} "Invalid input"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 403 {object} map[string]interface{} "Forbidden"
-// @Failure 404 {object} map[string]interface{} "Post not found"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Success 200 {object} models.SwaggerStandardResponse "Success message"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id} [delete]
 func DeletePost(c *gin.Context) {

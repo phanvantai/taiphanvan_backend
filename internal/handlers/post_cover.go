@@ -33,13 +33,12 @@ var allowedCoverFileTypes = map[string]bool{
 // @Produce json
 // @Param id path int true "Post ID"
 // @Param cover formData file true "Cover image file (JPG, JPEG, PNG, WEBP, max 5MB)"
-// @Success 200 {object} map[string]interface{} "Cover uploaded successfully"
-// @Success 200 {object} map[string]interface{} "Example response" {{"status":"success","message":"Cover uploaded successfully","data":{"cover":"https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg"}}}
-// @Failure 400 {object} map[string]interface{} "Invalid input"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 403 {object} map[string]interface{} "Forbidden"
-// @Failure 404 {object} map[string]interface{} "Post not found"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Success 200 {object} models.SwaggerPostCoverResponse "Cover uploaded successfully"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id}/cover [post]
 func UploadPostCover(c *gin.Context) {
@@ -179,12 +178,11 @@ func UploadPostCover(c *gin.Context) {
 // @Tags Posts
 // @Produce json
 // @Param id path int true "Post ID"
-// @Success 200 {object} map[string]interface{} "Cover deleted successfully"
-// @Success 200 {object} map[string]interface{} "Example response" {{"status":"success","message":"Cover deleted successfully"}}
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 403 {object} map[string]interface{} "Forbidden"
-// @Failure 404 {object} map[string]interface{} "Post not found"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Success 200 {object} models.SwaggerStandardResponse "Cover deleted successfully"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id}/cover [delete]
 func DeletePostCover(c *gin.Context) {

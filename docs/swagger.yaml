@@ -26,6 +26,44 @@ definitions:
         example: 1
         type: integer
     type: object
+  models.CreateCommentRequest:
+    description: Request model for creating a new comment on a post
+    properties:
+      content:
+        example: This is a great post!
+        type: string
+    required:
+    - content
+    type: object
+  models.CreatePostRequest:
+    description: Request model for creating a new blog post
+    properties:
+      content:
+        example: This is the content of my new post
+        type: string
+      cover:
+        example: https://example.com/image.jpg
+        type: string
+      excerpt:
+        example: A short excerpt
+        type: string
+      published:
+        example: true
+        type: boolean
+      tags:
+        example:
+        - '["technology"'
+        - '"programming"]'
+        items:
+          type: string
+        type: array
+      title:
+        example: My New Post
+        type: string
+    required:
+    - content
+    - title
+    type: object
   models.LoginRequest:
     properties:
       email:
@@ -104,6 +142,101 @@ definitions:
     - password
     - username
     type: object
+  models.SwaggerAvatarResponse:
+    description: Response model for avatar upload
+    properties:
+      profile_image:
+        example: https://example.com/avatar.jpg
+        type: string
+    type: object
+  models.SwaggerPostCoverResponse:
+    description: Response model for post cover upload
+    properties:
+      cover:
+        example: https://example.com/cover.jpg
+        type: string
+    type: object
+  models.SwaggerPostsResponse:
+    description: Response model for listing blog posts
+    properties:
+      meta:
+        properties:
+          last_page:
+            example: 5
+            type: integer
+          limit:
+            example: 10
+            type: integer
+          page:
+            example: 1
+            type: integer
+          total:
+            example: 50
+            type: integer
+        type: object
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+    type: object
+  models.SwaggerProfileResponse:
+    description: Response model for user profile information
+    properties:
+      bio:
+        example: Software developer
+        type: string
+      created_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      id:
+        example: 1
+        type: integer
+      last_name:
+        example: Doe
+        type: string
+      profile_image:
+        example: https://example.com/avatar.jpg
+        type: string
+      role:
+        example: user
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+  models.SwaggerStandardResponse:
+    description: A standard API response format
+    properties:
+      data: {}
+      error:
+        example: Invalid input
+        type: string
+      message:
+        example: Operation completed successfully
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  models.SwaggerUpdateProfileRequest:
+    description: Request model for updating user profile
+    properties:
+      bio:
+        example: Software developer
+        type: string
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+    type: object
   models.Tag:
     description: A tag that can be associated with multiple posts
     properties:
@@ -117,6 +250,19 @@ definitions:
         items:
           $ref: '#/definitions/models.Post'
         type: array
+    type: object
+  models.TagWithCount:
+    description: A tag with the count of posts using it
+    properties:
+      id:
+        example: 1
+        type: integer
+      name:
+        example: technology
+        type: string
+      post_count:
+        example: 5
+        type: integer
     type: object
   models.TokenResponse:
     properties:
@@ -136,6 +282,42 @@ definitions:
         type: string
     required:
     - refresh_token
+    type: object
+  models.UpdateCommentRequest:
+    description: Request model for updating an existing comment
+    properties:
+      content:
+        example: This is my updated comment
+        type: string
+    required:
+    - content
+    type: object
+  models.UpdatePostRequest:
+    description: Request model for updating an existing blog post
+    properties:
+      content:
+        example: Updated content
+        type: string
+      cover:
+        example: https://example.com/updated-cover.jpg
+        type: string
+      excerpt:
+        example: Updated excerpt
+        type: string
+      published:
+        example: true
+        type: boolean
+      tags:
+        example:
+        - '["technology"'
+        - '"programming"'
+        - '"updated"]'
+        items:
+          type: string
+        type: array
+      title:
+        example: Updated Post Title
+        type: string
     type: object
   models.User:
     description: A user account with profile information and relationships
@@ -247,18 +429,15 @@ paths:
         "200":
           description: Successfully logged out
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Logout from the application
@@ -314,23 +493,19 @@ paths:
         "201":
           description: User registered successfully
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "409":
           description: Email or username already exists
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       summary: Register a new user
       tags:
       - Auth
@@ -379,33 +554,27 @@ paths:
         "200":
           description: Success message
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "403":
           description: Forbidden
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "404":
           description: Comment not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Delete a comment
@@ -426,7 +595,7 @@ paths:
         name: comment
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/models.UpdateCommentRequest'
       produces:
       - application/json
       responses:
@@ -437,28 +606,23 @@ paths:
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "403":
           description: Forbidden
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "404":
           description: Comment not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Update a comment
@@ -473,13 +637,11 @@ paths:
         "200":
           description: API is healthy
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "503":
           description: Database connection issues
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       summary: Check API health
       tags:
       - System
@@ -503,16 +665,13 @@ paths:
       - application/json
       responses:
         "200":
-          description: Example response" {{"posts":[{"id":1,"title":"Sample Post","slug":"sample-post","content":"This
-            is a sample post content","excerpt":"Sample excerpt","cover":"https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg","user_id":1,"user":{"id":1,"username":"johndoe","first_name":"John","last_name":"Doe","profile_image":"https://example.com/avatar.jpg"},"tags":[{"id":1,"name":"technology"}],"created_at":"2023-01-01T12:00:00Z","updated_at":"2023-01-02T12:00:00Z","published_at":"2023-01-03T12:00:00Z"}],"meta":{"page":1,"limit":10,"total":1,"lastPage":1}}}
+          description: List of posts with pagination metadata
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerPostsResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       summary: Get list of blog posts
       tags:
       - Posts
@@ -523,10 +682,10 @@ paths:
       parameters:
       - description: Post details
         in: body
-        name: post
+        name: request
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/models.CreatePostRequest'
       produces:
       - application/json
       responses:
@@ -537,18 +696,15 @@ paths:
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Create a new blog post
@@ -569,33 +725,27 @@ paths:
         "200":
           description: Success message
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "403":
           description: Forbidden
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "404":
           description: Post not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Delete a blog post
@@ -616,7 +766,7 @@ paths:
         name: post
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/models.UpdatePostRequest'
       produces:
       - application/json
       responses:
@@ -627,28 +777,23 @@ paths:
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "403":
           description: Forbidden
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "404":
           description: Post not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Update an existing blog post
@@ -670,7 +815,7 @@ paths:
         name: comment
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/models.CreateCommentRequest'
       produces:
       - application/json
       responses:
@@ -681,23 +826,19 @@ paths:
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "404":
           description: Post not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Create a new comment
@@ -716,31 +857,25 @@ paths:
       - application/json
       responses:
         "200":
-          description: Example response" {{"status":"success","message":"Cover deleted
-            successfully"}}
+          description: Cover deleted successfully
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "403":
           description: Forbidden
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "404":
           description: Post not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Delete post cover image
@@ -765,36 +900,29 @@ paths:
       - application/json
       responses:
         "200":
-          description: Example response" {{"status":"success","message":"Cover uploaded
-            successfully","data":{"cover":"https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg"}}}
+          description: Cover uploaded successfully
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerPostCoverResponse'
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "403":
           description: Forbidden
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "404":
           description: Post not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Upload post cover image
@@ -821,13 +949,11 @@ paths:
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       summary: Get comments for a post
       tags:
       - Comments
@@ -850,8 +976,7 @@ paths:
         "404":
           description: Post not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       summary: Get a blog post by slug
       tags:
       - Posts
@@ -864,13 +989,11 @@ paths:
         "200":
           description: User profile
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerProfileResponse'
         "404":
           description: User not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Get user profile
@@ -886,25 +1009,22 @@ paths:
         name: profile
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/models.SwaggerUpdateProfileRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Profile updated successfully
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerProfileResponse'
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "404":
           description: User not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Update user profile
@@ -927,23 +1047,19 @@ paths:
         "200":
           description: Avatar uploaded successfully
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerAvatarResponse'
         "400":
           description: Invalid input
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       security:
       - BearerAuth: []
       summary: Upload user avatar
@@ -956,16 +1072,15 @@ paths:
       - application/json
       responses:
         "200":
-          description: List of tags with post counts" {[{"id":1,"name":"technology","post_count":5},{"id":2,"name":"programming","post_count":3}]}
+          description: List of tags with post counts
           schema:
             items:
-              type: object
+              $ref: '#/definitions/models.TagWithCount'
             type: array
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       summary: Get all tags
       tags:
       - Tags
@@ -976,16 +1091,15 @@ paths:
       - application/json
       responses:
         "200":
-          description: List of popular tags with post counts" {[{"id":1,"name":"technology","post_count":5},{"id":2,"name":"programming","post_count":3}]}
+          description: List of popular tags with post counts
           schema:
             items:
-              type: object
+              $ref: '#/definitions/models.TagWithCount'
             type: array
         "500":
           description: Server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SwaggerStandardResponse'
       summary: Get popular tags
       tags:
       - Tags

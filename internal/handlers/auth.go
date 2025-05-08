@@ -23,10 +23,10 @@ import (
 // @Accept json
 // @Produce json
 // @Param user body models.RegisterRequest true "User Registration Data"
-// @Success 201 {object} map[string]interface{} "User registered successfully"
-// @Failure 400 {object} map[string]interface{} "Invalid input"
-// @Failure 409 {object} map[string]interface{} "Email or username already exists"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Success 201 {object} models.SwaggerStandardResponse "User registered successfully"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 409 {object} models.SwaggerStandardResponse "Email or username already exists"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Router /auth/register [post]
 func Register(c *gin.Context) {
 	var request models.RegisterRequest
@@ -264,8 +264,8 @@ func RevokeToken(c *gin.Context) {
 // @Description Retrieve the current user's profile information
 // @Tags Users
 // @Produce json
-// @Success 200 {object} map[string]interface{} "User profile"
-// @Failure 404 {object} map[string]interface{} "User not found"
+// @Success 200 {object} models.SwaggerProfileResponse "User profile"
+// @Failure 404 {object} models.SwaggerStandardResponse "User not found"
 // @Security BearerAuth
 // @Router /profile [get]
 func GetProfile(c *gin.Context) {
@@ -295,10 +295,10 @@ func GetProfile(c *gin.Context) {
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param profile body object true "Profile Data"
-// @Success 200 {object} map[string]interface{} "Profile updated successfully"
-// @Failure 400 {object} map[string]interface{} "Invalid input"
-// @Failure 404 {object} map[string]interface{} "User not found"
+// @Param profile body models.SwaggerUpdateProfileRequest true "Profile Data"
+// @Success 200 {object} models.SwaggerProfileResponse "Profile updated successfully"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 404 {object} models.SwaggerStandardResponse "User not found"
 // @Security BearerAuth
 // @Router /profile [put]
 func UpdateProfile(c *gin.Context) {
@@ -371,9 +371,9 @@ func UpdateProfile(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param body body object false "Logout options"
-// @Success 200 {object} map[string]interface{} "Successfully logged out"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Success 200 {object} models.SwaggerStandardResponse "Successfully logged out"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Security BearerAuth
 // @Router /auth/logout [post]
 func Logout(c *gin.Context) {

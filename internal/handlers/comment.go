@@ -17,8 +17,8 @@ import (
 // @Produce json
 // @Param postID path int true "Post ID"
 // @Success 200 {array} models.Comment "List of comments"
-// @Failure 400 {object} map[string]interface{} "Invalid input"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Router /posts/{postID}/comments [get]
 func GetCommentsByPostID(c *gin.Context) {
 	postID, err := strconv.ParseUint(c.Param("postID"), 10, 32)
@@ -45,12 +45,12 @@ func GetCommentsByPostID(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Post ID"
-// @Param comment body object true "Comment content" {{"content":"This is a great post!"}}
+// @Param comment body models.CreateCommentRequest true "Comment content"
 // @Success 201 {object} models.Comment "Created comment"
-// @Failure 400 {object} map[string]interface{} "Invalid input"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 404 {object} map[string]interface{} "Post not found"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id}/comments [post]
 func CreateComment(c *gin.Context) {
@@ -68,9 +68,7 @@ func CreateComment(c *gin.Context) {
 		return
 	}
 
-	var requestBody struct {
-		Content string `json:"content" binding:"required"`
-	}
+	var requestBody models.CreateCommentRequest
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -103,13 +101,13 @@ func CreateComment(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param commentID path int true "Comment ID"
-// @Param comment body object true "Updated comment content" {{"content":"This is my updated comment"}}
+// @Param comment body models.UpdateCommentRequest true "Updated comment content"
 // @Success 200 {object} models.Comment "Updated comment"
-// @Failure 400 {object} map[string]interface{} "Invalid input"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 403 {object} map[string]interface{} "Forbidden"
-// @Failure 404 {object} map[string]interface{} "Comment not found"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Comment not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Security BearerAuth
 // @Router /comments/{commentID} [put]
 func UpdateComment(c *gin.Context) {
@@ -133,9 +131,7 @@ func UpdateComment(c *gin.Context) {
 		return
 	}
 
-	var requestBody struct {
-		Content string `json:"content" binding:"required"`
-	}
+	var requestBody models.UpdateCommentRequest
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -163,12 +159,12 @@ func UpdateComment(c *gin.Context) {
 // @Tags Comments
 // @Produce json
 // @Param commentID path int true "Comment ID"
-// @Success 200 {object} map[string]interface{} "Success message"
-// @Failure 400 {object} map[string]interface{} "Invalid input"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 403 {object} map[string]interface{} "Forbidden"
-// @Failure 404 {object} map[string]interface{} "Comment not found"
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Success 200 {object} models.SwaggerStandardResponse "Success message"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Comment not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Security BearerAuth
 // @Router /comments/{commentID} [delete]
 func DeleteComment(c *gin.Context) {
@@ -200,5 +196,5 @@ func DeleteComment(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Comment deleted successfully"})
+	c.JSON(http.StatusOK, models.SwaggerStandardResponse{Message: "Comment deleted successfully"})
 }

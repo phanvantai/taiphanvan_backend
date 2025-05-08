@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/phanvantai/taiphanvan_backend/internal/database"
+	"github.com/phanvantai/taiphanvan_backend/internal/models"
 )
 
 // GetAllTags godoc
@@ -12,17 +13,11 @@ import (
 // @Description Returns all tags with their post counts
 // @Tags Tags
 // @Produce json
-// @Success 200 {array} object "List of tags with post counts" {[{"id":1,"name":"technology","post_count":5},{"id":2,"name":"programming","post_count":3}]}
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Success 200 {array} models.TagWithCount "List of tags with post counts"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Router /tags [get]
 func GetAllTags(c *gin.Context) {
-	type TagWithCount struct {
-		ID        uint   `json:"id"`
-		Name      string `json:"name"`
-		PostCount int64  `json:"post_count"`
-	}
-
-	var tagsWithCount []TagWithCount
+	var tagsWithCount []models.TagWithCount
 
 	rows, err := database.DB.Table("tags").
 		Select("tags.id, tags.name, COUNT(DISTINCT post_tags.post_id) as post_count").
@@ -38,7 +33,7 @@ func GetAllTags(c *gin.Context) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var tag TagWithCount
+		var tag models.TagWithCount
 		if err := database.DB.ScanRows(rows, &tag); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to scan tags"})
 			return
@@ -54,8 +49,8 @@ func GetAllTags(c *gin.Context) {
 // @Description Returns the most used tags with post counts (limited to 10)
 // @Tags Tags
 // @Produce json
-// @Success 200 {array} object "List of popular tags with post counts" {[{"id":1,"name":"technology","post_count":5},{"id":2,"name":"programming","post_count":3}]}
-// @Failure 500 {object} map[string]interface{} "Server error"
+// @Success 200 {array} models.TagWithCount "List of popular tags with post counts"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Router /tags/popular [get]
 func GetPopularTags(c *gin.Context) {
 	limit := 10 // Default limit

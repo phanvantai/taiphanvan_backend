@@ -111,22 +111,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully logged out",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -208,29 +205,25 @@ const docTemplate = `{
                     "201": {
                         "description": "User registered successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "409": {
                         "description": "Email or username already exists",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -315,7 +308,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/models.UpdateCommentRequest"
                         }
                     }
                 ],
@@ -329,36 +322,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "404": {
                         "description": "Comment not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -390,43 +378,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Success message",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "404": {
                         "description": "Comment not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -446,15 +428,13 @@ const docTemplate = `{
                     "200": {
                         "description": "API is healthy",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "503": {
                         "description": "Database connection issues",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -492,17 +472,15 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Example response\" {{\"posts\":[{\"id\":1,\"title\":\"Sample Post\",\"slug\":\"sample-post\",\"content\":\"This is a sample post content\",\"excerpt\":\"Sample excerpt\",\"cover\":\"https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg\",\"user_id\":1,\"user\":{\"id\":1,\"username\":\"johndoe\",\"first_name\":\"John\",\"last_name\":\"Doe\",\"profile_image\":\"https://example.com/avatar.jpg\"},\"tags\":[{\"id\":1,\"name\":\"technology\"}],\"created_at\":\"2023-01-01T12:00:00Z\",\"updated_at\":\"2023-01-02T12:00:00Z\",\"published_at\":\"2023-01-03T12:00:00Z\"}],\"meta\":{\"page\":1,\"limit\":10,\"total\":1,\"lastPage\":1}}}",
+                        "description": "List of posts with pagination metadata",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerPostsResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -527,11 +505,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Post details",
-                        "name": "post",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/models.CreatePostRequest"
                         }
                     }
                 ],
@@ -545,22 +523,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -595,8 +570,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -634,7 +608,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/models.UpdatePostRequest"
                         }
                     }
                 ],
@@ -648,36 +622,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -709,43 +678,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Success message",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -783,7 +746,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/models.CreateCommentRequest"
                         }
                     }
                 ],
@@ -797,29 +760,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -861,45 +820,39 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Example response\" {{\"status\":\"success\",\"message\":\"Cover uploaded successfully\",\"data\":{\"cover\":\"https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg\"}}}",
+                        "description": "Cover uploaded successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerPostCoverResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -929,38 +882,33 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Example response\" {{\"status\":\"success\",\"message\":\"Cover deleted successfully\"}}",
+                        "description": "Cover deleted successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -998,15 +946,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -1031,15 +977,13 @@ const docTemplate = `{
                     "200": {
                         "description": "User profile",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerProfileResponse"
                         }
                     },
                     "404": {
                         "description": "User not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -1068,7 +1012,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/models.SwaggerUpdateProfileRequest"
                         }
                     }
                 ],
@@ -1076,22 +1020,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Profile updated successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerProfileResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "404": {
                         "description": "User not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -1128,29 +1069,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Avatar uploaded successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerAvatarResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -1168,19 +1105,18 @@ const docTemplate = `{
                 "summary": "Get all tags",
                 "responses": {
                     "200": {
-                        "description": "List of tags with post counts\" {[{\"id\":1,\"name\":\"technology\",\"post_count\":5},{\"id\":2,\"name\":\"programming\",\"post_count\":3}]}",
+                        "description": "List of tags with post counts",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "object"
+                                "$ref": "#/definitions/models.TagWithCount"
                             }
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -1198,19 +1134,18 @@ const docTemplate = `{
                 "summary": "Get popular tags",
                 "responses": {
                     "200": {
-                        "description": "List of popular tags with post counts\" {[{\"id\":1,\"name\":\"technology\",\"post_count\":5},{\"id\":2,\"name\":\"programming\",\"post_count\":3}]}",
+                        "description": "List of popular tags with post counts",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "object"
+                                "$ref": "#/definitions/models.TagWithCount"
                             }
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     }
                 }
@@ -1251,6 +1186,59 @@ const docTemplate = `{
                 "user_id": {
                     "type": "integer",
                     "example": 1
+                }
+            }
+        },
+        "models.CreateCommentRequest": {
+            "description": "Request model for creating a new comment on a post",
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "This is a great post!"
+                }
+            }
+        },
+        "models.CreatePostRequest": {
+            "description": "Request model for creating a new blog post",
+            "type": "object",
+            "required": [
+                "content",
+                "title"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "This is the content of my new post"
+                },
+                "cover": {
+                    "type": "string",
+                    "example": "https://example.com/image.jpg"
+                },
+                "excerpt": {
+                    "type": "string",
+                    "example": "A short excerpt"
+                },
+                "published": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"technology\"",
+                        "\"programming\"]"
+                    ]
+                },
+                "title": {
+                    "type": "string",
+                    "example": "My New Post"
                 }
             }
         },
@@ -1364,6 +1352,138 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SwaggerAvatarResponse": {
+            "description": "Response model for avatar upload",
+            "type": "object",
+            "properties": {
+                "profile_image": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                }
+            }
+        },
+        "models.SwaggerPostCoverResponse": {
+            "description": "Response model for post cover upload",
+            "type": "object",
+            "properties": {
+                "cover": {
+                    "type": "string",
+                    "example": "https://example.com/cover.jpg"
+                }
+            }
+        },
+        "models.SwaggerPostsResponse": {
+            "description": "Response model for listing blog posts",
+            "type": "object",
+            "properties": {
+                "meta": {
+                    "type": "object",
+                    "properties": {
+                        "last_page": {
+                            "type": "integer",
+                            "example": 5
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "example": 10
+                        },
+                        "page": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "total": {
+                            "type": "integer",
+                            "example": 50
+                        }
+                    }
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Post"
+                    }
+                }
+            }
+        },
+        "models.SwaggerProfileResponse": {
+            "description": "Response model for user profile information",
+            "type": "object",
+            "properties": {
+                "bio": {
+                    "type": "string",
+                    "example": "Software developer"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "profile_image": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "user"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "johndoe"
+                }
+            }
+        },
+        "models.SwaggerStandardResponse": {
+            "description": "A standard API response format",
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "string",
+                    "example": "Invalid input"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "models.SwaggerUpdateProfileRequest": {
+            "description": "Request model for updating user profile",
+            "type": "object",
+            "properties": {
+                "bio": {
+                    "type": "string",
+                    "example": "Software developer"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                }
+            }
+        },
         "models.Tag": {
             "description": "A tag that can be associated with multiple posts",
             "type": "object",
@@ -1381,6 +1501,24 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.Post"
                     }
+                }
+            }
+        },
+        "models.TagWithCount": {
+            "description": "A tag with the count of posts using it",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "technology"
+                },
+                "post_count": {
+                    "type": "integer",
+                    "example": 5
                 }
             }
         },
@@ -1410,6 +1548,56 @@ const docTemplate = `{
             "properties": {
                 "refresh_token": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UpdateCommentRequest": {
+            "description": "Request model for updating an existing comment",
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "This is my updated comment"
+                }
+            }
+        },
+        "models.UpdatePostRequest": {
+            "description": "Request model for updating an existing blog post",
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Updated content"
+                },
+                "cover": {
+                    "type": "string",
+                    "example": "https://example.com/updated-cover.jpg"
+                },
+                "excerpt": {
+                    "type": "string",
+                    "example": "Updated excerpt"
+                },
+                "published": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"technology\"",
+                        "\"programming\"",
+                        "\"updated\"]"
+                    ]
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Updated Post Title"
                 }
             }
         },

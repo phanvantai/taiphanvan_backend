@@ -45,3 +45,45 @@ type Comment struct {
 	UpdatedAt time.Time      `json:"updated_at" example:"2023-01-02T12:00:00Z" description:"When the comment was last updated"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"` // Hide from Swagger
 }
+
+// CreatePostRequest represents the request body for creating a new post
+// @Description Request model for creating a new blog post
+type CreatePostRequest struct {
+	Title     string   `json:"title" binding:"required" example:"My New Post" description:"Post title"`
+	Content   string   `json:"content" binding:"required" example:"This is the content of my new post" description:"Main content of the post"`
+	Excerpt   string   `json:"excerpt" example:"A short excerpt" description:"Short summary or preview of the post"`
+	Cover     string   `json:"cover" example:"https://example.com/image.jpg" description:"URL to the post's cover image"`
+	Tags      []string `json:"tags" example:"[\"technology\",\"programming\"]" description:"Tags associated with the post"`
+	Published bool     `json:"published" example:"true" description:"Whether the post should be published immediately"`
+}
+
+// UpdatePostRequest represents the request body for updating an existing post
+// @Description Request model for updating an existing blog post
+type UpdatePostRequest struct {
+	Title     *string  `json:"title" example:"Updated Post Title" description:"New post title"`
+	Content   *string  `json:"content" example:"Updated content" description:"New main content of the post"`
+	Excerpt   *string  `json:"excerpt" example:"Updated excerpt" description:"New short summary or preview of the post"`
+	Cover     *string  `json:"cover" example:"https://example.com/updated-cover.jpg" description:"New URL to the post's cover image"`
+	Tags      []string `json:"tags" example:"[\"technology\",\"programming\",\"updated\"]" description:"New tags associated with the post"`
+	Published *bool    `json:"published" example:"true" description:"Whether the post should be published"`
+}
+
+// CreateCommentRequest represents the request body for creating a new comment
+// @Description Request model for creating a new comment on a post
+type CreateCommentRequest struct {
+	Content string `json:"content" binding:"required" example:"This is a great post!" description:"Comment content"`
+}
+
+// UpdateCommentRequest represents the request body for updating an existing comment
+// @Description Request model for updating an existing comment
+type UpdateCommentRequest struct {
+	Content string `json:"content" binding:"required" example:"This is my updated comment" description:"Updated comment content"`
+}
+
+// TagWithCount represents a tag with its post count
+// @Description A tag with the count of posts using it
+type TagWithCount struct {
+	ID        uint   `json:"id" example:"1" description:"Unique identifier"`
+	Name      string `json:"name" example:"technology" description:"Tag name"`
+	PostCount int64  `json:"post_count" example:"5" description:"Number of posts using this tag"`
+}
