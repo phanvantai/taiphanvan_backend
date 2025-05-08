@@ -154,13 +154,16 @@ http://localhost:9876/swagger/index.html
 
 ### Blog Posts
 
-- `GET /api/posts` - Get all posts (with pagination and tag filtering)
+- `GET /api/posts` - Get all posts (with pagination, tag filtering, and status filtering)
 - `GET /api/posts/slug/:slug` - Get a specific post by slug
 - `POST /api/posts` - Create a new post (requires auth)
 - `PUT /api/posts/:id` - Update a post (requires auth)
 - `DELETE /api/posts/:id` - Delete a post (requires auth)
 - `POST /api/posts/:id/cover` - Upload post cover image (requires auth)
 - `DELETE /api/posts/:id/cover` - Delete post cover image (requires auth)
+- `POST /api/posts/:id/publish` - Publish a post (requires auth)
+- `POST /api/posts/:id/unpublish` - Unpublish a post (requires auth)
+- `POST /api/posts/:id/status` - Change post status (requires auth)
 
 ### Comments
 
@@ -177,6 +180,52 @@ http://localhost:9876/swagger/index.html
 ### Health Check
 
 - `GET /health` - Check API health status
+
+## Post Status Feature
+
+The blog platform supports a comprehensive post status system that allows for flexible content management:
+
+### Available Post Statuses
+
+- `draft` - Unpublished posts that are still being edited or reviewed
+- `published` - Live posts that are publicly visible to all users
+- `archived` - Previously published posts that are now archived and no longer actively displayed
+- `scheduled` - Posts scheduled to be published at a future date
+
+### Managing Post Status
+
+Post status can be managed through several endpoints:
+
+- When creating a post (`POST /api/posts`), you can set the initial status
+- Update the status when editing a post (`PUT /api/posts/:id`)
+- Use the dedicated status endpoint (`POST /api/posts/:id/status`) for status-specific updates
+- Use convenience endpoints for common transitions:
+  - `POST /api/posts/:id/publish` to quickly publish a post
+  - `POST /api/posts/:id/unpublish` to quickly unpublish a post
+
+### Filtering Posts by Status
+
+When retrieving posts, you can filter by status:
+
+```bash
+GET /api/posts?status=published
+GET /api/posts?status=draft
+```
+
+By default, the public posts endpoint only returns published posts.
+
+### Scheduled Posts
+
+For scheduled posts, you must provide a future publication date in the `publish_at` field. The system will validate that the date is in the future.
+
+Example request body for scheduling a post:
+
+```json
+{
+  "status": "scheduled",
+  "publish_at": "2025-06-01T12:00:00Z"
+}
+```
 
 ## Development
 

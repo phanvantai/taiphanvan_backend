@@ -344,6 +344,9 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 			protected.DELETE("/posts/:id", handlers.DeletePost)
 			protected.POST("/posts/:id/cover", handlers.UploadPostCover)
 			protected.DELETE("/posts/:id/cover", handlers.DeletePostCover)
+			protected.POST("/posts/:id/publish", handlers.PublishPost)
+			protected.POST("/posts/:id/unpublish", handlers.UnpublishPost)
+			protected.POST("/posts/:id/status", handlers.SetPostStatus)
 
 			// Comment routes
 			protected.POST("/posts/:id/comments", handlers.CreateComment)

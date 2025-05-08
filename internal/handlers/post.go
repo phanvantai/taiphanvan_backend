@@ -14,12 +14,13 @@ import (
 
 // GetPosts godoc
 // @Summary Get list of blog posts
-// @Description Returns a paginated list of blog posts with optional tag filtering
+// @Description Returns a paginated list of blog posts with optional tag and status filtering
 // @Tags Posts
 // @Produce json
 // @Param page query int false "Page number (default: 1)"
 // @Param limit query int false "Number of items per page (default: 10)"
 // @Param tag query string false "Filter posts by tag name"
+// @Param status query string false "Filter posts by status (draft, published, archived, scheduled)"
 // @Success 200 {object} models.SwaggerPostsResponse "List of posts with pagination metadata"
 // @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Router /posts [get]
@@ -27,12 +28,21 @@ func GetPosts(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	tag := c.Query("tag")
+	status := c.Query("status")
 
 	offset := (page - 1) * limit
 	var posts []models.Post
 	query := database.DB.Model(&models.Post{}).Preload("User", func(db *gorm.DB) *gorm.DB {
 		return db.Select("id, username, first_name, last_name, profile_image")
 	}).Preload("Tags").Order("created_at DESC")
+
+	// Default to showing only published posts for public API
+	if status == "" {
+		query = query.Where("status = ?", models.PostStatusPublished)
+	} else {
+		// If specific status is requested, filter by that status
+		query = query.Where("status = ?", status)
+	}
 
 	// Filter by tag if specified
 	if tag != "" {
@@ -126,9 +136,20 @@ func CreatePost(c *gin.Context) {
 		UserID:  userID.(uint),
 	}
 
-	if requestBody.Published {
-		now := time.Now()
-		post.PublishedAt = &now
+	// Set status (default to draft if not specified)
+	if requestBody.Status != "" {
+		post.Status = requestBody.Status
+	} else {
+		post.Status = models.PostStatusDraft
+	}
+
+	// Handle scheduled posts
+	if post.Status == models.PostStatusScheduled && requestBody.PublishAt != nil {
+		// Validate the publish date is in the future
+		if requestBody.PublishAt.Before(time.Now()) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Scheduled publish date must be in the future"})
+			return
+		}
 	}
 
 	tx := database.DB.Begin()
@@ -232,12 +253,28 @@ func UpdatePost(c *gin.Context) {
 	if requestBody.Cover != nil {
 		post.Cover = *requestBody.Cover
 	}
-	if requestBody.Published != nil {
-		if *requestBody.Published && post.PublishedAt == nil {
-			now := time.Now()
-			post.PublishedAt = &now
-		} else if !*requestBody.Published {
-			post.PublishedAt = nil
+
+	// Handle status update
+	if requestBody.Status != nil {
+		// Validate status
+		switch *requestBody.Status {
+		case models.PostStatusDraft, models.PostStatusPublished, models.PostStatusArchived, models.PostStatusScheduled:
+			// Valid status
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status. Allowed values: draft, published, archived, scheduled"})
+			return
+		}
+
+		// Update the status
+		post.Status = *requestBody.Status
+
+		// Handle scheduled posts
+		if *requestBody.Status == models.PostStatusScheduled && requestBody.PublishAt != nil {
+			// Validate the publish date is in the future
+			if requestBody.PublishAt.Before(time.Now()) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Scheduled publish date must be in the future"})
+				return
+			}
 		}
 	}
 
@@ -328,6 +365,203 @@ func DeletePost(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Post deleted successfully"})
+}
+
+// PublishPost godoc
+// @Summary Publish a blog post
+// @Description Sets a blog post's status to published
+// @Tags Posts
+// @Produce json
+// @Param id path int true "Post ID"
+// @Success 200 {object} models.Post "Published post"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /posts/{id}/publish [post]
+func PublishPost(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+		return
+	}
+
+	var post models.Post
+	if err := database.DB.First(&post, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	// Check if user is the author or an admin
+	role, _ := c.Get("userRole")
+	if post.UserID != userID.(uint) && role != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to publish this post"})
+		return
+	}
+
+	// Check if post is already published
+	if post.Status == models.PostStatusPublished {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Post is already published"})
+		return
+	}
+
+	// Set status to published
+	post.Status = models.PostStatusPublished
+
+	if err := database.DB.Save(&post).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish post"})
+		return
+	}
+
+	// Reload post with tags and user
+	database.DB.Preload("Tags").Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id, username, first_name, last_name, profile_image")
+	}).First(&post, post.ID)
+
+	c.JSON(http.StatusOK, post)
+}
+
+// UnpublishPost godoc
+// @Summary Unpublish a blog post
+// @Description Sets a blog post's status to unpublished (draft)
+// @Tags Posts
+// @Produce json
+// @Param id path int true "Post ID"
+// @Success 200 {object} models.Post "Unpublished post"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /posts/{id}/unpublish [post]
+func UnpublishPost(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+		return
+	}
+
+	var post models.Post
+	if err := database.DB.First(&post, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	// Check if user is the author or an admin
+	role, _ := c.Get("userRole")
+	if post.UserID != userID.(uint) && role != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to unpublish this post"})
+		return
+	}
+
+	// Check if post is already a draft
+	if post.Status == models.PostStatusDraft {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Post is already unpublished"})
+		return
+	}
+
+	// Set status to draft
+	post.Status = models.PostStatusDraft
+
+	if err := database.DB.Save(&post).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unpublish post"})
+		return
+	}
+
+	// Reload post with tags and user
+	database.DB.Preload("Tags").Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id, username, first_name, last_name, profile_image")
+	}).First(&post, post.ID)
+
+	c.JSON(http.StatusOK, post)
+}
+
+// SetPostStatus godoc
+// @Summary Set the status of a blog post
+// @Description Updates a post's status to the specified value (draft, published, archived, scheduled)
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Param request body models.SetPostStatusRequest true "Status details"
+// @Success 200 {object} models.Post "Updated post"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /posts/{id}/status [post]
+func SetPostStatus(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+		return
+	}
+
+	var post models.Post
+	if err := database.DB.First(&post, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	// Check if user is the author or an admin
+	role, _ := c.Get("userRole")
+	if post.UserID != userID.(uint) && role != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to change the status of this post"})
+		return
+	}
+
+	var requestBody models.SetPostStatusRequest
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate status
+	switch requestBody.Status {
+	case models.PostStatusDraft, models.PostStatusPublished, models.PostStatusArchived, models.PostStatusScheduled:
+		// Valid status
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status. Allowed values: draft, published, archived, scheduled"})
+		return
+	}
+
+	// For scheduled posts, validate the publish date
+	if requestBody.Status == models.PostStatusScheduled {
+		// For scheduled posts, check if we have a publish date
+		if requestBody.PublishAt == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "PublishAt date is required for scheduled posts"})
+			return
+		}
+
+		// Validate the publish date is in the future
+		if requestBody.PublishAt.Before(time.Now()) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "PublishAt date must be in the future"})
+			return
+		}
+	}
+
+	// Update the status
+	post.Status = requestBody.Status
+
+	if err := database.DB.Save(&post).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update post status"})
+		return
+	}
+
+	// Reload post with tags and user
+	database.DB.Preload("Tags").Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id, username, first_name, last_name, profile_image")
+	}).First(&post, post.ID)
+
+	c.JSON(http.StatusOK, post)
 }
 
 // Helper function to generate slug from title
