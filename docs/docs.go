@@ -442,7 +442,7 @@ const docTemplate = `{
         },
         "/posts": {
             "get": {
-                "description": "Returns a paginated list of blog posts with optional tag filtering",
+                "description": "Returns a paginated list of blog posts with optional tag and status filtering",
                 "produces": [
                     "application/json"
                 ],
@@ -467,6 +467,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter posts by tag name",
                         "name": "tag",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter posts by status (draft, published, archived, scheduled)",
+                        "name": "status",
                         "in": "query"
                     }
                 ],
@@ -914,6 +920,210 @@ const docTemplate = `{
                 }
             }
         },
+        "/posts/{id}/publish": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Sets a blog post's status to published",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Publish a blog post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Published post",
+                        "schema": {
+                            "$ref": "#/definitions/models.Post"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}/status": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates a post's status to the specified value (draft, published, archived, scheduled)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Set the status of a blog post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Status details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SetPostStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated post",
+                        "schema": {
+                            "$ref": "#/definitions/models.Post"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}/unpublish": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Sets a blog post's status to unpublished (draft)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Unpublish a blog post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unpublished post",
+                        "schema": {
+                            "$ref": "#/definitions/models.Post"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/posts/{postID}/comments": {
             "get": {
                 "description": "Returns all comments for a specific post",
@@ -1222,9 +1432,17 @@ const docTemplate = `{
                     "type": "string",
                     "example": "A short excerpt"
                 },
-                "published": {
-                    "type": "boolean",
-                    "example": true
+                "publish_at": {
+                    "type": "string",
+                    "example": "2023-01-03T12:00:00Z"
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.PostStatus"
+                        }
+                    ],
+                    "example": "published"
                 },
                 "tags": {
                     "type": "array",
@@ -1282,13 +1500,17 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
-                "published_at": {
-                    "type": "string",
-                    "example": "2023-01-03T12:00:00Z"
-                },
                 "slug": {
                     "type": "string",
                     "example": "my-first-blog-post"
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.PostStatus"
+                        }
+                    ],
+                    "example": "published"
                 },
                 "tags": {
                     "type": "array",
@@ -1312,6 +1534,21 @@ const docTemplate = `{
                     "example": 1
                 }
             }
+        },
+        "models.PostStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "published",
+                "archived",
+                "scheduled"
+            ],
+            "x-enum-varnames": [
+                "PostStatusDraft",
+                "PostStatusPublished",
+                "PostStatusArchived",
+                "PostStatusScheduled"
+            ]
         },
         "models.RefreshTokenRequest": {
             "type": "object",
@@ -1349,6 +1586,27 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 30,
                     "minLength": 3
+                }
+            }
+        },
+        "models.SetPostStatusRequest": {
+            "description": "Request model for changing a post's status",
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "publish_at": {
+                    "type": "string",
+                    "example": "2023-01-03T12:00:00Z"
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.PostStatus"
+                        }
+                    ],
+                    "example": "published"
                 }
             }
         },
@@ -1580,9 +1838,17 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Updated excerpt"
                 },
-                "published": {
-                    "type": "boolean",
-                    "example": true
+                "publish_at": {
+                    "type": "string",
+                    "example": "2023-01-03T12:00:00Z"
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.PostStatus"
+                        }
+                    ],
+                    "example": "published"
                 },
                 "tags": {
                     "type": "array",

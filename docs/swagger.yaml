@@ -47,9 +47,13 @@ definitions:
       excerpt:
         example: A short excerpt
         type: string
-      published:
-        example: true
-        type: boolean
+      publish_at:
+        example: "2023-01-03T12:00:00Z"
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.PostStatus'
+        example: published
       tags:
         example:
         - '["technology"'
@@ -93,12 +97,13 @@ definitions:
       id:
         example: 1
         type: integer
-      published_at:
-        example: "2023-01-03T12:00:00Z"
-        type: string
       slug:
         example: my-first-blog-post
         type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.PostStatus'
+        example: published
       tags:
         items:
           $ref: '#/definitions/models.Tag'
@@ -115,6 +120,18 @@ definitions:
         example: 1
         type: integer
     type: object
+  models.PostStatus:
+    enum:
+    - draft
+    - published
+    - archived
+    - scheduled
+    type: string
+    x-enum-varnames:
+    - PostStatusDraft
+    - PostStatusPublished
+    - PostStatusArchived
+    - PostStatusScheduled
   models.RefreshTokenRequest:
     properties:
       refresh_token:
@@ -141,6 +158,19 @@ definitions:
     - email
     - password
     - username
+    type: object
+  models.SetPostStatusRequest:
+    description: Request model for changing a post's status
+    properties:
+      publish_at:
+        example: "2023-01-03T12:00:00Z"
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.PostStatus'
+        example: published
+    required:
+    - status
     type: object
   models.SwaggerAvatarResponse:
     description: Response model for avatar upload
@@ -304,9 +334,13 @@ definitions:
       excerpt:
         example: Updated excerpt
         type: string
-      published:
-        example: true
-        type: boolean
+      publish_at:
+        example: "2023-01-03T12:00:00Z"
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.PostStatus'
+        example: published
       tags:
         example:
         - '["technology"'
@@ -647,7 +681,8 @@ paths:
       - System
   /posts:
     get:
-      description: Returns a paginated list of blog posts with optional tag filtering
+      description: Returns a paginated list of blog posts with optional tag and status
+        filtering
       parameters:
       - description: 'Page number (default: 1)'
         in: query
@@ -660,6 +695,10 @@ paths:
       - description: Filter posts by tag name
         in: query
         name: tag
+        type: string
+      - description: Filter posts by status (draft, published, archived, scheduled)
+        in: query
+        name: status
         type: string
       produces:
       - application/json
@@ -926,6 +965,138 @@ paths:
       security:
       - BearerAuth: []
       summary: Upload post cover image
+      tags:
+      - Posts
+  /posts/{id}/publish:
+    post:
+      description: Sets a blog post's status to published
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Published post
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "404":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Publish a blog post
+      tags:
+      - Posts
+  /posts/{id}/status:
+    post:
+      consumes:
+      - application/json
+      description: Updates a post's status to the specified value (draft, published,
+        archived, scheduled)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Status details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SetPostStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated post
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "404":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Set the status of a blog post
+      tags:
+      - Posts
+  /posts/{id}/unpublish:
+    post:
+      description: Sets a blog post's status to unpublished (draft)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Unpublished post
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "404":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Unpublish a blog post
       tags:
       - Posts
   /posts/{postID}/comments:
