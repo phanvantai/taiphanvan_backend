@@ -92,6 +92,26 @@ func UploadAvatar(c *gin.Context) {
 		return
 	}
 
+	// Get current user data to check if they already have an avatar
+	var user models.User
+	if result := database.DB.Where("id = ?", userID).First(&user); result.Error != nil {
+		log.Error().Err(result.Error).Interface("user_id", userID).Msg("Failed to find user")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "error",
+			"error":   "Database error",
+			"message": "Failed to retrieve user profile",
+		})
+		return
+	}
+
+	// If user already has a profile image, delete the old one
+	if user.ProfileImage != "" {
+		if err := cloudinaryService.DeleteImage(c.Request.Context(), user.ProfileImage); err != nil {
+			log.Warn().Err(err).Str("profile_image_url", user.ProfileImage).Msg("Failed to delete old avatar image")
+			// Continue with the upload even if deletion fails
+		}
+	}
+
 	// Upload the file to Cloudinary
 	imageURL, err := cloudinaryService.UploadAvatar(c.Request.Context(), file, userID.(uint))
 	if err != nil {
@@ -105,18 +125,6 @@ func UploadAvatar(c *gin.Context) {
 	}
 
 	// Update user's profile image in the database
-	var user models.User
-	if result := database.DB.Where("id = ?", userID).First(&user); result.Error != nil {
-		log.Error().Err(result.Error).Interface("user_id", userID).Msg("Failed to find user")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"error":   "Database error",
-			"message": "Failed to update user profile",
-		})
-		return
-	}
-
-	// Update the profile image URL
 	user.ProfileImage = imageURL
 	if result := database.DB.Save(&user); result.Error != nil {
 		log.Error().Err(result.Error).Interface("user_id", userID).Msg("Failed to update user profile")
