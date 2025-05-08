@@ -75,13 +75,12 @@ func UploadPostCover(c *gin.Context) {
 		return
 	}
 
-	// Check if user is the author or an admin
-	role, _ := c.Get("userRole")
-	if post.UserID != userID.(uint) && role != "admin" {
+	// Only allow the author to update the post cover
+	if post.UserID != userID.(uint) {
 		c.JSON(http.StatusForbidden, gin.H{
 			"status":  "error",
 			"error":   "Forbidden",
-			"message": "You don't have permission to update this post",
+			"message": "Only the author can update the post cover",
 		})
 		return
 	}
@@ -219,13 +218,12 @@ func DeletePostCover(c *gin.Context) {
 		return
 	}
 
-	// Check if user is the author or an admin
-	role, _ := c.Get("userRole")
-	if post.UserID != userID.(uint) && role != "admin" {
+	// Only allow the author to delete the post cover
+	if post.UserID != userID.(uint) {
 		c.JSON(http.StatusForbidden, gin.H{
 			"status":  "error",
 			"error":   "Forbidden",
-			"message": "You don't have permission to update this post",
+			"message": "Only the author can delete the post cover",
 		})
 		return
 	}

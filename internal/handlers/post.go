@@ -108,6 +108,13 @@ func GetPostBySlug(c *gin.Context) {
 // @Router /posts [post]
 func CreatePost(c *gin.Context) {
 	userID, _ := c.Get("userID")
+	role, _ := c.Get("userRole")
+
+	// Check if user has proper permissions (admin or editor)
+	if role != "admin" && role != "editor" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only administrators and editors can create posts"})
+		return
+	}
 
 	var requestBody models.CreatePostRequest
 
@@ -222,10 +229,9 @@ func UpdatePost(c *gin.Context) {
 		return
 	}
 
-	// Check if user is the author or an admin
-	role, _ := c.Get("userRole")
-	if post.UserID != userID.(uint) && role != "admin" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to edit this post"})
+	// Only the author can update the post
+	if post.UserID != userID.(uint) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only the author can update this post"})
 		return
 	}
 
@@ -395,10 +401,9 @@ func PublishPost(c *gin.Context) {
 		return
 	}
 
-	// Check if user is the author or an admin
-	role, _ := c.Get("userRole")
-	if post.UserID != userID.(uint) && role != "admin" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to publish this post"})
+	// Only the author can publish the post
+	if post.UserID != userID.(uint) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only the author can publish this post"})
 		return
 	}
 
@@ -499,7 +504,9 @@ func UnpublishPost(c *gin.Context) {
 // @Router /posts/{id}/status [post]
 func SetPostStatus(c *gin.Context) {
 	userID, _ := c.Get("userID")
+	role, _ := c.Get("userRole")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
 		return
@@ -511,17 +518,35 @@ func SetPostStatus(c *gin.Context) {
 		return
 	}
 
-	// Check if user is the author or an admin
-	role, _ := c.Get("userRole")
-	if post.UserID != userID.(uint) && role != "admin" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to change the status of this post"})
-		return
-	}
-
 	var requestBody models.SetPostStatusRequest
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// Authorization check based on the requested status change and user role
+	isAuthor := post.UserID == userID.(uint)
+	isAdmin := role == "admin"
+
+	// Check permissions based on the action being performed
+	if requestBody.Status == models.PostStatusPublished {
+		// Only the author can publish their post
+		if !isAuthor {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Only the author can publish this post"})
+			return
+		}
+	} else if requestBody.Status == models.PostStatusDraft {
+		// Only admin or author can unpublish a post
+		if !isAuthor && !isAdmin {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Only the author or administrators can unpublish this post"})
+			return
+		}
+	} else {
+		// For other status changes (archived, scheduled), only the author can do this
+		if !isAuthor {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Only the author can change the status of this post"})
+			return
+		}
 	}
 
 	// Validate status
