@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -108,11 +109,17 @@ func GetPostBySlug(c *gin.Context) {
 // @Router /posts [post]
 func CreatePost(c *gin.Context) {
 	userID, _ := c.Get("userID")
-	role, _ := c.Get("userRole")
+	role, exists := c.Get("userRole")
 
-	// Check if user has proper permissions (admin or editor)
-	if role != "admin" && role != "editor" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Only administrators and editors can create posts"})
+	// Improved permission check with better logging and error handling
+	userRole, ok := role.(string)
+	if !exists || !ok || (userRole != "admin" && userRole != "editor") {
+		c.JSON(http.StatusForbidden, gin.H{
+			"status":  "error",
+			"error":   "Permission denied",
+			"message": "Only administrators and editors can create posts",
+			"debug":   fmt.Sprintf("User role: %v, exists: %v, ok: %v", role, exists, ok),
+		})
 		return
 	}
 
@@ -358,9 +365,16 @@ func DeletePost(c *gin.Context) {
 	}
 
 	// Check if user is the author or an admin
-	role, _ := c.Get("userRole")
-	if post.UserID != userID.(uint) && role != "admin" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to delete this post"})
+	role, exists := c.Get("userRole")
+	userRole, ok := role.(string)
+	isAdmin := exists && ok && userRole == "admin"
+
+	if post.UserID != userID.(uint) && !isAdmin {
+		c.JSON(http.StatusForbidden, gin.H{
+			"status":  "error",
+			"error":   "Permission denied",
+			"message": "You don't have permission to delete this post",
+		})
 		return
 	}
 
@@ -403,7 +417,11 @@ func PublishPost(c *gin.Context) {
 
 	// Only the author can publish the post
 	if post.UserID != userID.(uint) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Only the author can publish this post"})
+		c.JSON(http.StatusForbidden, gin.H{
+			"status":  "error",
+			"error":   "Permission denied",
+			"message": "Only the author can publish this post",
+		})
 		return
 	}
 
@@ -458,9 +476,16 @@ func UnpublishPost(c *gin.Context) {
 	}
 
 	// Check if user is the author or an admin
-	role, _ := c.Get("userRole")
-	if post.UserID != userID.(uint) && role != "admin" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to unpublish this post"})
+	role, exists := c.Get("userRole")
+	userRole, ok := role.(string)
+	isAdmin := exists && ok && userRole == "admin"
+
+	if post.UserID != userID.(uint) && !isAdmin {
+		c.JSON(http.StatusForbidden, gin.H{
+			"status":  "error",
+			"error":   "Permission denied",
+			"message": "You don't have permission to unpublish this post",
+		})
 		return
 	}
 
@@ -504,7 +529,7 @@ func UnpublishPost(c *gin.Context) {
 // @Router /posts/{id}/status [post]
 func SetPostStatus(c *gin.Context) {
 	userID, _ := c.Get("userID")
-	role, _ := c.Get("userRole")
+	roleInterface, exists := c.Get("userRole")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 
 	if err != nil {
@@ -524,27 +549,42 @@ func SetPostStatus(c *gin.Context) {
 		return
 	}
 
+	// Properly handling role type assertion
+	userRole, ok := roleInterface.(string)
+
 	// Authorization check based on the requested status change and user role
 	isAuthor := post.UserID == userID.(uint)
-	isAdmin := role == "admin"
+	isAdmin := exists && ok && userRole == "admin"
 
 	// Check permissions based on the action being performed
 	if requestBody.Status == models.PostStatusPublished {
 		// Only the author can publish their post
 		if !isAuthor {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Only the author can publish this post"})
+			c.JSON(http.StatusForbidden, gin.H{
+				"status":  "error",
+				"error":   "Permission denied",
+				"message": "Only the author can publish this post",
+			})
 			return
 		}
 	} else if requestBody.Status == models.PostStatusDraft {
 		// Only admin or author can unpublish a post
 		if !isAuthor && !isAdmin {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Only the author or administrators can unpublish this post"})
+			c.JSON(http.StatusForbidden, gin.H{
+				"status":  "error",
+				"error":   "Permission denied",
+				"message": "Only the author or administrators can unpublish this post",
+			})
 			return
 		}
 	} else {
 		// For other status changes (archived, scheduled), only the author can do this
 		if !isAuthor {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Only the author can change the status of this post"})
+			c.JSON(http.StatusForbidden, gin.H{
+				"status":  "error",
+				"error":   "Permission denied",
+				"message": "Only the author can change the status of this post",
+			})
 			return
 		}
 	}
