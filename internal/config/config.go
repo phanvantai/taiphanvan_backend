@@ -21,6 +21,7 @@ type Config struct {
 	Logging    LoggingConfig
 	TLS        TLSConfig
 	Admin      AdminConfig
+	Editor     EditorConfig
 	Cloudinary CloudinaryConfig
 }
 
@@ -72,6 +73,14 @@ type AdminConfig struct {
 	Username           string
 	Email              string
 	Password           string
+}
+
+// EditorConfig holds configuration for the default editor user
+type EditorConfig struct {
+	CreateDefaultEditor bool
+	Username            string
+	Email               string
+	Password            string
 }
 
 // CloudinaryConfig holds configuration for Cloudinary
@@ -201,6 +210,14 @@ func Load(envFile string) (*Config, error) {
 		Username:           getEnv("DEFAULT_ADMIN_USERNAME", ""),
 		Email:              getEnv("DEFAULT_ADMIN_EMAIL", ""),
 		Password:           getEnv("DEFAULT_ADMIN_PASSWORD", ""),
+	}
+
+	// Load editor config
+	config.Editor = EditorConfig{
+		CreateDefaultEditor: GetEnvBool("CREATE_DEFAULT_EDITOR", false),
+		Username:            getEnv("DEFAULT_EDITOR_USERNAME", ""),
+		Email:               getEnv("DEFAULT_EDITOR_EMAIL", ""),
+		Password:            getEnv("DEFAULT_EDITOR_PASSWORD", ""),
 	}
 
 	// Load Cloudinary config
@@ -352,14 +369,6 @@ func GetEnvBool(key string, defaultValue bool) bool {
 	}
 
 	return b
-}
-
-// Default configuration values
-func (c *Config) setDefaults() {
-	// Server defaults
-	if c.Server.Port == "" {
-		c.Server.Port = getEnv("API_PORT", "9876")
-	}
 }
 
 // generateTemporarySecret creates a more secure temporary secret

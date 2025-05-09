@@ -84,6 +84,20 @@ func Initialize(cfg *config.Config) error {
 		}
 	}
 
+	// Create default editor user if enabled
+	if cfg.Editor.CreateDefaultEditor {
+		if err := CreateDefaultEditorUser(cfg); err != nil {
+			return fmt.Errorf("failed to create default editor user: %w", err)
+		}
+	}
+
+	// Create default editor user if enabled
+	if cfg.Editor.CreateDefaultEditor {
+		if err := CreateDefaultEditorUser(cfg); err != nil {
+			return fmt.Errorf("failed to create default editor user: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -134,13 +148,13 @@ func CreateDefaultAdminUser(cfg *config.Config) error {
 	if adminEmail == "" {
 		adminEmail = os.Getenv("DEFAULT_ADMIN_EMAIL")
 		if adminEmail == "" {
-			adminEmail = "admin@example.com" // Fallback default
+			adminEmail = "admin@admin.com" // Fallback default
 		}
 	}
 	if adminPassword == "" {
 		adminPassword = os.Getenv("DEFAULT_ADMIN_PASSWORD")
 		if adminPassword == "" {
-			adminPassword = "admin123" // Fallback default (should be changed immediately)
+			adminPassword = "securePassword123" // Fallback default
 		}
 	}
 
@@ -165,6 +179,69 @@ func CreateDefaultAdminUser(cfg *config.Config) error {
 	}
 
 	log.Printf("Default admin user created with username: %s", adminUsername)
+	return nil
+}
+
+// CreateDefaultEditorUser creates a default editor user if no editor exists
+func CreateDefaultEditorUser(cfg *config.Config) error {
+	// Check if editor user already exists
+	var count int64
+	if err := DB.Model(&models.User{}).Where("role = ?", "editor").Count(&count).Error; err != nil {
+		return fmt.Errorf("failed to check for existing editor: %w", err)
+	}
+
+	// If editor exists, return early
+	if count > 0 {
+		log.Println("Editor user already exists, skipping default editor creation")
+		return nil
+	}
+
+	// Get editor credentials from config or environment variables
+	editorUsername := cfg.Editor.Username
+	editorEmail := cfg.Editor.Email
+	editorPassword := cfg.Editor.Password
+
+	// Fall back to environment variables if not in config
+	if editorUsername == "" {
+		editorUsername = os.Getenv("DEFAULT_EDITOR_USERNAME")
+		if editorUsername == "" {
+			editorUsername = "editor" // Fallback default
+		}
+	}
+	if editorEmail == "" {
+		editorEmail = os.Getenv("DEFAULT_EDITOR_EMAIL")
+		if editorEmail == "" {
+			editorEmail = "editor@editor.com" // Fallback default
+		}
+	}
+	if editorPassword == "" {
+		editorPassword = os.Getenv("DEFAULT_EDITOR_PASSWORD")
+		if editorPassword == "" {
+			editorPassword = "securePassword123" // Fallback default
+		}
+	}
+
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(editorPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("failed to hash editor password: %w", err)
+	}
+
+	// Create editor user
+	editorUser := models.User{
+		Username:  editorUsername,
+		Email:     editorEmail,
+		Password:  string(hashedPassword),
+		FirstName: "Content",
+		LastName:  "Editor",
+		Role:      "editor",
+	}
+
+	if result := DB.Create(&editorUser); result.Error != nil {
+		return fmt.Errorf("failed to create editor user: %w", result.Error)
+	}
+
+	log.Printf("Default editor user created with username: %s", editorUsername)
 	return nil
 }
 
