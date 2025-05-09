@@ -28,12 +28,8 @@ func Initialize(cfg *config.Config) error {
 		Logger: logger.Default.LogMode(logLevel),
 	}
 
-	// Check for DATABASE_URL environment variable (provided by platforms like Railway and Render)
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		// Fall back to configuration-based DSN
-		dsn = cfg.Database.DSN
-	}
+	// Use the DSN from config, which is already handled in config.go for Railway
+	dsn := cfg.Database.DSN
 
 	// Log connection attempt (without exposing credentials)
 	hostInfo := "using DATABASE_URL"
@@ -81,13 +77,6 @@ func Initialize(cfg *config.Config) error {
 	if cfg.Admin.CreateDefaultAdmin {
 		if err := CreateDefaultAdminUser(cfg); err != nil {
 			return fmt.Errorf("failed to create default admin user: %w", err)
-		}
-	}
-
-	// Create default editor user if enabled
-	if cfg.Editor.CreateDefaultEditor {
-		if err := CreateDefaultEditorUser(cfg); err != nil {
-			return fmt.Errorf("failed to create default editor user: %w", err)
 		}
 	}
 
