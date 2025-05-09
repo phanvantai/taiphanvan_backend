@@ -1,0 +1,67 @@
+# Docker Compose configuration for TaiPhanVan Backend
+# Updated May 1, 2025
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blog_api
+    restart: unless-stopped
+    ports:
+      - "9876:9876"  # Using same port internally and externally
+    depends_on:
+      - postgres
+    environment:
+      - API_PORT=9876
+      - GIN_MODE=debug
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=bloguser
+      - DB_PASS=blogpassword
+      - DB_NAME=blog_db
+      - DB_SSL_MODE=disable
+      - JWT_SECRET=development_secret_key_replace_in_production
+      - JWT_ACCESS_EXPIRY=15m
+      - JWT_REFRESH_EXPIRY=168h
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000
+      - LOG_LEVEL=debug
+      - LOG_FORMAT=console
+      # Admin user creation configuration
+      - CREATE_DEFAULT_ADMIN=true
+      - DEFAULT_ADMIN_USERNAME=admin
+      - DEFAULT_ADMIN_EMAIL=admin@admin.com
+      - DEFAULT_ADMIN_PASSWORD=securePassword123
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:9876/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: blog_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=bloguser
+      - POSTGRES_PASSWORD=blogpassword
+      - POSTGRES_DB=blog_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Changed from "5432:5432" to avoid potential port conflicts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bloguser -d blog_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  default:
+    name: blog-network
+    driver: bridge
+
+volumes:
+  postgres_data:
