@@ -30,6 +30,9 @@ COPY . .
 # Ensure configs directory exists
 RUN mkdir -p /app/configs
 
+# Create an empty .env file if it doesn't exist
+RUN if [ ! -f .env ]; then touch .env; fi
+
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /app/api ./cmd/api
 
@@ -48,8 +51,8 @@ COPY --from=builder /app/api /app/api
 # Copy configuration directory
 COPY --from=builder /app/configs /app/configs
 
-# Copy .env file from root (if it exists)
-COPY .env /app/.env
+# Copy .env file from builder (now guaranteed to exist)
+COPY --from=builder /app/.env /app/.env
 
 # Use non-root user
 USER appuser:appuser

@@ -389,11 +389,36 @@ docker-compose up -d --build
 
 ### Cloud Deployment
 
-The application is configured to run on Railway.app and other cloud platforms with minimal configuration:
+#### Railway Deployment
 
-- The application automatically detects when it's running in a cloud environment
-- It will use environment variables provided by the platform
-- For Railway, it will use the `PORT` and `DATABASE_URL` environment variables automatically
+The application is configured to run on Railway.app with minimal configuration:
+
+1. **Connect your GitHub repository to Railway**
+
+2. **Set up environment variables in Railway**
+   - Use the provided `railway.env.example` file as a reference
+   - Railway automatically provides `PORT` and `DATABASE_URL` environment variables
+   - Make sure to set at least the following variables:
+     - `JWT_SECRET` (important for security)
+     - `GIN_MODE=release` (for production)
+     - `CORS_ALLOWED_ORIGINS` (your frontend domain)
+     - Cloudinary credentials if you're using image uploads
+
+3. **No need for a .env file**
+   - The application is designed to run without a `.env` file in Railway
+   - All configuration is done through Railway's environment variables
+   - The Dockerfile has been modified to handle the absence of a `.env` file
+
+4. **Deploy your application**
+   - Railway will automatically build and deploy your application
+   - The application will detect it's running on Railway and apply appropriate settings
+
+5. **Verify deployment**
+   - Check the deployment logs for any issues
+   - Test the API endpoints using the provided URL
+   - Verify the health endpoint: `https://your-railway-url.up.railway.app/health`
+
+The application automatically detects when it's running in a cloud environment and will use environment variables provided by the platform. For Railway, it will use the `PORT` and `DATABASE_URL` environment variables automatically.
 
 ## Security Considerations
 
