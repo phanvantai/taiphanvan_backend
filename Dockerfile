@@ -1,4 +1,4 @@
-FROM golang:1.24.2-alpine AS builder
+FROM golang:1.24.3-alpine AS builder
 
 # Install dependencies and apply security updates
 RUN apk update && apk upgrade && apk add --no-cache git ca-certificates tzdata && update-ca-certificates
