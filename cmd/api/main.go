@@ -49,24 +49,8 @@ func main() {
 	// Initialize barebones logger for startup errors
 	initStartupLogger()
 
-	// Check if we're running in a cloud environment
-	var configPath string
-	if isContainerized() || os.Getenv("RAILWAY_SERVICE_ID") != "" {
-		log.Info().Msg("Running in a containerized/cloud environment")
-		// In container or cloud, trust environment variables - no .env file needed
-		configPath = ""
-	} else {
-		log.Info().Msg("Running in a local environment")
-		// For local development, try to load from .env file
-		configPath = "configs/.env"
-		if _, err := os.Stat(configPath); os.IsNotExist(err) {
-			log.Warn().Str("path", configPath).Msg("Config file not found, using environment variables")
-			configPath = ""
-		}
-	}
-
-	// Load configuration
-	cfg, err := config.Load(configPath)
+	// Load configuration (will automatically check for .env in root directory)
+	cfg, err := config.Load("")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to load configuration")
 	}
@@ -203,33 +187,7 @@ func initStartupLogger() {
 	log.Logger = log.Output(consoleWriter)
 }
 
-// isContainerized checks if the application is running in a container
-func isContainerized() bool {
-	// Check for container environment indicators
-	// 1. Check for /.dockerenv file
-	if _, err := os.Stat("/.dockerenv"); err == nil {
-		return true
-	}
-
-	// 2. Check cgroup - common for Docker and other container engines
-	if _, err := os.Stat("/proc/1/cgroup"); err == nil {
-		data, err := os.ReadFile("/proc/1/cgroup")
-		if err == nil && (
-		// Look for container-related cgroup entries
-		contains(string(data), "docker") ||
-			contains(string(data), "kubepods") ||
-			contains(string(data), "containerd")) {
-			return true
-		}
-	}
-
-	return false
-}
-
-// contains is a simple helper function to check if a string contains a substring
-func contains(s, substr string) bool {
-	return len(s) > 0 && len(substr) > 0 && s != substr && len(s) >= len(substr) && s[0:len(substr)] == substr
-}
+// This function has been moved to the config package
 
 // requestIDMiddleware adds a unique request ID to each request
 func requestIDMiddleware() gin.HandlerFunc {

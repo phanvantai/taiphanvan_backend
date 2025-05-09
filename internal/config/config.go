@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -92,45 +91,22 @@ type CloudinaryConfig struct {
 }
 
 // Load loads the configuration from environment variables or .env file
-func Load(envFile string) (*Config, error) {
-	// Try to load .env files in order of priority
-	loaded := false
-
-	// Try root directory .env first (takes precedence)
-	rootEnvFile := ".env"
-	if err := godotenv.Load(rootEnvFile); err == nil {
-		log.Info().Str("file", rootEnvFile).Msg("Loaded environment from root .env file")
-		loaded = true
-	}
-
-	// Try provided env file path as fallback
-	if envFile != "" && (!loaded || envFile != rootEnvFile) {
-		// First try direct path
-		err := godotenv.Load(envFile)
-		if err != nil {
-			// If that fails, try to find it relative to working directory
-			log.Warn().Err(err).Str("file", envFile).Msg("Failed to load .env file directly, trying relative path")
-
-			// Get current working directory
-			cwd, err := os.Getwd()
-			if err == nil {
-				relativePath := filepath.Join(cwd, envFile)
-				err = godotenv.Load(relativePath)
-				if err != nil {
-					log.Warn().Err(err).Str("file", relativePath).Msg("Failed to load .env from relative path")
-				} else {
-					log.Info().Str("file", relativePath).Msg("Loaded environment from relative path")
-					loaded = true
-				}
-			}
+func Load(_ string) (*Config, error) {
+	// Skip .env file loading in containerized environments (including Railway)
+	// as they should use environment variables directly
+	if !IsRunningInContainer() && !IsRunningOnRailway() {
+		// Only try to load from the root .env file
+		envFile := ".env"
+		if err := godotenv.Load(envFile); err == nil {
+			log.Info().Str("file", envFile).Msg("Loaded environment from .env file")
 		} else {
-			log.Info().Str("file", envFile).Msg("Loaded environment from specified path")
-			loaded = true
+			log.Info().Msg("No .env file found. Continuing with environment variables and defaults")
 		}
-	}
-
-	if !loaded {
-		log.Info().Msg("No .env file loaded. Continuing with environment variables and defaults")
+	} else {
+		log.Info().
+			Bool("container", IsRunningInContainer()).
+			Bool("railway", IsRunningOnRailway()).
+			Msg("Running in containerized/cloud environment, using environment variables directly")
 	}
 
 	config := &Config{}
@@ -151,13 +127,15 @@ func Load(envFile string) (*Config, error) {
 		SSLMode:  getEnv("DB_SSL_MODE", "disable"),
 	}
 
-	// Construct DSN
-	dbConfig.DSN = fmt.Sprintf("host=%s user=%s dbname=%s port=%s sslmode=%s",
-		dbConfig.Host, dbConfig.User, dbConfig.Name, dbConfig.Port, dbConfig.SSLMode)
-
-	if dbConfig.Password != "" {
-		dbConfig.DSN = fmt.Sprintf("%s password=%s", dbConfig.DSN, dbConfig.Password)
-	}
+	// Initial DSN construction (may be overridden in ValidateWithFallbacks)
+	dbConfig.DSN = constructDSN(
+		dbConfig.Host,
+		dbConfig.Port,
+		dbConfig.User,
+		dbConfig.Password,
+		dbConfig.Name,
+		dbConfig.SSLMode,
+	)
 
 	config.Database = dbConfig
 
@@ -228,7 +206,7 @@ func Load(envFile string) (*Config, error) {
 		UploadFolder: getEnv("CLOUDINARY_UPLOAD_FOLDER", "blog_images"),
 	}
 
-	// Validate configuration - but provide better fallbacks for Docker environment
+	// Validate configuration and apply environment-specific fallbacks
 	if err := config.ValidateWithFallbacks(); err != nil {
 		return nil, err
 	}
@@ -236,10 +214,22 @@ func Load(envFile string) (*Config, error) {
 	return config, nil
 }
 
+// constructDSN creates a PostgreSQL connection string from individual parameters
+func constructDSN(host, port, user, password, dbname, sslmode string) string {
+	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s",
+		host, port, user, dbname, sslmode)
+
+	if password != "" {
+		dsn = fmt.Sprintf("%s password=%s", dsn, password)
+	}
+
+	return dsn
+}
+
 // ValidateWithFallbacks checks if all required configuration is present, with better Docker support
 func (c *Config) ValidateWithFallbacks() error {
 	// Check for Railway deployment
-	if os.Getenv("RAILWAY") == "true" || os.Getenv("RAILWAY_SERVICE_ID") != "" {
+	if IsRunningOnRailway() {
 		log.Info().Msg("Running on Railway.app, applying platform-specific configuration")
 
 		// Use Railway's PORT environment variable for the server
@@ -256,7 +246,6 @@ func (c *Config) ValidateWithFallbacks() error {
 			log.Warn().Msg("DATABASE_URL not found in Railway environment, checking for individual database variables")
 
 			// For Railway, we'll set default database connection values if they're not provided
-			// This prevents invalid connection strings
 			if c.Database.Host == "" {
 				log.Info().Msg("Setting default database host for Railway")
 				c.Database.Host = "localhost" // Default fallback
@@ -268,12 +257,14 @@ func (c *Config) ValidateWithFallbacks() error {
 			}
 
 			// Reconstruct the DSN with proper formatting
-			c.Database.DSN = fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s",
-				c.Database.Host, c.Database.Port, c.Database.User, c.Database.Name, c.Database.SSLMode)
-
-			if c.Database.Password != "" {
-				c.Database.DSN = fmt.Sprintf("%s password=%s", c.Database.DSN, c.Database.Password)
-			}
+			c.Database.DSN = constructDSN(
+				c.Database.Host,
+				c.Database.Port,
+				c.Database.User,
+				c.Database.Password,
+				c.Database.Name,
+				c.Database.SSLMode,
+			)
 
 			log.Info().Str("host", c.Database.Host).Str("dbname", c.Database.Name).
 				Msg("Using constructed database connection string")
@@ -294,10 +285,12 @@ func (c *Config) ValidateWithFallbacks() error {
 		return nil // Render provides all necessary environment variables
 	}
 
+	// Handle Docker/container environment (local or other deployment)
+	isContainer := IsRunningInContainer()
+
 	// Database validation
 	if c.Database.Host == "" {
-		// For Docker Compose setups, try the service name as fallback
-		if IsRunningInContainer() {
+		if isContainer {
 			log.Info().Msg("Running in container, using 'postgres' as default database host")
 			c.Database.Host = "postgres"
 		} else {
@@ -306,8 +299,7 @@ func (c *Config) ValidateWithFallbacks() error {
 	}
 
 	if c.Database.User == "" {
-		// Common default for local development
-		if IsRunningInContainer() {
+		if isContainer {
 			log.Info().Msg("Running in container, using 'bloguser' as default database user")
 			c.Database.User = "bloguser"
 			c.Database.Password = "blogpassword" // Default password from docker-compose
@@ -319,7 +311,7 @@ func (c *Config) ValidateWithFallbacks() error {
 	// JWT validation with better fallback for development
 	if c.JWT.Secret == "" {
 		// In development or container, we can use a default for convenience
-		if os.Getenv("GIN_MODE") != "release" || IsRunningInContainer() {
+		if os.Getenv("GIN_MODE") != "release" || isContainer {
 			log.Warn().Msg("No JWT_SECRET provided. Using a default secret for development. DO NOT USE IN PRODUCTION!")
 			c.JWT.Secret = "default_development_secret_replace_in_production"
 		} else {
@@ -330,21 +322,44 @@ func (c *Config) ValidateWithFallbacks() error {
 	}
 
 	// Reconstruct DSN with updated values
-	c.Database.DSN = fmt.Sprintf("host=%s user=%s dbname=%s port=%s sslmode=%s",
-		c.Database.Host, c.Database.User, c.Database.Name, c.Database.Port, c.Database.SSLMode)
-
-	if c.Database.Password != "" {
-		c.Database.DSN = fmt.Sprintf("%s password=%s", c.Database.DSN, c.Database.Password)
-	}
+	c.Database.DSN = constructDSN(
+		c.Database.Host,
+		c.Database.Port,
+		c.Database.User,
+		c.Database.Password,
+		c.Database.Name,
+		c.Database.SSLMode,
+	)
 
 	return nil
 }
 
 // IsRunningInContainer checks if the application is running in a container
 func IsRunningInContainer() bool {
-	// This checks for the "/.dockerenv" file which is present in Docker containers
-	_, err := os.Stat("/.dockerenv")
-	return err == nil
+	// 1. Check for /.dockerenv file (Docker)
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		return true
+	}
+
+	// 2. Check cgroup - common for Docker and other container engines
+	if _, err := os.Stat("/proc/1/cgroup"); err == nil {
+		data, err := os.ReadFile("/proc/1/cgroup")
+		if err == nil {
+			content := string(data)
+			if strings.Contains(content, "docker") ||
+				strings.Contains(content, "kubepods") ||
+				strings.Contains(content, "containerd") {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// IsRunningOnRailway checks if the application is running on Railway.app
+func IsRunningOnRailway() bool {
+	return os.Getenv("RAILWAY") == "true" || os.Getenv("RAILWAY_SERVICE_ID") != ""
 }
 
 // getEnv gets an environment variable or returns the default value
