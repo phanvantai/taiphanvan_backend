@@ -40,7 +40,7 @@ services:
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
       - CLOUDINARY_UPLOAD_FOLDER=${CLOUDINARY_UPLOAD_FOLDER}
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:${API_PORT}/health"]
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:${API_PORT}/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
