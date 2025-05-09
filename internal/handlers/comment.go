@@ -10,7 +10,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetCommentsByPostID returns all comments for a specific post
+// GetCommentsByPostID godoc
+// @Summary Get comments for a post
+// @Description Returns all comments for a specific post
+// @Tags Comments
+// @Produce json
+// @Param postID path int true "Post ID"
+// @Success 200 {array} models.Comment "List of comments"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Router /posts/{postID}/comments [get]
 func GetCommentsByPostID(c *gin.Context) {
 	postID, err := strconv.ParseUint(c.Param("postID"), 10, 32)
 	if err != nil {
@@ -29,7 +38,21 @@ func GetCommentsByPostID(c *gin.Context) {
 	c.JSON(http.StatusOK, comments)
 }
 
-// CreateComment adds a new comment to a post
+// CreateComment godoc
+// @Summary Create a new comment
+// @Description Adds a new comment to a post
+// @Tags Comments
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Param comment body models.CreateCommentRequest true "Comment content"
+// @Success 201 {object} models.Comment "Created comment"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /posts/{id}/comments [post]
 func CreateComment(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	postID, err := strconv.ParseUint(c.Param("postID"), 10, 32)
@@ -45,9 +68,7 @@ func CreateComment(c *gin.Context) {
 		return
 	}
 
-	var requestBody struct {
-		Content string `json:"content" binding:"required"`
-	}
+	var requestBody models.CreateCommentRequest
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -73,7 +94,22 @@ func CreateComment(c *gin.Context) {
 	c.JSON(http.StatusCreated, comment)
 }
 
-// UpdateComment updates an existing comment
+// UpdateComment godoc
+// @Summary Update a comment
+// @Description Updates an existing comment
+// @Tags Comments
+// @Accept json
+// @Produce json
+// @Param commentID path int true "Comment ID"
+// @Param comment body models.UpdateCommentRequest true "Updated comment content"
+// @Success 200 {object} models.Comment "Updated comment"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Comment not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /comments/{commentID} [put]
 func UpdateComment(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	commentID, err := strconv.ParseUint(c.Param("commentID"), 10, 32)
@@ -95,9 +131,7 @@ func UpdateComment(c *gin.Context) {
 		return
 	}
 
-	var requestBody struct {
-		Content string `json:"content" binding:"required"`
-	}
+	var requestBody models.UpdateCommentRequest
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -119,7 +153,20 @@ func UpdateComment(c *gin.Context) {
 	c.JSON(http.StatusOK, comment)
 }
 
-// DeleteComment removes a comment
+// DeleteComment godoc
+// @Summary Delete a comment
+// @Description Removes a comment from a post
+// @Tags Comments
+// @Produce json
+// @Param commentID path int true "Comment ID"
+// @Success 200 {object} models.SwaggerStandardResponse "Success message"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
+// @Failure 404 {object} models.SwaggerStandardResponse "Comment not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /comments/{commentID} [delete]
 func DeleteComment(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	commentID, err := strconv.ParseUint(c.Param("commentID"), 10, 32)
@@ -149,5 +196,5 @@ func DeleteComment(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Comment deleted successfully"})
+	c.JSON(http.StatusOK, models.SwaggerStandardResponse{Message: "Comment deleted successfully"})
 }

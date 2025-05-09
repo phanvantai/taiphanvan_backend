@@ -25,9 +25,9 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title           Personal Blog API
+// @title           TaiPhanVan Blog API
 // @version         1.0
-// @description     This is a REST API server for a personal blog.
+// @description     A RESTful API for the TaiPhanVan personal blog platform
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   API Support
@@ -37,7 +37,7 @@ import (
 // @license.name  MIT
 // @license.url   https://opensource.org/licenses/MIT
 
-// @host      ${API_HOST}
+// @host      localhost:9876
 // @BasePath  /api
 
 // @securityDefinitions.apikey BearerAuth
@@ -268,9 +268,13 @@ func initSwagger() {
 		}
 	}
 
-	// Set the host in the Swagger info
+	// Set the Swagger info
 	swaggerInfo := docs.SwaggerInfo
+	swaggerInfo.Title = "TaiPhanVan Blog API"
+	swaggerInfo.Description = "A RESTful API for the TaiPhanVan personal blog platform"
+	swaggerInfo.Version = "1.0"
 	swaggerInfo.Host = host
+	swaggerInfo.BasePath = "/api"
 
 	// Set the scheme based on environment
 	isProduction := os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true"
@@ -280,21 +284,28 @@ func initSwagger() {
 		swaggerInfo.Schemes = []string{"http"}
 	}
 
+	// Ensure the template variables are properly replaced in the Swagger JSON
+	docs.SwaggerInfo.Host = host
+	docs.SwaggerInfo.BasePath = "/api"
+
 	log.Info().
+		Str("title", swaggerInfo.Title).
+		Str("version", swaggerInfo.Version).
 		Str("host", host).
+		Str("basePath", swaggerInfo.BasePath).
 		Strs("schemes", swaggerInfo.Schemes).
 		Msg("Swagger configuration initialized")
 }
 
 // setupRoutes configures all the routes for the API
 func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
-	// Add health check endpoints
-	r.GET("/health", handlers.HealthCheck)
-
 	// Define API routes
 	api := r.Group("/api")
 	{
-		// Apply rate limiting to all API routes
+		// Health check endpoint
+		api.GET("/health", handlers.HealthCheck)
+
+		// Apply rate limiting to all other API routes
 		api.Use(rateLimiter.RateLimitMiddleware())
 
 		// Public routes
@@ -325,11 +336,18 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 			// User routes
 			protected.GET("/profile", handlers.GetProfile)
 			protected.PUT("/profile", handlers.UpdateProfile)
+			protected.POST("/profile/avatar", handlers.UploadAvatar)
 
 			// Post routes
 			protected.POST("/posts", handlers.CreatePost)
 			protected.PUT("/posts/:id", handlers.UpdatePost)
 			protected.DELETE("/posts/:id", handlers.DeletePost)
+			protected.GET("/posts/me", handlers.GetMyPosts) // New endpoint for dashboard
+			protected.POST("/posts/:id/cover", handlers.UploadPostCover)
+			protected.DELETE("/posts/:id/cover", handlers.DeletePostCover)
+			protected.POST("/posts/:id/publish", handlers.PublishPost)
+			protected.POST("/posts/:id/unpublish", handlers.UnpublishPost)
+			protected.POST("/posts/:id/status", handlers.SetPostStatus)
 
 			// Comment routes
 			protected.POST("/posts/:id/comments", handlers.CreateComment)
@@ -347,6 +365,12 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 
 	// Add Swagger documentation endpoint with environment-aware configuration
 	r.GET("/swagger/*any", func(c *gin.Context) {
+		// Handle doc.json with the custom handler
+		if c.Param("any") == "/doc.json" {
+			handlers.SwaggerDocHandler(c)
+			return
+		}
+
 		// Determine if we're running in Railway or other production environment
 		isProduction := os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true"
 
@@ -376,9 +400,15 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 		swaggerURL := fmt.Sprintf("%s://%s/swagger/doc.json", protocol, host)
 		log.Info().Str("swagger_url", swaggerURL).Msg("Configuring Swagger documentation URL")
 
+		// Update Swagger info again to ensure it's properly set
+		docs.SwaggerInfo.Host = host
+		docs.SwaggerInfo.BasePath = "/api"
+
 		ginSwagger.WrapHandler(swaggerFiles.Handler,
 			ginSwagger.URL(swaggerURL),
 			ginSwagger.DeepLinking(true),
+			ginSwagger.DefaultModelsExpandDepth(1), // Show models with depth 1
+			ginSwagger.DocExpansion("list"),        // Expand operation by default
 		)(c)
 	})
 }

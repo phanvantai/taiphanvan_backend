@@ -14,13 +14,15 @@ import (
 
 // Config holds all configuration for the application
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	JWT      JWTConfig
-	CORS     CORSConfig
-	Logging  LoggingConfig
-	TLS      TLSConfig
-	Admin    AdminConfig
+	Server     ServerConfig
+	Database   DatabaseConfig
+	JWT        JWTConfig
+	CORS       CORSConfig
+	Logging    LoggingConfig
+	TLS        TLSConfig
+	Admin      AdminConfig
+	Editor     EditorConfig
+	Cloudinary CloudinaryConfig
 }
 
 // ServerConfig holds all server-related configuration
@@ -73,10 +75,36 @@ type AdminConfig struct {
 	Password           string
 }
 
+// EditorConfig holds configuration for the default editor user
+type EditorConfig struct {
+	CreateDefaultEditor bool
+	Username            string
+	Email               string
+	Password            string
+}
+
+// CloudinaryConfig holds configuration for Cloudinary
+type CloudinaryConfig struct {
+	CloudName    string
+	APIKey       string
+	APISecret    string
+	UploadFolder string
+}
+
 // Load loads the configuration from environment variables or .env file
 func Load(envFile string) (*Config, error) {
-	// Try to load .env file if provided
-	if envFile != "" {
+	// Try to load .env files in order of priority
+	loaded := false
+
+	// Try root directory .env first (takes precedence)
+	rootEnvFile := ".env"
+	if err := godotenv.Load(rootEnvFile); err == nil {
+		log.Info().Str("file", rootEnvFile).Msg("Loaded environment from root .env file")
+		loaded = true
+	}
+
+	// Try provided env file path as fallback
+	if envFile != "" && (!loaded || envFile != rootEnvFile) {
 		// First try direct path
 		err := godotenv.Load(envFile)
 		if err != nil {
@@ -90,14 +118,19 @@ func Load(envFile string) (*Config, error) {
 				err = godotenv.Load(relativePath)
 				if err != nil {
 					log.Warn().Err(err).Str("file", relativePath).Msg("Failed to load .env from relative path")
+				} else {
+					log.Info().Str("file", relativePath).Msg("Loaded environment from relative path")
+					loaded = true
 				}
 			}
-
-			// If we still fail, log but continue (we'll use env vars or defaults)
-			if err != nil {
-				log.Info().Msg("Continuing with environment variables and defaults")
-			}
+		} else {
+			log.Info().Str("file", envFile).Msg("Loaded environment from specified path")
+			loaded = true
 		}
+	}
+
+	if !loaded {
+		log.Info().Msg("No .env file loaded. Continuing with environment variables and defaults")
 	}
 
 	config := &Config{}
@@ -177,6 +210,22 @@ func Load(envFile string) (*Config, error) {
 		Username:           getEnv("DEFAULT_ADMIN_USERNAME", ""),
 		Email:              getEnv("DEFAULT_ADMIN_EMAIL", ""),
 		Password:           getEnv("DEFAULT_ADMIN_PASSWORD", ""),
+	}
+
+	// Load editor config
+	config.Editor = EditorConfig{
+		CreateDefaultEditor: GetEnvBool("CREATE_DEFAULT_EDITOR", false),
+		Username:            getEnv("DEFAULT_EDITOR_USERNAME", ""),
+		Email:               getEnv("DEFAULT_EDITOR_EMAIL", ""),
+		Password:            getEnv("DEFAULT_EDITOR_PASSWORD", ""),
+	}
+
+	// Load Cloudinary config
+	config.Cloudinary = CloudinaryConfig{
+		CloudName:    getEnv("CLOUDINARY_CLOUD_NAME", ""),
+		APIKey:       getEnv("CLOUDINARY_API_KEY", ""),
+		APISecret:    getEnv("CLOUDINARY_API_SECRET", ""),
+		UploadFolder: getEnv("CLOUDINARY_UPLOAD_FOLDER", "blog_images"),
 	}
 
 	// Validate configuration - but provide better fallbacks for Docker environment
@@ -320,14 +369,6 @@ func GetEnvBool(key string, defaultValue bool) bool {
 	}
 
 	return b
-}
-
-// Default configuration values
-func (c *Config) setDefaults() {
-	// Server defaults
-	if c.Server.Port == "" {
-		c.Server.Port = getEnv("API_PORT", "9876")
-	}
 }
 
 // generateTemporarySecret creates a more secure temporary secret

@@ -8,7 +8,14 @@ import (
 	"github.com/phanvantai/taiphanvan_backend/internal/database"
 )
 
-// HealthCheck provides a simple endpoint to verify the API is running
+// HealthCheck godoc
+// @Summary Check API health
+// @Description Provides a simple endpoint to verify the API and database are running
+// @Tags System
+// @Produce json
+// @Success 200 {object} models.SwaggerStandardResponse "API is healthy"
+// @Failure 503 {object} models.SwaggerStandardResponse "Database connection issues"
+// @Router /health [get]
 func HealthCheck(c *gin.Context) {
 	// Check database connectivity
 	sqlDB, err := database.DB.DB()

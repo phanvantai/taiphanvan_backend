@@ -27,8 +27,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Ensure configs directory exists and create empty .env file if it doesn't exist
-RUN mkdir -p /app/configs && touch /app/configs/.env
+# Ensure configs directory exists
+RUN mkdir -p /app/configs
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /app/api ./cmd/api
@@ -45,8 +45,11 @@ COPY --from=builder /etc/group /etc/group
 # Copy our binary
 COPY --from=builder /app/api /app/api
 
-# Copy configuration directory with empty .env file
+# Copy configuration directory
 COPY --from=builder /app/configs /app/configs
+
+# Copy .env file from root (if it exists)
+COPY .env /app/.env
 
 # Use non-root user
 USER appuser:appuser
