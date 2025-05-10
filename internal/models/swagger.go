@@ -76,3 +76,15 @@ type SwaggerAvatarResponse struct {
 type SwaggerPostCoverResponse struct {
 	Cover string `json:"cover" example:"https://example.com/cover.jpg" description:"URL to the uploaded cover image"`
 }
+
+// SwaggerFileUploadResponse represents the response after uploading a file for editor use
+// @Description Response model for editor file upload
+type SwaggerFileUploadResponse struct {
+	FileURL string `json:"file_url" example:"https://example.com/file.jpg" description:"URL to the uploaded file"`
+}
+
+// SwaggerDeleteFileRequest represents a request to delete a file
+// @Description Request model for deleting a file
+type SwaggerDeleteFileRequest struct {
+	FileURL string `json:"file_url" example:"https://example.com/file.jpg" description:"URL of the file to delete"`
+}

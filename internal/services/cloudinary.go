@@ -24,6 +24,7 @@ const (
 	// Folder paths for different upload types
 	avatarFolder    = "avatars"
 	postCoverFolder = "post_covers"
+	editorFolder    = "editor_files"
 )
 
 // NewCloudinaryService creates a new Cloudinary service
@@ -85,26 +86,6 @@ func (s *CloudinaryService) UploadAvatar(ctx context.Context, file *multipart.Fi
 	return result.SecureURL, nil
 }
 
-// DeleteAvatar deletes an avatar from Cloudinary
-func (s *CloudinaryService) DeleteAvatar(ctx context.Context, publicID string) error {
-	if publicID == "" {
-		return nil // Nothing to delete
-	}
-
-	log.Info().Str("public_id", publicID).Msg("Deleting avatar from Cloudinary")
-
-	_, err := s.cld.Upload.Destroy(ctx, uploader.DestroyParams{
-		PublicID: publicID,
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to delete from Cloudinary: %w", err)
-	}
-
-	log.Info().Str("public_id", publicID).Msg("Avatar deleted successfully")
-	return nil
-}
-
 // UploadPostCover uploads a cover image for a post to Cloudinary
 func (s *CloudinaryService) UploadPostCover(ctx context.Context, file *multipart.FileHeader, postID uint) (string, error) {
 	// Open the uploaded file
@@ -143,6 +124,56 @@ func (s *CloudinaryService) UploadPostCover(ctx context.Context, file *multipart
 		Str("url", result.SecureURL).
 		Uint("post_id", postID).
 		Msg("Post cover uploaded successfully")
+
+	return result.SecureURL, nil
+}
+
+// UploadEditorFile uploads a file for editor use to Cloudinary
+func (s *CloudinaryService) UploadEditorFile(ctx context.Context, file *multipart.FileHeader, userID uint) (string, error) {
+	// Open the uploaded file
+	src, err := file.Open()
+	if err != nil {
+		return "", fmt.Errorf("failed to open uploaded file: %w", err)
+	}
+	defer src.Close()
+
+	// Create a unique public ID for the file
+	timestamp := time.Now().UnixNano()
+	folderPath := fmt.Sprintf("%s/%s", s.cfg.UploadFolder, editorFolder)
+	publicID := fmt.Sprintf("editor_%d_%d", userID, timestamp)
+
+	// Determine resource type based on file extension
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	resourceType := "image"
+	if ext == ".pdf" {
+		resourceType = "raw"
+	}
+
+	// Upload the file to Cloudinary
+	uploadParams := uploader.UploadParams{
+		PublicID:     publicID,
+		ResourceType: resourceType,
+		Folder:       folderPath,
+	}
+
+	log.Info().
+		Str("public_id", publicID).
+		Str("folder", folderPath).
+		Str("resource_type", resourceType).
+		Uint("user_id", userID).
+		Str("filename", file.Filename).
+		Msg("Uploading editor file to Cloudinary")
+
+	result, err := s.cld.Upload.Upload(ctx, src, uploadParams)
+	if err != nil {
+		return "", fmt.Errorf("failed to upload to Cloudinary: %w", err)
+	}
+
+	log.Info().
+		Str("public_id", publicID).
+		Str("url", result.SecureURL).
+		Uint("user_id", userID).
+		Msg("Editor file uploaded successfully")
 
 	return result.SecureURL, nil
 }

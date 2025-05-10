@@ -296,6 +296,10 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 			protected.PUT("/profile", handlers.UpdateProfile)
 			protected.POST("/profile/avatar", handlers.UploadAvatar)
 
+			// File routes for editor
+			protected.POST("/files/upload", handlers.UploadFile)
+			protected.POST("/files/delete", handlers.DeleteFile)
+
 			// Post routes
 			protected.POST("/posts", handlers.CreatePost)
 			protected.PUT("/posts/:id", handlers.UpdatePost)
