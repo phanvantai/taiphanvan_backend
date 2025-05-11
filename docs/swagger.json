@@ -408,6 +408,118 @@
                 }
             }
         },
+        "/files/delete": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a file that was previously uploaded for use in the editor",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Delete a file uploaded for editor use",
+                "parameters": [
+                    {
+                        "description": "File URL to delete",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerDeleteFileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/upload": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload a file that can be used in the editor when creating or editing posts",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Upload a file for editor use",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File to upload (JPG, JPEG, PNG, WEBP, GIF, SVG, PDF, max 5MB)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File uploaded successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerFileUploadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Provides a simple endpoint to verify the API and database are running",
@@ -1662,6 +1774,26 @@
                 "profile_image": {
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
+                }
+            }
+        },
+        "models.SwaggerDeleteFileRequest": {
+            "description": "Request model for deleting a file",
+            "type": "object",
+            "properties": {
+                "file_url": {
+                    "type": "string",
+                    "example": "https://example.com/file.jpg"
+                }
+            }
+        },
+        "models.SwaggerFileUploadResponse": {
+            "description": "Response model for editor file upload",
+            "type": "object",
+            "properties": {
+                "file_url": {
+                    "type": "string",
+                    "example": "https://example.com/file.jpg"
                 }
             }
         },
