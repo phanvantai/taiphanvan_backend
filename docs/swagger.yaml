@@ -179,6 +179,20 @@ definitions:
         example: https://example.com/avatar.jpg
         type: string
     type: object
+  models.SwaggerDeleteFileRequest:
+    description: Request model for deleting a file
+    properties:
+      file_url:
+        example: https://example.com/file.jpg
+        type: string
+    type: object
+  models.SwaggerFileUploadResponse:
+    description: Response model for editor file upload
+    properties:
+      file_url:
+        example: https://example.com/file.jpg
+        type: string
+    type: object
   models.SwaggerPostCoverResponse:
     description: Response model for post cover upload
     properties:
@@ -662,6 +676,78 @@ paths:
       summary: Update a comment
       tags:
       - Comments
+  /files/delete:
+    post:
+      consumes:
+      - application/json
+      description: Delete a file that was previously uploaded for use in the editor
+      parameters:
+      - description: File URL to delete
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SwaggerDeleteFileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: File deleted successfully
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a file uploaded for editor use
+      tags:
+      - Files
+  /files/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a file that can be used in the editor when creating or editing
+        posts
+      parameters:
+      - description: File to upload (JPG, JPEG, PNG, WEBP, GIF, SVG, PDF, max 5MB)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: File uploaded successfully
+          schema:
+            $ref: '#/definitions/models.SwaggerFileUploadResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload a file for editor use
+      tags:
+      - Files
   /health:
     get:
       description: Provides a simple endpoint to verify the API and database are running

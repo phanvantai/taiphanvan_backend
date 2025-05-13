@@ -1,4 +1,4 @@
-FROM golang:1.24.2-alpine AS builder
+FROM golang:1.24.3-alpine AS builder
 
 # Install dependencies and apply security updates
 RUN apk update && apk upgrade && apk add --no-cache git ca-certificates tzdata && update-ca-certificates
@@ -27,8 +27,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Ensure configs directory exists and create empty .env file if it doesn't exist
-RUN mkdir -p /app/configs && touch /app/configs/.env
+# No need to create .env files as the application now detects Docker environments
+# and uses environment variables directly
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /app/api ./cmd/api
@@ -45,8 +45,7 @@ COPY --from=builder /etc/group /etc/group
 # Copy our binary
 COPY --from=builder /app/api /app/api
 
-# Copy configuration directory with empty .env file
-COPY --from=builder /app/configs /app/configs
+# No need to copy configs directory as we don't use .env files in Docker
 
 # Use non-root user
 USER appuser:appuser

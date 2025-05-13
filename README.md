@@ -83,7 +83,20 @@ The server will start on `http://localhost:9876` by default (configurable in con
 
 ## Configuration
 
-The application uses environment variables for configuration. Create a `.env` file in the project root or configure these environment variables in your deployment environment. You can use the provided `.env.example` as a template:
+The application uses environment variables for configuration. For local development, create a `.env` file in the project root directory (not in any subdirectory). You can use the provided `.env.example` as a template:
+
+> **Note:** The `.env` file must be placed in the root directory of the project. When running in Docker or cloud environments (like Railway), the application will automatically use environment variables directly and ignore the `.env` file.
+
+### Environment Detection
+
+The application includes an intelligent environment detection system that automatically:
+
+1. Detects when it's running in a Docker container
+2. Detects when it's running on Railway.app
+3. Applies appropriate configuration defaults based on the environment
+4. Skips loading the `.env` file in containerized environments
+
+This makes deployment seamless across different environments without requiring manual configuration changes.
 
 ```bash
 # API Configuration
@@ -332,6 +345,12 @@ environment:
   # ... other configurations
 ```
 
+The application is designed to detect when it's running in a Docker container and will automatically:
+
+1. Skip loading the `.env` file (using environment variables directly)
+2. Apply sensible defaults for database connection (using `postgres` as the host)
+3. Set appropriate fallback values for missing configuration
+
 #### Managing Docker Containers
 
 ```bash
@@ -418,7 +437,13 @@ The application is configured to run on Railway.app with minimal configuration:
    - Test the API endpoints using the provided URL
    - Verify the health endpoint: `https://your-railway-url.up.railway.app/health`
 
-The application automatically detects when it's running in a cloud environment and will use environment variables provided by the platform. For Railway, it will use the `PORT` and `DATABASE_URL` environment variables automatically.
+The application automatically detects when it's running in a cloud environment and will use environment variables provided by the platform. For Railway, it will:
+
+1. Detect the Railway environment automatically
+2. Use the `PORT` environment variable for the server port
+3. Use the `DATABASE_URL` environment variable for database connection
+4. Generate a secure JWT secret if none is provided
+5. Apply appropriate production settings
 
 ## Security Considerations
 
