@@ -10,16 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetCommentsByPostID godoc
-// @Summary Get comments for a post
-// @Description Returns all comments for a specific post
-// @Tags Comments
-// @Produce json
-// @Param postID path int true "Post ID"
-// @Success 200 {object} models.StandardResponse "List of comments"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Router /posts/{postID}/comments [get]
+// GetCommentsByPostID returns all comments for a specific post
 func GetCommentsByPostID(c *gin.Context) {
 	postID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -69,21 +60,7 @@ func GetCommentsByPostID(c *gin.Context) {
 	c.JSON(http.StatusOK, models.NewSuccessResponse(result, "Comments retrieved successfully"))
 }
 
-// CreateComment godoc
-// @Summary Create a new comment
-// @Description Adds a new comment to a post
-// @Tags Comments
-// @Accept json
-// @Produce json
-// @Param id path int true "Post ID"
-// @Param comment body models.CreateCommentRequest true "Comment content"
-// @Success 201 {object} models.StandardResponse "Created comment"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 404 {object} models.StandardResponse "Post not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /posts/{id}/comments [post]
+// CreateComment adds a new comment to a post
 func CreateComment(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	postID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -125,22 +102,7 @@ func CreateComment(c *gin.Context) {
 	c.JSON(http.StatusCreated, models.NewSuccessResponse(comment, "Comment created successfully"))
 }
 
-// UpdateComment godoc
-// @Summary Update a comment
-// @Description Updates an existing comment
-// @Tags Comments
-// @Accept json
-// @Produce json
-// @Param commentID path int true "Comment ID"
-// @Param comment body models.UpdateCommentRequest true "Updated comment content"
-// @Success 200 {object} models.StandardResponse "Updated comment"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 403 {object} models.StandardResponse "Forbidden"
-// @Failure 404 {object} models.StandardResponse "Comment not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /comments/{commentID} [put]
+// UpdateComment updates an existing comment
 func UpdateComment(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	commentID, err := strconv.ParseUint(c.Param("commentID"), 10, 32)
@@ -184,20 +146,7 @@ func UpdateComment(c *gin.Context) {
 	c.JSON(http.StatusOK, models.NewSuccessResponse(comment, "Comment updated successfully"))
 }
 
-// DeleteComment godoc
-// @Summary Delete a comment
-// @Description Removes a comment from a post
-// @Tags Comments
-// @Produce json
-// @Param commentID path int true "Comment ID"
-// @Success 200 {object} models.StandardResponse "Success message"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 403 {object} models.StandardResponse "Forbidden"
-// @Failure 404 {object} models.StandardResponse "Comment not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /comments/{commentID} [delete]
+// DeleteComment removes a comment from a post
 func DeleteComment(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	commentID, err := strconv.ParseUint(c.Param("commentID"), 10, 32)

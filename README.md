@@ -8,7 +8,7 @@ This repository contains the backend API service for a personal blog built with 
 taiphanvan_backend/
 ├── cmd/api/           # Application entrypoint and API documentation
 ├── configs/           # Configuration files
-├── docs/              # Swagger documentation
+├── docs/              # Documentation
 ├── internal/          # Private application code
 │   ├── config/        # Application configuration
 │   ├── database/      # Database connection and management
@@ -29,7 +29,7 @@ taiphanvan_backend/
 - Database interactions with connection pooling using GORM
 - Input validation and error handling
 - Structured logging with zerolog
-- API documentation with Swagger
+
 - Security features (rate limiting, input sanitization, CORS support)
 - Cloudinary integration for image uploads
 - Containerization with Docker
@@ -143,11 +143,7 @@ CLOUDINARY_UPLOAD_FOLDER=blog_images
 
 ## API Documentation
 
-API documentation is available via Swagger UI when the application is running:
-
-```url
-http://localhost:9876/swagger/index.html
-```
+API documentation is available in the code and in the docs directory.
 
 ## API Endpoints
 
@@ -370,7 +366,7 @@ docker-compose up -d --build
 #### Accessing the Application
 
 - API: <http://localhost:9876>
-- Swagger documentation: <http://localhost:9876/swagger/index.html>
+
 - Database is accessible on port 5433 with credentials from docker-compose.yml
 
 #### Troubleshooting Docker Setup

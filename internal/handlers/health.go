@@ -10,13 +10,7 @@ import (
 )
 
 // HealthCheck godoc
-// @Summary Check API health
-// @Description Provides a simple endpoint to verify the API and database are running
-// @Tags System
-// @Produce json
-// @Success 200 {object} models.StandardResponse "API is healthy"
-// @Failure 503 {object} models.StandardResponse "Database connection issues"
-// @Router /health [get]
+// HealthCheck handles the request
 func HealthCheck(c *gin.Context) {
 	// Check database connectivity
 	sqlDB, err := database.DB.DB()

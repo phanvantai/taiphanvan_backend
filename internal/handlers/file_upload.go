@@ -27,18 +27,7 @@ var allowedUploadFileTypes = map[string]bool{
 }
 
 // UploadFile godoc
-// @Summary Upload a file for editor use
-// @Description Upload a file that can be used in the editor when creating or editing posts
-// @Tags Files
-// @Accept multipart/form-data
-// @Produce json
-// @Param file formData file true "File to upload (JPG, JPEG, PNG, WEBP, GIF, SVG, PDF, max 5MB)"
-// @Success 200 {object} models.FileUploadResponse "File uploaded successfully"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /files/upload [post]
+// UploadFile handles the request
 func UploadFile(c *gin.Context) {
 	// Get user ID from context (set by AuthMiddleware)
 	userID, exists := c.Get("userID")
@@ -90,18 +79,7 @@ func UploadFile(c *gin.Context) {
 }
 
 // DeleteFile godoc
-// @Summary Delete a file uploaded for editor use
-// @Description Delete a file that was previously uploaded for use in the editor
-// @Tags Files
-// @Accept json
-// @Produce json
-// @Param request body models.DeleteFileRequest true "File URL to delete"
-// @Success 200 {object} models.StandardResponse "File deleted successfully"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /files/delete [post]
+// DeleteFile handles the request
 func DeleteFile(c *gin.Context) {
 	// Get user ID from context (set by AuthMiddleware)
 	_, exists := c.Get("userID")

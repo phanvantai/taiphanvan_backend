@@ -53,17 +53,7 @@ func createPaginationMeta(page, limit int, total int64) gin.H {
 }
 
 // GetPosts godoc
-// @Summary Get list of blog posts
-// @Description Returns a paginated list of blog posts with optional tag and status filtering
-// @Tags Posts
-// @Produce json
-// @Param page query int false "Page number (default: 1)"
-// @Param limit query int false "Number of items per page (default: 10)"
-// @Param tag query string false "Filter posts by tag name"
-// @Param status query string false "Filter posts by status (draft, published, archived, scheduled)"
-// @Success 200 {object} models.PostsResponse "List of posts with pagination metadata"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Router /posts [get]
+// GetPosts handles the request
 func GetPosts(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
@@ -105,14 +95,7 @@ func GetPosts(c *gin.Context) {
 }
 
 // GetPostBySlug godoc
-// @Summary Get a blog post by slug
-// @Description Returns a single blog post by its slug and automatically increments its view count
-// @Tags Posts
-// @Produce json
-// @Param slug path string true "Post slug"
-// @Success 200 {object} models.Post "Post details"
-// @Failure 404 {object} models.StandardResponse "Post not found"
-// @Router /posts/slug/{slug} [get]
+// GetPostBySlug handles the request
 func GetPostBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 
@@ -136,18 +119,7 @@ func GetPostBySlug(c *gin.Context) {
 }
 
 // CreatePost godoc
-// @Summary Create a new blog post
-// @Description Creates a new blog post with the provided details
-// @Tags Posts
-// @Accept json
-// @Produce json
-// @Param request body models.CreatePostRequest true "Post details"
-// @Success 201 {object} models.Post "Created post"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /posts [post]
+// CreatePost handles the request
 func CreatePost(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	role, exists := c.Get("userRole")
@@ -249,21 +221,7 @@ func CreatePost(c *gin.Context) {
 }
 
 // UpdatePost godoc
-// @Summary Update an existing blog post
-// @Description Updates a blog post with the provided details
-// @Tags Posts
-// @Accept json
-// @Produce json
-// @Param id path int true "Post ID"
-// @Param post body models.UpdatePostRequest true "Post details"
-// @Success 200 {object} models.Post "Updated post"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 403 {object} models.StandardResponse "Forbidden"
-// @Failure 404 {object} models.StandardResponse "Post not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /posts/{id} [put]
+// UpdatePost handles the request
 func UpdatePost(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -388,19 +346,7 @@ func UpdatePost(c *gin.Context) {
 }
 
 // DeletePost godoc
-// @Summary Delete a blog post
-// @Description Deletes a blog post by ID (soft delete)
-// @Tags Posts
-// @Produce json
-// @Param id path int true "Post ID"
-// @Success 200 {object} models.StandardResponse "Success message"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 403 {object} models.StandardResponse "Forbidden"
-// @Failure 404 {object} models.StandardResponse "Post not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /posts/{id} [delete]
+// DeletePost handles the request
 func DeletePost(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -438,19 +384,7 @@ func DeletePost(c *gin.Context) {
 }
 
 // PublishPost godoc
-// @Summary Publish a blog post
-// @Description Sets a blog post's status to published
-// @Tags Posts
-// @Produce json
-// @Param id path int true "Post ID"
-// @Success 200 {object} models.Post "Published post"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 403 {object} models.StandardResponse "Forbidden"
-// @Failure 404 {object} models.StandardResponse "Post not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /posts/{id}/publish [post]
+// PublishPost handles the request
 func PublishPost(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -497,19 +431,7 @@ func PublishPost(c *gin.Context) {
 }
 
 // UnpublishPost godoc
-// @Summary Unpublish a blog post
-// @Description Sets a blog post's status to unpublished (draft)
-// @Tags Posts
-// @Produce json
-// @Param id path int true "Post ID"
-// @Success 200 {object} models.Post "Unpublished post"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 403 {object} models.StandardResponse "Forbidden"
-// @Failure 404 {object} models.StandardResponse "Post not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /posts/{id}/unpublish [post]
+// UnpublishPost handles the request
 func UnpublishPost(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -560,21 +482,7 @@ func UnpublishPost(c *gin.Context) {
 }
 
 // SetPostStatus godoc
-// @Summary Set the status of a blog post
-// @Description Updates a post's status to the specified value (draft, published, archived, scheduled)
-// @Tags Posts
-// @Accept json
-// @Produce json
-// @Param id path int true "Post ID"
-// @Param request body models.SetPostStatusRequest true "Status details"
-// @Success 200 {object} models.Post "Updated post"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 403 {object} models.StandardResponse "Forbidden"
-// @Failure 404 {object} models.StandardResponse "Post not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /posts/{id}/status [post]
+// SetPostStatus handles the request
 func SetPostStatus(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	roleInterface, exists := c.Get("userRole")
@@ -684,17 +592,7 @@ func SetPostStatus(c *gin.Context) {
 }
 
 // GetMyPosts godoc
-// @Summary Get the current user's blog posts
-// @Description Returns a paginated list of blog posts authored by the currently authenticated user
-// @Tags Posts
-// @Produce json
-// @Param page query int false "Page number (default: 1)"
-// @Param limit query int false "Number of items per page (default: 10)"
-// @Success 200 {object} models.PostsResponse "List of the user's posts with pagination metadata"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /posts/me [get]
+// GetMyPosts handles the request
 func GetMyPosts(c *gin.Context) {
 	// Get user ID from context (set by AuthMiddleware)
 	userID, exists := c.Get("userID")
@@ -730,16 +628,7 @@ func GetMyPosts(c *gin.Context) {
 }
 
 // IncrementPostViewCount godoc
-// @Summary Increment post view count
-// @Description Increments the view count for a specific post
-// @Tags Posts
-// @Produce json
-// @Param id path int true "Post ID"
-// @Success 200 {object} models.ViewCountResponse "View count incremented successfully"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 404 {object} models.StandardResponse "Post not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Router /posts/{id}/view [post]
+// IncrementPostViewCount handles the request
 func IncrementPostViewCount(c *gin.Context) {
 	// Get post ID from URL
 	postID, err := strconv.ParseUint(c.Param("id"), 10, 32)

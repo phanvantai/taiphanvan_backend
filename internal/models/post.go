@@ -21,7 +21,7 @@ const (
 )
 
 // Post represents a blog post
-// @Description A blog post with content, metadata, and relationships
+
 type Post struct {
 	ID        uint           `json:"id" gorm:"primaryKey" example:"1" description:"Unique identifier"`
 	Title     string         `json:"title" gorm:"size:255;not null" example:"My First Blog Post" description:"Post title"`
@@ -40,7 +40,7 @@ type Post struct {
 }
 
 // Tag represents a post tag
-// @Description A tag that can be associated with multiple posts
+
 type Tag struct {
 	ID    uint   `json:"id" gorm:"primaryKey" example:"1" description:"Unique identifier"`
 	Name  string `json:"name" gorm:"size:50;not null;unique" example:"technology" description:"Tag name"`
@@ -60,7 +60,7 @@ const (
 )
 
 // CommentVote represents a user's vote on a comment
-// @Description A vote (upvote or downvote) by a user on a comment
+
 type CommentVote struct {
 	ID        uint      `json:"id" gorm:"primaryKey" example:"1" description:"Unique identifier"`
 	UserID    uint      `json:"user_id" example:"1" description:"ID of the user who voted"`
@@ -71,7 +71,7 @@ type CommentVote struct {
 }
 
 // Comment represents a user comment on a post
-// @Description A comment made by a user on a specific post
+
 type Comment struct {
 	ID          uint           `json:"id" gorm:"primaryKey" example:"1" description:"Unique identifier"`
 	Content     string         `json:"content" gorm:"type:text;not null" example:"Great post!" description:"Comment content"`
@@ -87,7 +87,7 @@ type Comment struct {
 }
 
 // CreatePostRequest represents the request body for creating a new post
-// @Description Request model for creating a new blog post
+
 type CreatePostRequest struct {
 	Title     string     `json:"title" binding:"required" example:"My New Post" description:"Post title"`
 	Content   string     `json:"content" binding:"required" example:"This is the content of my new post" description:"Main content of the post"`
@@ -99,7 +99,7 @@ type CreatePostRequest struct {
 }
 
 // UpdatePostRequest represents the request body for updating an existing post
-// @Description Request model for updating an existing blog post
+
 type UpdatePostRequest struct {
 	Title     *string     `json:"title" example:"Updated Post Title" description:"New post title"`
 	Content   *string     `json:"content" example:"Updated content" description:"New main content of the post"`
@@ -111,25 +111,25 @@ type UpdatePostRequest struct {
 }
 
 // CreateCommentRequest represents the request body for creating a new comment
-// @Description Request model for creating a new comment on a post
+
 type CreateCommentRequest struct {
 	Content string `json:"content" binding:"required" example:"This is a great post!" description:"Comment content"`
 }
 
 // UpdateCommentRequest represents the request body for updating an existing comment
-// @Description Request model for updating an existing comment
+
 type UpdateCommentRequest struct {
 	Content string `json:"content" binding:"required" example:"This is my updated comment" description:"Updated comment content"`
 }
 
 // CommentVoteRequest represents the request body for voting on a comment
-// @Description Request model for voting on a comment
+
 type CommentVoteRequest struct {
 	VoteType VoteType `json:"vote_type" binding:"required" example:"1" description:"Type of vote: 1 (upvote), -1 (downvote), 0 (none)"`
 }
 
 // CommentVoteResponse represents the response body for a comment vote operation
-// @Description Response model for a comment vote operation
+
 type CommentVoteResponse struct {
 	CommentID   uint `json:"comment_id" example:"1" description:"ID of the comment that was voted on"`
 	UpvoteCount int  `json:"upvote_count" example:"5" description:"Updated upvote count for the comment"`
@@ -137,14 +137,14 @@ type CommentVoteResponse struct {
 }
 
 // CommentWithUserVote represents a comment with the current user's vote
-// @Description A comment with additional information about the current user's vote
+
 type CommentWithUserVote struct {
 	Comment  Comment `json:"comment" description:"The comment data"`
 	UserVote int8    `json:"user_vote" example:"1" description:"The user's current vote: 1 (upvote), -1 (downvote), 0 (none)"`
 }
 
 // TagWithCount represents a tag with its post count
-// @Description A tag with the count of posts using it
+
 type TagWithCount struct {
 	ID        uint   `json:"id" example:"1" description:"Unique identifier"`
 	Name      string `json:"name" example:"technology" description:"Tag name"`
@@ -152,7 +152,7 @@ type TagWithCount struct {
 }
 
 // SetPostStatusRequest represents the request body for updating a post's status
-// @Description Request model for changing a post's status
+
 type SetPostStatusRequest struct {
 	Status    PostStatus `json:"status" binding:"required" example:"published" description:"New post status (draft, published, archived, scheduled)"`
 	PublishAt *time.Time `json:"publish_at,omitempty" example:"2023-01-03T12:00:00Z" description:"When to publish the post if status is 'scheduled'"`

@@ -39,13 +39,7 @@ func fetchTags[T any](orderBy string, limit int) ([]T, error) {
 }
 
 // GetAllTags godoc
-// @Summary Get all tags
-// @Description Returns all tags with their post counts
-// @Tags Tags
-// @Produce json
-// @Success 200 {object} models.StandardResponse "List of tags with post counts"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Router /tags [get]
+// GetAllTags handles the request
 func GetAllTags(c *gin.Context) {
 	tags, err := fetchTags[models.TagWithCount]("tags.name", 0)
 	if err != nil {
@@ -57,13 +51,7 @@ func GetAllTags(c *gin.Context) {
 }
 
 // GetPopularTags godoc
-// @Summary Get popular tags
-// @Description Returns the most used tags with post counts (limited to 10)
-// @Tags Tags
-// @Produce json
-// @Success 200 {object} models.StandardResponse "List of popular tags with post counts"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Router /tags/popular [get]
+// GetPopularTags handles the request
 func GetPopularTags(c *gin.Context) {
 	limit := 10 // Default limit
 

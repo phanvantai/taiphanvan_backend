@@ -6,14 +6,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/phanvantai/taiphanvan_backend/docs"
 	"github.com/phanvantai/taiphanvan_backend/internal/config"
 	"github.com/phanvantai/taiphanvan_backend/internal/database"
 	"github.com/phanvantai/taiphanvan_backend/internal/handlers"
@@ -21,47 +19,7 @@ import (
 	"github.com/phanvantai/taiphanvan_backend/internal/middleware"
 	"github.com/phanvantai/taiphanvan_backend/pkg/utils"
 	"github.com/rs/zerolog/log"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
-
-// @title           TaiPhanVan Blog API
-// @version         1.0
-// @description     A RESTful API for the TaiPhanVan personal blog platform
-// @termsOfService  http://swagger.io/terms/
-
-// @contact.name   API Support
-// @contact.url    https://github.com/phanvantai/taiphanvan_backend
-// @contact.email  support@example.com
-
-// @license.name  MIT
-// @license.url   https://opensource.org/licenses/MIT
-
-// @host      localhost:9876
-// @BasePath  /api
-
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
-// @description Type "Bearer" followed by a space and the JWT token.
-
-// @tag.name Auth
-// @tag.description Authentication operations
-
-// @tag.name Posts
-// @tag.description Blog post operations
-
-// @tag.name Comments
-// @tag.description Comment operations
-
-// @tag.name Tags
-// @tag.description Tag operations
-
-// @tag.name Users
-// @tag.description User operations
-
-// @tag.name Files
-// @tag.description File upload operations
 
 func main() {
 	// Initialize barebones logger for startup errors
@@ -94,9 +52,6 @@ func main() {
 
 	// Start the token cleanup routine in the background
 	utils.StartTokenCleanup()
-
-	// Initialize Swagger documentation
-	initSwagger()
 
 	// Initialize the router
 	r := gin.New()
@@ -168,15 +123,6 @@ func main() {
 		}
 	}()
 
-	// Log Swagger URL with the correct protocol
-	host := docs.SwaggerInfo.Host
-	protocol := "http"
-	if os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true" || cfg.TLS.Enabled {
-		protocol = "https"
-	}
-	swaggerURL := fmt.Sprintf("%s://%s/swagger/index.html", protocol, host)
-	log.Info().Str("url", swaggerURL).Msg("Swagger documentation available at")
-
 	// Wait for interrupt signal to gracefully shutdown the server
 	quit := make(chan os.Signal, 1)
 	// Kill (no param) default sends syscall.SIGTERM
@@ -223,54 +169,6 @@ func requestIDMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
-}
-
-// initSwagger initializes the Swagger documentation with the correct host
-func initSwagger() {
-	// Get host from environment or use default
-	host := os.Getenv("API_HOST")
-	if host == "" {
-		// Check if we should use the custom domain
-		customDomain := os.Getenv("CUSTOM_DOMAIN")
-		if customDomain != "" {
-			host = customDomain
-		} else if railwayURL := os.Getenv("RAILWAY_PUBLIC_DOMAIN"); railwayURL != "" {
-			// For Railway, use the PUBLIC_URL without scheme
-			host = railwayURL
-		} else if port := os.Getenv("API_PORT"); port != "" {
-			host = fmt.Sprintf("localhost:%s", port)
-		} else {
-			host = "localhost:9876" // Default fallback
-		}
-	}
-
-	// Set the Swagger info
-	swaggerInfo := docs.SwaggerInfo
-	swaggerInfo.Title = "TaiPhanVan Blog API"
-	swaggerInfo.Description = "A RESTful API for the TaiPhanVan personal blog platform"
-	swaggerInfo.Version = "1.0"
-	swaggerInfo.Host = host
-	swaggerInfo.BasePath = "/api"
-
-	// Set the scheme based on environment
-	isProduction := os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true"
-	if isProduction || strings.HasPrefix(host, "api.taiphanvan.dev") {
-		swaggerInfo.Schemes = []string{"https"}
-	} else {
-		swaggerInfo.Schemes = []string{"http"}
-	}
-
-	// Ensure the template variables are properly replaced in the Swagger JSON
-	docs.SwaggerInfo.Host = host
-	docs.SwaggerInfo.BasePath = "/api"
-
-	log.Info().
-		Str("title", swaggerInfo.Title).
-		Str("version", swaggerInfo.Version).
-		Str("host", host).
-		Str("basePath", swaggerInfo.BasePath).
-		Strs("schemes", swaggerInfo.Schemes).
-		Msg("Swagger configuration initialized")
 }
 
 // setupRoutes configures all the routes for the API
@@ -350,52 +248,4 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 		}
 	}
 
-	// Add Swagger documentation endpoint with environment-aware configuration
-	r.GET("/swagger/*any", func(c *gin.Context) {
-		// Handle doc.json with the custom handler
-		if c.Param("any") == "/doc.json" {
-			handlers.SwaggerDocHandler(c)
-			return
-		}
-
-		// Determine if we're running in Railway or other production environment
-		isProduction := os.Getenv("RAILWAY_SERVICE_ID") != "" || os.Getenv("PRODUCTION") == "true"
-
-		// Get host from environment or use default
-		host := os.Getenv("API_HOST")
-		if host == "" {
-			// Check if we should use the custom domain
-			customDomain := os.Getenv("CUSTOM_DOMAIN")
-			if customDomain != "" {
-				host = customDomain
-			} else if railwayURL := os.Getenv("RAILWAY_PUBLIC_DOMAIN"); railwayURL != "" {
-				host = railwayURL
-			} else if port := os.Getenv("API_PORT"); port != "" {
-				host = fmt.Sprintf("localhost:%s", port)
-			} else {
-				host = "localhost:9876" // Default fallback
-			}
-		}
-
-		// Determine the correct protocol based on environment
-		protocol := "http"
-		if isProduction || strings.HasPrefix(host, "api.taiphanvan.dev") {
-			protocol = "https"
-		}
-
-		// Configure Swagger with the correct URL
-		swaggerURL := fmt.Sprintf("%s://%s/swagger/doc.json", protocol, host)
-		log.Info().Str("swagger_url", swaggerURL).Msg("Configuring Swagger documentation URL")
-
-		// Update Swagger info again to ensure it's properly set
-		docs.SwaggerInfo.Host = host
-		docs.SwaggerInfo.BasePath = "/api"
-
-		ginSwagger.WrapHandler(swaggerFiles.Handler,
-			ginSwagger.URL(swaggerURL),
-			ginSwagger.DeepLinking(true),
-			ginSwagger.DefaultModelsExpandDepth(1), // Show models with depth 1
-			ginSwagger.DocExpansion("list"),        // Expand operation by default
-		)(c)
-	})
 }

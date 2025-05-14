@@ -23,17 +23,7 @@ func GetUserVote(commentID, userID uint) (models.VoteType, error) {
 	return vote.VoteType, nil
 }
 
-// GetCommentVotes godoc
-// @Summary Get vote counts for a comment
-// @Description Returns the upvote/downvote counts for a specific comment
-// @Tags Comments
-// @Produce json
-// @Param commentID path int true "Comment ID"
-// @Success 200 {object} models.CommentVoteResponse "Vote counts"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 404 {object} models.StandardResponse "Comment not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Router /comments/{commentID}/votes [get]
+// GetCommentVotes retrieves the vote counts for a specific comment
 func GetCommentVotes(c *gin.Context) {
 	// Parse comment ID from path
 	commentID, err := strconv.ParseUint(c.Param("commentID"), 10, 32)
@@ -69,21 +59,7 @@ func GetCommentVotes(c *gin.Context) {
 	c.JSON(http.StatusOK, models.NewSuccessResponse(response, "Vote counts retrieved successfully"))
 }
 
-// VoteOnComment godoc
-// @Summary Vote on a comment
-// @Description Upvote, downvote, or remove a vote from a comment
-// @Tags Comments
-// @Accept json
-// @Produce json
-// @Param commentID path int true "Comment ID"
-// @Param vote body models.CommentVoteRequest true "Vote type"
-// @Success 200 {object} models.CommentVoteResponse "Updated vote counts"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 404 {object} models.StandardResponse "Comment not found"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /comments/{commentID}/vote [post]
+// VoteOnComment handles upvoting, downvoting, or removing a vote from a comment
 func VoteOnComment(c *gin.Context) {
 	// Get authenticated user ID
 	userID, _ := c.Get("userID")

@@ -7,7 +7,7 @@ import (
 )
 
 // User represents a blog user
-// @Description A user account with profile information and relationships
+
 type User struct {
 	ID           uint           `json:"id" gorm:"primaryKey" example:"1" description:"Unique identifier"`
 	Username     string         `json:"username" gorm:"size:50;not null;unique" example:"johndoe" description:"Unique username"`

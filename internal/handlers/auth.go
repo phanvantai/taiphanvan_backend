@@ -17,17 +17,7 @@ import (
 )
 
 // Register godoc
-// @Summary Register a new user
-// @Description Create a new user account
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param user body models.RegisterRequest true "User Registration Data"
-// @Success 201 {object} models.StandardResponseUser "User registered successfully"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 409 {object} models.StandardResponse "Email or username already exists"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Router /auth/register [post]
+// Register handles the request
 func Register(c *gin.Context) {
 	var request models.RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -79,17 +69,7 @@ func Register(c *gin.Context) {
 }
 
 // Login godoc
-// @Summary Login to the application
-// @Description Authenticate a user and return JWT tokens
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param credentials body models.LoginRequest true "Login Credentials"
-// @Success 200 {object} models.TokenResponse "Login successful"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Authentication failed"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Router /auth/login [post]
+// Login handles the request
 func Login(c *gin.Context) {
 	var request models.LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -144,16 +124,7 @@ func Login(c *gin.Context) {
 }
 
 // RefreshToken godoc
-// @Summary Refresh an access token
-// @Description Get a new access token using a refresh token
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param refresh_token body models.RefreshTokenRequest true "Refresh Token"
-// @Success 200 {object} models.TokenResponse "Token refreshed successfully"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 401 {object} models.StandardResponse "Invalid refresh token"
-// @Router /auth/refresh [post]
+// RefreshToken handles the request
 func RefreshToken(c *gin.Context) {
 	var request models.RefreshTokenRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -184,16 +155,7 @@ func RefreshToken(c *gin.Context) {
 }
 
 // RevokeToken godoc
-// @Summary Revoke a refresh token
-// @Description Invalidate a refresh token
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param refresh_token body models.TokenRevokeRequest true "Refresh Token"
-// @Success 200 {object} models.StandardResponse "Token revoked successfully"
-// @Failure 400 {object} models.StandardResponse "Invalid input or token revocation failed"
-// @Security BearerAuth
-// @Router /auth/revoke [post]
+// RevokeToken handles the request
 func RevokeToken(c *gin.Context) {
 	var request models.TokenRevokeRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -214,14 +176,7 @@ func RevokeToken(c *gin.Context) {
 }
 
 // GetProfile godoc
-// @Summary Get user profile
-// @Description Retrieve the current user's profile information
-// @Tags Users
-// @Produce json
-// @Success 200 {object} models.SwaggerProfile "User profile"
-// @Failure 404 {object} models.StandardResponse "User not found"
-// @Security BearerAuth
-// @Router /profile [get]
+// GetProfile handles the request
 func GetProfile(c *gin.Context) {
 	userID, _ := c.Get("userID")
 
@@ -237,17 +192,7 @@ func GetProfile(c *gin.Context) {
 }
 
 // UpdateProfile godoc
-// @Summary Update user profile
-// @Description Update the current user's profile information
-// @Tags Users
-// @Accept json
-// @Produce json
-// @Param profile body models.UpdateProfileRequest true "Profile Data"
-// @Success 200 {object} models.SwaggerProfile "Profile updated successfully"
-// @Failure 400 {object} models.StandardResponse "Invalid input"
-// @Failure 404 {object} models.StandardResponse "User not found"
-// @Security BearerAuth
-// @Router /profile [put]
+// UpdateProfile handles the request
 func UpdateProfile(c *gin.Context) {
 	userID, _ := c.Get("userID")
 
@@ -296,17 +241,7 @@ func UpdateProfile(c *gin.Context) {
 }
 
 // Logout godoc
-// @Summary Logout from the application
-// @Description Invalidate the current user's tokens
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param body body object false "Logout options"
-// @Success 200 {object} models.StandardResponse "Successfully logged out"
-// @Failure 401 {object} models.StandardResponse "Unauthorized"
-// @Failure 500 {object} models.StandardResponse "Server error"
-// @Security BearerAuth
-// @Router /auth/logout [post]
+// Logout handles the request
 func Logout(c *gin.Context) {
 	// Get user ID from context (set by AuthMiddleware)
 	userID, exists := c.Get("userID")
