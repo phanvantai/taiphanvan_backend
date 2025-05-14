@@ -10,13 +10,31 @@ type SwaggerDeletedAt struct {
 	Valid bool      `json:"valid,omitempty"`
 }
 
-// SwaggerStandardResponse represents a standard API response
-// @Description A standard API response format
-type SwaggerStandardResponse struct {
-	Status  string      `json:"status" example:"success" description:"Response status (success or error)"`
-	Message string      `json:"message,omitempty" example:"Operation completed successfully" description:"Response message"`
-	Data    interface{} `json:"data,omitempty" description:"Response data payload"`
-	Error   string      `json:"error,omitempty" example:"Invalid input" description:"Error message (only present when status is error)"`
+// SwaggerStandardResponse represents a standard API response with generic data type
+// @Description A standard API response format with type-safe data payload
+type SwaggerStandardResponse[T any] struct {
+	Status  string `json:"status" example:"success" description:"Response status (success or error)"`
+	Message string `json:"message,omitempty" example:"Operation completed successfully" description:"Response message"`
+	Data    T      `json:"data,omitempty" description:"Response data payload"`
+	Error   string `json:"error,omitempty" example:"Invalid input" description:"Error message (only present when status is error)"`
+}
+
+// NewSuccessResponse creates a new success response with the given data and message
+func NewSuccessResponse[T any](data T, message string) SwaggerStandardResponse[T] {
+	return SwaggerStandardResponse[T]{
+		Status:  "success",
+		Message: message,
+		Data:    data,
+	}
+}
+
+// NewErrorResponse creates a new error response with the given error message and error type
+func NewErrorResponse(errorType, message string) SwaggerStandardResponse[any] {
+	return SwaggerStandardResponse[any]{
+		Status:  "error",
+		Error:   errorType,
+		Message: message,
+	}
 }
 
 // SwaggerPaginatedResponse represents a paginated API response

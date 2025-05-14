@@ -38,14 +38,14 @@ func GetCommentVotes(c *gin.Context) {
 	// Parse comment ID from path
 	commentID, err := strconv.ParseUint(c.Param("commentID"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment ID"})
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse("Invalid input", "Invalid comment ID"))
 		return
 	}
 
 	// Check if comment exists
 	var comment models.Comment
 	if err := database.DB.First(&comment, commentID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
+		c.JSON(http.StatusNotFound, models.NewErrorResponse("Not found", "Comment not found"))
 		return
 	}
 
@@ -60,11 +60,13 @@ func GetCommentVotes(c *gin.Context) {
 	}
 
 	// Return vote counts
-	c.JSON(http.StatusOK, models.CommentVoteResponse{
+	response := models.CommentVoteResponse{
 		CommentID:   comment.ID,
 		UpvoteCount: comment.UpvoteCount,
 		UserVote:    userVote,
-	})
+	}
+
+	c.JSON(http.StatusOK, models.NewSuccessResponse(response, "Vote counts retrieved successfully"))
 }
 
 // VoteOnComment godoc
@@ -89,27 +91,27 @@ func VoteOnComment(c *gin.Context) {
 	// Parse comment ID from path
 	commentID, err := strconv.ParseUint(c.Param("commentID"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment ID"})
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse("Invalid input", "Invalid comment ID"))
 		return
 	}
 
 	// Check if comment exists
 	var comment models.Comment
 	if err := database.DB.First(&comment, commentID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
+		c.JSON(http.StatusNotFound, models.NewErrorResponse("Not found", "Comment not found"))
 		return
 	}
 
 	// Parse request body
 	var requestBody models.CommentVoteRequest
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse("Invalid input", err.Error()))
 		return
 	}
 
 	// Validate vote type
 	if requestBody.VoteType < -1 || requestBody.VoteType > 1 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid vote type, must be -1, 0, or 1"})
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse("Invalid input", "Invalid vote type, must be -1, 0, or 1"))
 		return
 	}
 
@@ -178,14 +180,16 @@ func VoteOnComment(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process vote: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, models.NewErrorResponse("Server error", "Failed to process vote: "+err.Error()))
 		return
 	}
 
 	// Return updated vote counts
-	c.JSON(http.StatusOK, models.CommentVoteResponse{
+	response := models.CommentVoteResponse{
 		CommentID:   comment.ID,
 		UpvoteCount: comment.UpvoteCount,
 		UserVote:    int8(requestBody.VoteType),
-	})
+	}
+
+	c.JSON(http.StatusOK, models.NewSuccessResponse(response, "Vote processed successfully"))
 }

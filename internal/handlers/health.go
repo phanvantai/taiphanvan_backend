@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/phanvantai/taiphanvan_backend/internal/database"
+	"github.com/phanvantai/taiphanvan_backend/internal/models"
 )
 
 // HealthCheck godoc
@@ -20,27 +21,19 @@ func HealthCheck(c *gin.Context) {
 	// Check database connectivity
 	sqlDB, err := database.DB.DB()
 	if err != nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"status":  "error",
-			"message": "Database connection not available",
-			"time":    time.Now().Format(time.RFC3339),
-		})
+		c.JSON(http.StatusServiceUnavailable, models.NewErrorResponse("Service Unavailable", "Database connection not available"))
 		return
 	}
 
 	// Ping the database
 	if err := sqlDB.Ping(); err != nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"status":  "error",
-			"message": "Database ping failed",
-			"time":    time.Now().Format(time.RFC3339),
-		})
+		c.JSON(http.StatusServiceUnavailable, models.NewErrorResponse("Service Unavailable", "Database ping failed"))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"message": "API is healthy",
-		"time":    time.Now().Format(time.RFC3339),
-	})
+	healthData := map[string]interface{}{
+		"time": time.Now().Format(time.RFC3339),
+	}
+
+	c.JSON(http.StatusOK, models.NewSuccessResponse(healthData, "API is healthy"))
 }

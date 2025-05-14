@@ -33,7 +33,7 @@ var allowedUploadFileTypes = map[string]bool{
 // @Accept multipart/form-data
 // @Produce json
 // @Param file formData file true "File to upload (JPG, JPEG, PNG, WEBP, GIF, SVG, PDF, max 5MB)"
-// @Success 200 {object} models.SwaggerFileUploadResponse "File uploaded successfully"
+// @Success 200 {object} models.SwaggerStandardResponse "File uploaded successfully"
 // @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
 // @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
 // @Failure 500 {object} models.SwaggerStandardResponse "Server error"
@@ -43,43 +43,27 @@ func UploadFile(c *gin.Context) {
 	// Get user ID from context (set by AuthMiddleware)
 	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":  "error",
-			"error":   "Unauthorized",
-			"message": "Authentication required",
-		})
+		c.JSON(http.StatusUnauthorized, models.NewErrorResponse("Unauthorized", "Authentication required"))
 		return
 	}
 
 	// Get the file from the request
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"error":   "Invalid input",
-			"message": "No file uploaded or invalid file",
-		})
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse("Invalid input", "No file uploaded or invalid file"))
 		return
 	}
 
 	// Check file size
 	if file.Size > maxFileSize {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"error":   "File too large",
-			"message": "File must be less than 5MB",
-		})
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse("File too large", "File must be less than 5MB"))
 		return
 	}
 
 	// Check file type
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	if !allowedUploadFileTypes[ext] {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"error":   "Invalid file type",
-			"message": "Only JPG, JPEG, PNG, WEBP, GIF, SVG, and PDF files are allowed",
-		})
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse("Invalid file type", "Only JPG, JPEG, PNG, WEBP, GIF, SVG, and PDF files are allowed"))
 		return
 	}
 
@@ -87,11 +71,7 @@ func UploadFile(c *gin.Context) {
 	cloudinaryService, err := services.NewCloudinaryService(middleware.AppConfig.Cloudinary)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to initialize Cloudinary service")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"error":   "Server error",
-			"message": "Failed to initialize upload service",
-		})
+		c.JSON(http.StatusInternalServerError, models.NewErrorResponse("Server error", "Failed to initialize upload service"))
 		return
 	}
 
@@ -99,22 +79,14 @@ func UploadFile(c *gin.Context) {
 	fileURL, err := cloudinaryService.UploadEditorFile(c.Request.Context(), file, userID.(uint))
 	if err != nil {
 		log.Error().Err(err).Interface("user_id", userID).Msg("Failed to upload file")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"error":   "Upload failed",
-			"message": "Failed to upload file",
-		})
+		c.JSON(http.StatusInternalServerError, models.NewErrorResponse("Upload failed", "Failed to upload file"))
 		return
 	}
 
 	log.Info().Interface("user_id", userID).Str("file_url", fileURL).Msg("File uploaded successfully")
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"message": "File uploaded successfully",
-		"data": gin.H{
-			"file_url": fileURL,
-		},
-	})
+	c.JSON(http.StatusOK, models.NewSuccessResponse(map[string]string{
+		"file_url": fileURL,
+	}, "File uploaded successfully"))
 }
 
 // DeleteFile godoc
@@ -134,32 +106,20 @@ func DeleteFile(c *gin.Context) {
 	// Get user ID from context (set by AuthMiddleware)
 	_, exists := c.Get("userID")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":  "error",
-			"error":   "Unauthorized",
-			"message": "Authentication required",
-		})
+		c.JSON(http.StatusUnauthorized, models.NewErrorResponse("Unauthorized", "Authentication required"))
 		return
 	}
 
 	// Parse request body
 	var request models.DeleteFileRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"error":   "Invalid input",
-			"message": "Invalid request format",
-		})
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse("Invalid input", "Invalid request format"))
 		return
 	}
 
 	// Validate file URL
 	if request.FileURL == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"error":   "Invalid input",
-			"message": "File URL is required",
-		})
+		c.JSON(http.StatusBadRequest, models.NewErrorResponse("Invalid input", "File URL is required"))
 		return
 	}
 
@@ -167,28 +127,17 @@ func DeleteFile(c *gin.Context) {
 	cloudinaryService, err := services.NewCloudinaryService(middleware.AppConfig.Cloudinary)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to initialize Cloudinary service")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"error":   "Server error",
-			"message": "Failed to initialize service",
-		})
+		c.JSON(http.StatusInternalServerError, models.NewErrorResponse("Server error", "Failed to initialize service"))
 		return
 	}
 
 	// Delete the file from Cloudinary
 	if err := cloudinaryService.DeleteImage(c.Request.Context(), request.FileURL); err != nil {
 		log.Error().Err(err).Str("file_url", request.FileURL).Msg("Failed to delete file")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"error":   "Delete failed",
-			"message": "Failed to delete file",
-		})
+		c.JSON(http.StatusInternalServerError, models.NewErrorResponse("Delete failed", "Failed to delete file"))
 		return
 	}
 
 	log.Info().Str("file_url", request.FileURL).Msg("File deleted successfully")
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"message": "File deleted successfully",
-	})
+	c.JSON(http.StatusOK, models.NewSuccessResponse(struct{}{}, "File deleted successfully"))
 }
