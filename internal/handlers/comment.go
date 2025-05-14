@@ -16,14 +16,17 @@ import (
 // @Tags Comments
 // @Produce json
 // @Param postID path int true "Post ID"
-// @Success 200 {array} models.Comment "List of comments"
+// @Success 200 {object} models.SwaggerStandardResponse "List of comments"
 // @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
 // @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Router /posts/{postID}/comments [get]
 func GetCommentsByPostID(c *gin.Context) {
-	postID, err := strconv.ParseUint(c.Param("postID"), 10, 32)
+	postID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+		c.JSON(http.StatusBadRequest, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Invalid post ID",
+		})
 		return
 	}
 
@@ -31,7 +34,10 @@ func GetCommentsByPostID(c *gin.Context) {
 	if err := database.DB.Where("post_id = ?", postID).Preload("User", func(db *gorm.DB) *gorm.DB {
 		return db.Select("id, username, first_name, last_name, profile_image")
 	}).Order("created_at DESC").Find(&comments).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch comments"})
+		c.JSON(http.StatusInternalServerError, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Failed to fetch comments",
+		})
 		return
 	}
 
@@ -66,7 +72,11 @@ func GetCommentsByPostID(c *gin.Context) {
 		result = append(result, commentWithVote)
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, models.SwaggerStandardResponse{
+		Status:  "success",
+		Message: "Comments retrieved successfully",
+		Data:    result,
+	})
 }
 
 // CreateComment godoc
@@ -77,7 +87,7 @@ func GetCommentsByPostID(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Post ID"
 // @Param comment body models.CreateCommentRequest true "Comment content"
-// @Success 201 {object} models.Comment "Created comment"
+// @Success 201 {object} models.SwaggerStandardResponse "Created comment"
 // @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
 // @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
 // @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
@@ -86,23 +96,32 @@ func GetCommentsByPostID(c *gin.Context) {
 // @Router /posts/{id}/comments [post]
 func CreateComment(c *gin.Context) {
 	userID, _ := c.Get("userID")
-	postID, err := strconv.ParseUint(c.Param("postID"), 10, 32)
+	postID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+		c.JSON(http.StatusBadRequest, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Invalid post ID",
+		})
 		return
 	}
 
 	// Check if post exists
 	var post models.Post
 	if err := database.DB.First(&post, postID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		c.JSON(http.StatusNotFound, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Post not found",
+		})
 		return
 	}
 
 	var requestBody models.CreateCommentRequest
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  err.Error(),
+		})
 		return
 	}
 
@@ -113,7 +132,10 @@ func CreateComment(c *gin.Context) {
 	}
 
 	if err := database.DB.Create(&comment).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create comment"})
+		c.JSON(http.StatusInternalServerError, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Failed to create comment",
+		})
 		return
 	}
 
@@ -122,7 +144,11 @@ func CreateComment(c *gin.Context) {
 		return db.Select("id, username, first_name, last_name, profile_image")
 	}).First(&comment, comment.ID)
 
-	c.JSON(http.StatusCreated, comment)
+	c.JSON(http.StatusCreated, models.SwaggerStandardResponse{
+		Status:  "success",
+		Message: "Comment created successfully",
+		Data:    comment,
+	})
 }
 
 // UpdateComment godoc
@@ -133,7 +159,7 @@ func CreateComment(c *gin.Context) {
 // @Produce json
 // @Param commentID path int true "Comment ID"
 // @Param comment body models.UpdateCommentRequest true "Updated comment content"
-// @Success 200 {object} models.Comment "Updated comment"
+// @Success 200 {object} models.SwaggerStandardResponse "Updated comment"
 // @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
 // @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
 // @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
@@ -145,34 +171,49 @@ func UpdateComment(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	commentID, err := strconv.ParseUint(c.Param("commentID"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment ID"})
+		c.JSON(http.StatusBadRequest, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Invalid comment ID",
+		})
 		return
 	}
 
 	var comment models.Comment
 	if err := database.DB.First(&comment, commentID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
+		c.JSON(http.StatusNotFound, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Comment not found",
+		})
 		return
 	}
 
 	// Check if user is the author of the comment or an admin
 	role, _ := c.Get("userRole")
 	if comment.UserID != userID.(uint) && role != "admin" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to edit this comment"})
+		c.JSON(http.StatusForbidden, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "You don't have permission to edit this comment",
+		})
 		return
 	}
 
 	var requestBody models.UpdateCommentRequest
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  err.Error(),
+		})
 		return
 	}
 
 	comment.Content = requestBody.Content
 
 	if err := database.DB.Save(&comment).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update comment"})
+		c.JSON(http.StatusInternalServerError, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Failed to update comment",
+		})
 		return
 	}
 
@@ -181,7 +222,11 @@ func UpdateComment(c *gin.Context) {
 		return db.Select("id, username, first_name, last_name, profile_image")
 	}).First(&comment, comment.ID)
 
-	c.JSON(http.StatusOK, comment)
+	c.JSON(http.StatusOK, models.SwaggerStandardResponse{
+		Status:  "success",
+		Message: "Comment updated successfully",
+		Data:    comment,
+	})
 }
 
 // DeleteComment godoc
@@ -202,13 +247,19 @@ func DeleteComment(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	commentID, err := strconv.ParseUint(c.Param("commentID"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment ID"})
+		c.JSON(http.StatusBadRequest, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Invalid comment ID",
+		})
 		return
 	}
 
 	var comment models.Comment
 	if err := database.DB.First(&comment, commentID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
+		c.JSON(http.StatusNotFound, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Comment not found",
+		})
 		return
 	}
 
@@ -218,14 +269,23 @@ func DeleteComment(c *gin.Context) {
 	database.DB.First(&post, comment.PostID)
 
 	if comment.UserID != userID.(uint) && post.UserID != userID.(uint) && role != "admin" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to delete this comment"})
+		c.JSON(http.StatusForbidden, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "You don't have permission to delete this comment",
+		})
 		return
 	}
 
 	if err := database.DB.Delete(&comment).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete comment"})
+		c.JSON(http.StatusInternalServerError, models.SwaggerStandardResponse{
+			Status: "error",
+			Error:  "Failed to delete comment",
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, models.SwaggerStandardResponse{Message: "Comment deleted successfully"})
+	c.JSON(http.StatusOK, models.SwaggerStandardResponse{
+		Status:  "success",
+		Message: "Comment deleted successfully",
+	})
 }
