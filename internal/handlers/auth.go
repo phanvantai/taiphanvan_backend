@@ -162,11 +162,15 @@ func Login(c *gin.Context) {
 	expiresIn := int(middleware.AppConfig.JWT.AccessExpiry.Seconds())
 
 	log.Info().Str("email", user.Email).Uint("id", user.ID).Msg("User logged in successfully")
-	c.JSON(http.StatusOK, models.TokenResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		TokenType:    "Bearer",
-		ExpiresIn:    expiresIn,
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "User logged in successfully",
+		"data": models.TokenResponse{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			TokenType:    "Bearer",
+			ExpiresIn:    expiresIn,
+		},
 	})
 }
 
@@ -209,7 +213,8 @@ func RefreshToken(c *gin.Context) {
 
 	log.Info().Msg("Access token refreshed successfully")
 	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
+		"status":  "success",
+		"message": "Access token refreshed successfully",
 		"data": models.TokenResponse{
 			AccessToken: accessToken,
 			TokenType:   "Bearer",
@@ -284,8 +289,9 @@ func GetProfile(c *gin.Context) {
 
 	log.Info().Interface("user_id", userID).Msg("User profile retrieved")
 	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-		"data":   user,
+		"status":  "success",
+		"message": "User profile retrieved successfully",
+		"data":    user,
 	})
 }
 

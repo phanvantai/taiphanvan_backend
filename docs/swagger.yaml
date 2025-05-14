@@ -708,7 +708,7 @@ paths:
         "200":
           description: Updated comment
           schema:
-            $ref: '#/definitions/models.Comment'
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "400":
           description: Invalid input
           schema:
@@ -1081,7 +1081,7 @@ paths:
         "201":
           description: Created comment
           schema:
-            $ref: '#/definitions/models.Comment'
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "400":
           description: Invalid input
           schema:
@@ -1365,9 +1365,7 @@ paths:
         "200":
           description: List of comments
           schema:
-            items:
-              $ref: '#/definitions/models.Comment'
-            type: array
+            $ref: '#/definitions/models.SwaggerStandardResponse'
         "400":
           description: Invalid input
           schema:

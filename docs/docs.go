@@ -316,7 +316,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated comment",
                         "schema": {
-                            "$ref": "#/definitions/models.Comment"
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "400": {
@@ -1040,7 +1040,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created comment",
                         "schema": {
-                            "$ref": "#/definitions/models.Comment"
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "400": {
@@ -1474,10 +1474,7 @@ const docTemplate = `{
                     "200": {
                         "description": "List of comments",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Comment"
-                            }
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
                     },
                     "400": {
