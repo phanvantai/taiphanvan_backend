@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/phanvantai/taiphanvan_backend/internal/database"
 	"github.com/phanvantai/taiphanvan_backend/internal/middleware"
 	"github.com/phanvantai/taiphanvan_backend/internal/models"
@@ -304,10 +304,13 @@ func Logout(c *gin.Context) {
 	}
 
 	var expiresAt time.Time
-	if exp, ok := claims["exp"].(float64); ok {
-		expiresAt = time.Unix(int64(exp), 0)
-	} else {
+	// Extract expiration time using v5 methods
+	expClaim, err := claims.GetExpirationTime()
+	if err != nil || expClaim == nil {
+		log.Warn().Err(err).Msg("Could not extract expiration time from token")
 		expiresAt = time.Now().Add(time.Hour * 24) // Default to 24 hours if unable to extract
+	} else {
+		expiresAt = expClaim.Time
 	}
 
 	// Use a transaction for checking and creating the blacklisted token
