@@ -3,33 +3,18 @@ package models
 
 import "time"
 
-// SwaggerDeletedAt is a custom type for Swagger documentation
-// @Description A timestamp for soft-deleted records (null if not deleted)
-type SwaggerDeletedAt struct {
+type DeletedAt struct {
 	Time  time.Time `json:"time,omitempty"`
 	Valid bool      `json:"valid,omitempty"`
 }
 
-// SwaggerStandardResponse represents a standard API response with generic data type
-// This type is used in actual code but not directly in Swagger annotations
-type SwaggerStandardResponse[T any] struct {
-	Status  string `json:"status" example:"success"`
-	Message string `json:"message,omitempty" example:"Operation completed successfully"`
-	Data    T      `json:"data,omitempty"`
-	Error   string `json:"error,omitempty" example:"Invalid input"`
+type StandardResponse[T any] struct {
+	Status  string `json:"status" example:"success" description:"Response status (success or error)"`
+	Message string `json:"message,omitempty" example:"Operation completed successfully" description:"Response message"`
+	Data    T      `json:"data,omitempty" description:"Response data payload"`
+	Error   string `json:"error,omitempty" example:"Invalid input" description:"Error message (only present when status is error)"`
 }
 
-// StandardResponse represents a standard API response for Swagger documentation
-// @Description A standard API response format with data payload
-type StandardResponse struct {
-	Status  string      `json:"status" example:"success" description:"Response status (success or error)"`
-	Message string      `json:"message,omitempty" example:"Operation completed successfully" description:"Response message"`
-	Data    interface{} `json:"data,omitempty" description:"Response data payload"`
-	Error   string      `json:"error,omitempty" example:"Invalid input" description:"Error message (only present when status is error)"`
-}
-
-// StandardResponseString represents a standard API response with string data for Swagger
-// @Description A standard API response with string data
 type StandardResponseString struct {
 	Status  string `json:"status" example:"success" description:"Response status (success or error)"`
 	Message string `json:"message,omitempty" example:"Operation completed successfully" description:"Response message"`
@@ -37,8 +22,6 @@ type StandardResponseString struct {
 	Error   string `json:"error,omitempty" example:"Invalid input" description:"Error message (only present when status is error)"`
 }
 
-// StandardResponseUser represents a standard API response with User data for Swagger
-// @Description A standard API response with user data
 type StandardResponseUser struct {
 	Status  string         `json:"status" example:"success" description:"Response status (success or error)"`
 	Message string         `json:"message,omitempty" example:"Operation completed successfully" description:"Response message"`
@@ -46,8 +29,6 @@ type StandardResponseUser struct {
 	Error   string         `json:"error,omitempty" example:"Invalid input" description:"Error message (only present when status is error)"`
 }
 
-// SwaggerProfile represents a simplified user profile for Swagger documentation
-// @Description User profile information
 type SwaggerProfile struct {
 	ID           uint      `json:"id" example:"1" description:"User ID"`
 	Username     string    `json:"username" example:"johndoe" description:"Username"`
@@ -61,8 +42,8 @@ type SwaggerProfile struct {
 }
 
 // NewSuccessResponse creates a new success response with the given data and message
-func NewSuccessResponse[T any](data T, message string) SwaggerStandardResponse[T] {
-	return SwaggerStandardResponse[T]{
+func NewSuccessResponse[T any](data T, message string) StandardResponse[T] {
+	return StandardResponse[T]{
 		Status:  "success",
 		Message: message,
 		Data:    data,
@@ -70,8 +51,8 @@ func NewSuccessResponse[T any](data T, message string) SwaggerStandardResponse[T
 }
 
 // NewErrorResponse creates a new error response with the given error message and error type
-func NewErrorResponse(errorType, message string) SwaggerStandardResponse[any] {
-	return SwaggerStandardResponse[any]{
+func NewErrorResponse(errorType, message string) StandardResponse[any] {
+	return StandardResponse[any]{
 		Status:  "error",
 		Error:   errorType,
 		Message: message,
