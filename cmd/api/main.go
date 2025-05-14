@@ -316,7 +316,13 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 			protected.POST("/posts/:id/comments", handlers.CreateComment)
 			protected.PUT("/comments/:commentID", handlers.UpdateComment)
 			protected.DELETE("/comments/:commentID", handlers.DeleteComment)
+
+			// Comment vote routes
+			protected.POST("/comments/:commentID/vote", handlers.VoteOnComment)
 		}
+
+		// Get comment votes (public endpoint)
+		api.GET("/comments/:commentID/votes", handlers.GetCommentVotes)
 
 		// Admin routes
 		admin := protected.Group("/admin")

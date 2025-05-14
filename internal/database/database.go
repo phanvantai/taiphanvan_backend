@@ -97,6 +97,7 @@ func autoMigrate() error {
 		&models.Post{},
 		&models.Tag{},
 		&models.Comment{},
+		&models.CommentVote{},
 		&models.BlacklistedToken{},
 		&models.RefreshToken{}, // Add RefreshToken model
 	)

@@ -35,7 +35,38 @@ func GetCommentsByPostID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, comments)
+	// Check if user is authenticated to include vote status
+	var userID uint
+	var isAuthenticated bool
+	if id, exists := c.Get("userID"); exists {
+		userID = id.(uint)
+		isAuthenticated = true
+	}
+
+	// If the user is authenticated, include their vote status for each comment
+	type CommentWithVote struct {
+		*models.Comment
+		UserVote int8 `json:"user_vote"`
+	}
+
+	var result []CommentWithVote
+	for _, comment := range comments {
+		commentWithVote := CommentWithVote{
+			Comment:  &comment,
+			UserVote: 0,
+		}
+
+		if isAuthenticated {
+			voteType, err := GetUserVote(comment.ID, userID)
+			if err == nil {
+				commentWithVote.UserVote = int8(voteType)
+			}
+		}
+
+		result = append(result, commentWithVote)
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 // CreateComment godoc

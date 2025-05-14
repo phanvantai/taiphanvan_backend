@@ -20,9 +20,35 @@ definitions:
       updated_at:
         example: "2023-01-02T12:00:00Z"
         type: string
+      upvote_count:
+        example: 5
+        type: integer
       user:
         $ref: '#/definitions/models.User'
       user_id:
+        example: 1
+        type: integer
+    type: object
+  models.CommentVoteRequest:
+    description: Request model for voting on a comment
+    properties:
+      vote_type:
+        allOf:
+        - $ref: '#/definitions/models.VoteType'
+        example: 1
+    required:
+    - vote_type
+    type: object
+  models.CommentVoteResponse:
+    description: Response model for a comment vote operation
+    properties:
+      comment_id:
+        example: 1
+        type: integer
+      upvote_count:
+        example: 5
+        type: integer
+      user_vote:
         example: 1
         type: integer
     type: object
@@ -431,6 +457,16 @@ definitions:
         example: johndoe
         type: string
     type: object
+  models.VoteType:
+    enum:
+    - -1
+    - 0
+    - 1
+    type: integer
+    x-enum-varnames:
+    - VoteTypeDownvote
+    - VoteTypeNone
+    - VoteTypeUpvote
 host: localhost:9876
 info:
   contact:
@@ -696,6 +732,82 @@ paths:
       security:
       - BearerAuth: []
       summary: Update a comment
+      tags:
+      - Comments
+  /comments/{commentID}/vote:
+    post:
+      consumes:
+      - application/json
+      description: Upvote, downvote, or remove a vote from a comment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: integer
+      - description: Vote type
+        in: body
+        name: vote
+        required: true
+        schema:
+          $ref: '#/definitions/models.CommentVoteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated vote counts
+          schema:
+            $ref: '#/definitions/models.CommentVoteResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "404":
+          description: Comment not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Vote on a comment
+      tags:
+      - Comments
+  /comments/{commentID}/votes:
+    get:
+      description: Returns the upvote/downvote counts for a specific comment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Vote counts
+          schema:
+            $ref: '#/definitions/models.CommentVoteResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "404":
+          description: Comment not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      summary: Get vote counts for a comment
       tags:
       - Comments
   /files/delete:

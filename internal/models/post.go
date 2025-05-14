@@ -47,18 +47,43 @@ type Tag struct {
 	Posts []Post `json:"posts" gorm:"many2many:post_tags;" description:"Posts associated with this tag"`
 }
 
+// VoteType represents the type of vote (upvote or downvote)
+type VoteType int8
+
+const (
+	// VoteTypeDownvote represents a downvote
+	VoteTypeDownvote VoteType = -1
+	// VoteTypeNone represents no vote
+	VoteTypeNone VoteType = 0
+	// VoteTypeUpvote represents an upvote
+	VoteTypeUpvote VoteType = 1
+)
+
+// CommentVote represents a user's vote on a comment
+// @Description A vote (upvote or downvote) by a user on a comment
+type CommentVote struct {
+	ID        uint      `json:"id" gorm:"primaryKey" example:"1" description:"Unique identifier"`
+	UserID    uint      `json:"user_id" example:"1" description:"ID of the user who voted"`
+	CommentID uint      `json:"comment_id" example:"1" description:"ID of the comment that was voted on"`
+	VoteType  VoteType  `json:"vote_type" gorm:"type:smallint;not null" example:"1" description:"Type of vote: 1 (upvote), -1 (downvote), 0 (none)"`
+	CreatedAt time.Time `json:"created_at" example:"2023-01-01T12:00:00Z" description:"When the vote was created"`
+	UpdatedAt time.Time `json:"updated_at" example:"2023-01-02T12:00:00Z" description:"When the vote was last updated"`
+}
+
 // Comment represents a user comment on a post
 // @Description A comment made by a user on a specific post
 type Comment struct {
-	ID        uint           `json:"id" gorm:"primaryKey" example:"1" description:"Unique identifier"`
-	Content   string         `json:"content" gorm:"type:text;not null" example:"Great post!" description:"Comment content"`
-	UserID    uint           `json:"user_id" example:"1" description:"ID of the comment author"`
-	User      User           `json:"user" gorm:"foreignKey:UserID" description:"Author of the comment"`
-	PostID    uint           `json:"post_id" example:"1" description:"ID of the post being commented on"`
-	Post      Post           `json:"post" gorm:"foreignKey:PostID" description:"Post being commented on"`
-	CreatedAt time.Time      `json:"created_at" example:"2023-01-01T12:00:00Z" description:"When the comment was created"`
-	UpdatedAt time.Time      `json:"updated_at" example:"2023-01-02T12:00:00Z" description:"When the comment was last updated"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"` // Hide from Swagger
+	ID          uint           `json:"id" gorm:"primaryKey" example:"1" description:"Unique identifier"`
+	Content     string         `json:"content" gorm:"type:text;not null" example:"Great post!" description:"Comment content"`
+	UserID      uint           `json:"user_id" example:"1" description:"ID of the comment author"`
+	User        User           `json:"user" gorm:"foreignKey:UserID" description:"Author of the comment"`
+	PostID      uint           `json:"post_id" example:"1" description:"ID of the post being commented on"`
+	Post        Post           `json:"post" gorm:"foreignKey:PostID" description:"Post being commented on"`
+	UpvoteCount int            `json:"upvote_count" gorm:"default:0" example:"5" description:"Number of upvotes on the comment"`
+	Votes       []CommentVote  `json:"-" gorm:"foreignKey:CommentID;constraint:OnDelete:CASCADE;" description:"Users who voted on this comment"`
+	CreatedAt   time.Time      `json:"created_at" example:"2023-01-01T12:00:00Z" description:"When the comment was created"`
+	UpdatedAt   time.Time      `json:"updated_at" example:"2023-01-02T12:00:00Z" description:"When the comment was last updated"`
+	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"` // Hide from Swagger
 }
 
 // CreatePostRequest represents the request body for creating a new post
@@ -95,6 +120,27 @@ type CreateCommentRequest struct {
 // @Description Request model for updating an existing comment
 type UpdateCommentRequest struct {
 	Content string `json:"content" binding:"required" example:"This is my updated comment" description:"Updated comment content"`
+}
+
+// CommentVoteRequest represents the request body for voting on a comment
+// @Description Request model for voting on a comment
+type CommentVoteRequest struct {
+	VoteType VoteType `json:"vote_type" binding:"required" example:"1" description:"Type of vote: 1 (upvote), -1 (downvote), 0 (none)"`
+}
+
+// CommentVoteResponse represents the response body for a comment vote operation
+// @Description Response model for a comment vote operation
+type CommentVoteResponse struct {
+	CommentID   uint `json:"comment_id" example:"1" description:"ID of the comment that was voted on"`
+	UpvoteCount int  `json:"upvote_count" example:"5" description:"Updated upvote count for the comment"`
+	UserVote    int8 `json:"user_vote" example:"1" description:"The user's current vote: 1 (upvote), -1 (downvote), 0 (none)"`
+}
+
+// CommentWithUserVote represents a comment with the current user's vote
+// @Description A comment with additional information about the current user's vote
+type CommentWithUserVote struct {
+	Comment  Comment `json:"comment" description:"The comment data"`
+	UserVote int8    `json:"user_vote" example:"1" description:"The user's current vote: 1 (upvote), -1 (downvote), 0 (none)"`
 }
 
 // TagWithCount represents a tag with its post count

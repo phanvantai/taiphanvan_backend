@@ -408,6 +408,123 @@
                 }
             }
         },
+        "/comments/{commentID}/vote": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upvote, downvote, or remove a vote from a comment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Vote on a comment",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Vote type",
+                        "name": "vote",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CommentVoteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated vote counts",
+                        "schema": {
+                            "$ref": "#/definitions/models.CommentVoteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Comment not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/comments/{commentID}/votes": {
+            "get": {
+                "description": "Returns the upvote/downvote counts for a specific comment",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Get vote counts for a comment",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Vote counts",
+                        "schema": {
+                            "$ref": "#/definitions/models.CommentVoteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Comment not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/files/delete": {
             "post": {
                 "security": [
@@ -1594,10 +1711,49 @@
                     "type": "string",
                     "example": "2023-01-02T12:00:00Z"
                 },
+                "upvote_count": {
+                    "type": "integer",
+                    "example": 5
+                },
                 "user": {
                     "$ref": "#/definitions/models.User"
                 },
                 "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "models.CommentVoteRequest": {
+            "description": "Request model for voting on a comment",
+            "type": "object",
+            "required": [
+                "vote_type"
+            ],
+            "properties": {
+                "vote_type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.VoteType"
+                        }
+                    ],
+                    "example": 1
+                }
+            }
+        },
+        "models.CommentVoteResponse": {
+            "description": "Response model for a comment vote operation",
+            "type": "object",
+            "properties": {
+                "comment_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "upvote_count": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "user_vote": {
                     "type": "integer",
                     "example": 1
                 }
@@ -2179,6 +2335,19 @@
                     "example": "johndoe"
                 }
             }
+        },
+        "models.VoteType": {
+            "type": "integer",
+            "enum": [
+                -1,
+                0,
+                1
+            ],
+            "x-enum-varnames": [
+                "VoteTypeDownvote",
+                "VoteTypeNone",
+                "VoteTypeUpvote"
+            ]
         }
     },
     "securityDefinitions": {
