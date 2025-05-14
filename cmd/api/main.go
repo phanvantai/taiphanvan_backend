@@ -269,6 +269,7 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 		// Public routes
 		api.GET("/posts", handlers.GetPosts)
 		api.GET("/posts/slug/:slug", handlers.GetPostBySlug)
+		api.POST("/posts/:id/view", handlers.IncrementPostViewCount)
 		api.GET("/posts/:id/comments", handlers.GetCommentsByPostID)
 		api.GET("/tags", handlers.GetAllTags)
 		api.GET("/tags/popular", handlers.GetPopularTags)

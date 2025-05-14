@@ -712,7 +712,7 @@ const docTemplate = `{
         },
         "/posts/slug/{slug}": {
             "get": {
-                "description": "Returns a single blog post by its slug",
+                "description": "Returns a single blog post by its slug and automatically increments its view count",
                 "produces": [
                     "application/json"
                 ],
@@ -1287,6 +1287,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/posts/{id}/view": {
+            "post": {
+                "description": "Increments the view count for a specific post",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Increment post view count",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "View count incremented successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerViewCountResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/posts/{postID}/comments": {
             "get": {
                 "description": "Returns all comments for a specific post",
@@ -1695,6 +1742,10 @@ const docTemplate = `{
                 "user_id": {
                     "type": "integer",
                     "example": 1
+                },
+                "view_count": {
+                    "type": "integer",
+                    "example": 42
                 }
             }
         },
@@ -1922,6 +1973,33 @@ const docTemplate = `{
                 "last_name": {
                     "type": "string",
                     "example": "Doe"
+                }
+            }
+        },
+        "models.SwaggerViewCountResponse": {
+            "description": "Response model for incrementing a post's view count",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "post_id": {
+                            "type": "integer",
+                            "example": 123
+                        },
+                        "view_count": {
+                            "type": "integer",
+                            "example": 42
+                        }
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "View count incremented successfully"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },

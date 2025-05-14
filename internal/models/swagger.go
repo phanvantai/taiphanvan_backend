@@ -88,3 +88,14 @@ type SwaggerFileUploadResponse struct {
 type SwaggerDeleteFileRequest struct {
 	FileURL string `json:"file_url" example:"https://example.com/file.jpg" description:"URL of the file to delete"`
 }
+
+// SwaggerViewCountResponse represents the response for the view count increment endpoint
+// @Description Response model for incrementing a post's view count
+type SwaggerViewCountResponse struct {
+	Status  string `json:"status" example:"success" description:"Response status (success or error)"`
+	Message string `json:"message" example:"View count incremented successfully" description:"Response message"`
+	Data    struct {
+		PostID    uint `json:"post_id" example:"123" description:"ID of the post"`
+		ViewCount uint `json:"view_count" example:"42" description:"New view count after incrementing"`
+	} `json:"data" description:"Response data payload"`
+}

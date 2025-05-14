@@ -119,6 +119,9 @@ definitions:
       user_id:
         example: 1
         type: integer
+      view_count:
+        example: 42
+        type: integer
     type: object
   models.PostStatus:
     enum:
@@ -279,6 +282,25 @@ definitions:
         type: string
       last_name:
         example: Doe
+        type: string
+    type: object
+  models.SwaggerViewCountResponse:
+    description: Response model for incrementing a post's view count
+    properties:
+      data:
+        properties:
+          post_id:
+            example: 123
+            type: integer
+          view_count:
+            example: 42
+            type: integer
+        type: object
+      message:
+        example: View count incremented successfully
+        type: string
+      status:
+        example: success
         type: string
     type: object
   models.Tag:
@@ -1185,6 +1207,37 @@ paths:
       summary: Unpublish a blog post
       tags:
       - Posts
+  /posts/{id}/view:
+    post:
+      description: Increments the view count for a specific post
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: View count incremented successfully
+          schema:
+            $ref: '#/definitions/models.SwaggerViewCountResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "404":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      summary: Increment post view count
+      tags:
+      - Posts
   /posts/{postID}/comments:
     get:
       description: Returns all comments for a specific post
@@ -1249,7 +1302,8 @@ paths:
       - Posts
   /posts/slug/{slug}:
     get:
-      description: Returns a single blog post by its slug
+      description: Returns a single blog post by its slug and automatically increments
+        its view count
       parameters:
       - description: Post slug
         in: path

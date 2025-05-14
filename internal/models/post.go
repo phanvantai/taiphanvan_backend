@@ -30,6 +30,7 @@ type Post struct {
 	Excerpt   string         `json:"excerpt" gorm:"type:text" example:"A short summary of the post" description:"Short summary or preview of the post"`
 	Cover     string         `json:"cover" gorm:"size:500" example:"https://res.cloudinary.com/demo/image/upload/v1234567890/folder/post_1_1620000000.jpg" description:"URL to the post's cover image"`
 	Status    PostStatus     `json:"status" gorm:"type:varchar(20);not null;default:'draft'" example:"published" description:"Publication status of the post"`
+	ViewCount uint           `json:"view_count" gorm:"default:0" example:"42" description:"Number of times the post has been viewed"`
 	UserID    uint           `json:"user_id" example:"1" description:"ID of the post author"`
 	User      User           `json:"user" gorm:"foreignKey:UserID" description:"Author of the post"`
 	Tags      []Tag          `json:"tags" gorm:"many2many:post_tags;" description:"Tags associated with the post"`

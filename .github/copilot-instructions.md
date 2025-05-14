@@ -6,8 +6,10 @@ This is the backend API service for a personal blog built with Go. When generati
 1. **Incremental Development**:
    - Work in small, manageable steps
    - Implement one feature or fix at a time
-   - Always ask for user guidance before proceeding to next steps
-   - Validate each step works before moving to the next one
+   - Change only one file per step
+   - Always ask for user feedback after each file change
+   - Validate each file change works before moving to the next file
+   - Never proceed to the next file without explicit user approval
 
 ## Project Guidelines
 1. Follow idiomatic Go practices and conventions
@@ -70,8 +72,9 @@ This is the backend API service for a personal blog built with Go. When generati
 ## Implementation Workflow
 1. Start by understanding requirements clearly
 2. Break down tasks into small, manageable subtasks
-3. Implement one subtask at a time
-4. Test each implementation step
+3. Implement changes to one file at a time
+4. Test each file change individually
 5. Document your changes
-6. Request user feedback before proceeding to the next step
+6. Request user feedback after each file change before proceeding to the next file
 7. Adjust approach based on feedback
+8. Only proceed to the next file after receiving explicit approval

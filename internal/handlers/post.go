@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/phanvantai/taiphanvan_backend/internal/database"
 	"github.com/phanvantai/taiphanvan_backend/internal/models"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -73,7 +74,7 @@ func GetPosts(c *gin.Context) {
 
 // GetPostBySlug godoc
 // @Summary Get a blog post by slug
-// @Description Returns a single blog post by its slug
+// @Description Returns a single blog post by its slug and automatically increments its view count
 // @Tags Posts
 // @Produce json
 // @Param slug path string true "Post slug"
@@ -90,6 +91,14 @@ func GetPostBySlug(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
 	}
+
+	// Increment view count in a separate goroutine to not block the response
+	go func(postID uint) {
+		if err := database.DB.Model(&models.Post{}).Where("id = ?", postID).
+			Update("view_count", gorm.Expr("view_count + ?", 1)).Error; err != nil {
+			log.Error().Err(err).Uint("post_id", postID).Msg("Failed to increment view count")
+		}
+	}(post.ID)
 
 	c.JSON(http.StatusOK, post)
 }
@@ -685,6 +694,60 @@ func GetMyPosts(c *gin.Context) {
 			"limit":    limit,
 			"total":    total,
 			"lastPage": (int(total) + limit - 1) / limit,
+		},
+	})
+}
+
+// IncrementPostViewCount godoc
+// @Summary Increment post view count
+// @Description Increments the view count for a specific post
+// @Tags Posts
+// @Produce json
+// @Param id path int true "Post ID"
+// @Success 200 {object} models.SwaggerViewCountResponse "View count incremented successfully"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Router /posts/{id}/view [post]
+func IncrementPostViewCount(c *gin.Context) {
+	// Get post ID from URL
+	postID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "error",
+			"error":   "Invalid input",
+			"message": "Invalid post ID",
+		})
+		return
+	}
+
+	// Find the post
+	var post models.Post
+	if err := database.DB.First(&post, postID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"status":  "error",
+			"error":   "Not found",
+			"message": "Post not found",
+		})
+		return
+	}
+
+	// Increment view count
+	if err := database.DB.Model(&post).Update("view_count", gorm.Expr("view_count + ?", 1)).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "error",
+			"error":   "Database error",
+			"message": "Failed to update view count",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "View count incremented successfully",
+		"data": gin.H{
+			"post_id":    post.ID,
+			"view_count": post.ViewCount + 1, // Return the incremented count
 		},
 	})
 }
