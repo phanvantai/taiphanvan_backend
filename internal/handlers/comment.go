@@ -16,9 +16,9 @@ import (
 // @Tags Comments
 // @Produce json
 // @Param postID path int true "Post ID"
-// @Success 200 {object} models.SwaggerStandardResponse "List of comments"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.StandardResponse "List of comments"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Router /posts/{postID}/comments [get]
 func GetCommentsByPostID(c *gin.Context) {
 	postID, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -77,11 +77,11 @@ func GetCommentsByPostID(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Post ID"
 // @Param comment body models.CreateCommentRequest true "Comment content"
-// @Success 201 {object} models.SwaggerStandardResponse "Created comment"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 201 {object} models.StandardResponse "Created comment"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 404 {object} models.StandardResponse "Post not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id}/comments [post]
 func CreateComment(c *gin.Context) {
@@ -133,12 +133,12 @@ func CreateComment(c *gin.Context) {
 // @Produce json
 // @Param commentID path int true "Comment ID"
 // @Param comment body models.UpdateCommentRequest true "Updated comment content"
-// @Success 200 {object} models.SwaggerStandardResponse "Updated comment"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
-// @Failure 404 {object} models.SwaggerStandardResponse "Comment not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.StandardResponse "Updated comment"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 403 {object} models.StandardResponse "Forbidden"
+// @Failure 404 {object} models.StandardResponse "Comment not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /comments/{commentID} [put]
 func UpdateComment(c *gin.Context) {
@@ -190,12 +190,12 @@ func UpdateComment(c *gin.Context) {
 // @Tags Comments
 // @Produce json
 // @Param commentID path int true "Comment ID"
-// @Success 200 {object} models.SwaggerStandardResponse "Success message"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
-// @Failure 404 {object} models.SwaggerStandardResponse "Comment not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.StandardResponse "Success message"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 403 {object} models.StandardResponse "Forbidden"
+// @Failure 404 {object} models.StandardResponse "Comment not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /comments/{commentID} [delete]
 func DeleteComment(c *gin.Context) {

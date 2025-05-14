@@ -30,9 +30,9 @@ func GetUserVote(commentID, userID uint) (models.VoteType, error) {
 // @Produce json
 // @Param commentID path int true "Comment ID"
 // @Success 200 {object} models.CommentVoteResponse "Vote counts"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 404 {object} models.SwaggerStandardResponse "Comment not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 404 {object} models.StandardResponse "Comment not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Router /comments/{commentID}/votes [get]
 func GetCommentVotes(c *gin.Context) {
 	// Parse comment ID from path
@@ -78,10 +78,10 @@ func GetCommentVotes(c *gin.Context) {
 // @Param commentID path int true "Comment ID"
 // @Param vote body models.CommentVoteRequest true "Vote type"
 // @Success 200 {object} models.CommentVoteResponse "Updated vote counts"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 404 {object} models.SwaggerStandardResponse "Comment not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 404 {object} models.StandardResponse "Comment not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /comments/{commentID}/vote [post]
 func VoteOnComment(c *gin.Context) {

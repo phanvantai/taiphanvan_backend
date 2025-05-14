@@ -33,12 +33,12 @@ var allowedCoverFileTypes = map[string]bool{
 // @Produce json
 // @Param id path int true "Post ID"
 // @Param cover formData file true "Cover image file (JPG, JPEG, PNG, WEBP, max 5MB)"
-// @Success 200 {object} models.SwaggerPostCoverResponse "Cover uploaded successfully"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
-// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.PostCoverResponse "Cover uploaded successfully"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 403 {object} models.StandardResponse "Forbidden"
+// @Failure 404 {object} models.StandardResponse "Post not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id}/cover [post]
 func UploadPostCover(c *gin.Context) {
@@ -138,11 +138,11 @@ func UploadPostCover(c *gin.Context) {
 // @Tags Posts
 // @Produce json
 // @Param id path int true "Post ID"
-// @Success 200 {object} models.SwaggerStandardResponse "Cover deleted successfully"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
-// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.StandardResponse "Cover deleted successfully"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 403 {object} models.StandardResponse "Forbidden"
+// @Failure 404 {object} models.StandardResponse "Post not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id}/cover [delete]
 func DeletePostCover(c *gin.Context) {

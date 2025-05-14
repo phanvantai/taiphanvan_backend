@@ -61,8 +61,8 @@ func createPaginationMeta(page, limit int, total int64) gin.H {
 // @Param limit query int false "Number of items per page (default: 10)"
 // @Param tag query string false "Filter posts by tag name"
 // @Param status query string false "Filter posts by status (draft, published, archived, scheduled)"
-// @Success 200 {object} models.SwaggerStandardResponse{data=models.SwaggerPostsResponse} "List of posts with pagination metadata"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.PostsResponse "List of posts with pagination metadata"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Router /posts [get]
 func GetPosts(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -110,8 +110,8 @@ func GetPosts(c *gin.Context) {
 // @Tags Posts
 // @Produce json
 // @Param slug path string true "Post slug"
-// @Success 200 {object} models.SwaggerStandardResponse{data=models.Post} "Post details"
-// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
+// @Success 200 {object} models.Post "Post details"
+// @Failure 404 {object} models.StandardResponse "Post not found"
 // @Router /posts/slug/{slug} [get]
 func GetPostBySlug(c *gin.Context) {
 	slug := c.Param("slug")
@@ -142,10 +142,10 @@ func GetPostBySlug(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body models.CreatePostRequest true "Post details"
-// @Success 201 {object} models.SwaggerStandardResponse{data=models.Post} "Created post"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 201 {object} models.Post "Created post"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts [post]
 func CreatePost(c *gin.Context) {
@@ -256,12 +256,12 @@ func CreatePost(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Post ID"
 // @Param post body models.UpdatePostRequest true "Post details"
-// @Success 200 {object} models.SwaggerStandardResponse{data=models.Post} "Updated post"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
-// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.Post "Updated post"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 403 {object} models.StandardResponse "Forbidden"
+// @Failure 404 {object} models.StandardResponse "Post not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id} [put]
 func UpdatePost(c *gin.Context) {
@@ -393,12 +393,12 @@ func UpdatePost(c *gin.Context) {
 // @Tags Posts
 // @Produce json
 // @Param id path int true "Post ID"
-// @Success 200 {object} models.SwaggerStandardResponse "Success message"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
-// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.StandardResponse "Success message"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 403 {object} models.StandardResponse "Forbidden"
+// @Failure 404 {object} models.StandardResponse "Post not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id} [delete]
 func DeletePost(c *gin.Context) {
@@ -443,12 +443,12 @@ func DeletePost(c *gin.Context) {
 // @Tags Posts
 // @Produce json
 // @Param id path int true "Post ID"
-// @Success 200 {object} models.SwaggerStandardResponse{data=models.Post} "Published post"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
-// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.Post "Published post"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 403 {object} models.StandardResponse "Forbidden"
+// @Failure 404 {object} models.StandardResponse "Post not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id}/publish [post]
 func PublishPost(c *gin.Context) {
@@ -502,12 +502,12 @@ func PublishPost(c *gin.Context) {
 // @Tags Posts
 // @Produce json
 // @Param id path int true "Post ID"
-// @Success 200 {object} models.SwaggerStandardResponse{data=models.Post} "Unpublished post"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
-// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.Post "Unpublished post"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 403 {object} models.StandardResponse "Forbidden"
+// @Failure 404 {object} models.StandardResponse "Post not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id}/unpublish [post]
 func UnpublishPost(c *gin.Context) {
@@ -567,12 +567,12 @@ func UnpublishPost(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Post ID"
 // @Param request body models.SetPostStatusRequest true "Status details"
-// @Success 200 {object} models.SwaggerStandardResponse{data=models.Post} "Updated post"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 403 {object} models.SwaggerStandardResponse "Forbidden"
-// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.Post "Updated post"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 403 {object} models.StandardResponse "Forbidden"
+// @Failure 404 {object} models.StandardResponse "Post not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/{id}/status [post]
 func SetPostStatus(c *gin.Context) {
@@ -690,9 +690,9 @@ func SetPostStatus(c *gin.Context) {
 // @Produce json
 // @Param page query int false "Page number (default: 1)"
 // @Param limit query int false "Number of items per page (default: 10)"
-// @Success 200 {object} models.SwaggerStandardResponse{data=models.SwaggerPostsResponse} "List of the user's posts with pagination metadata"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.PostsResponse "List of the user's posts with pagination metadata"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /posts/me [get]
 func GetMyPosts(c *gin.Context) {
@@ -735,10 +735,10 @@ func GetMyPosts(c *gin.Context) {
 // @Tags Posts
 // @Produce json
 // @Param id path int true "Post ID"
-// @Success 200 {object} models.SwaggerStandardResponse{data=models.SwaggerViewCountResponse} "View count incremented successfully"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 404 {object} models.SwaggerStandardResponse "Post not found"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.ViewCountResponse "View count incremented successfully"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 404 {object} models.StandardResponse "Post not found"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Router /posts/{id}/view [post]
 func IncrementPostViewCount(c *gin.Context) {
 	// Get post ID from URL

@@ -14,8 +14,8 @@ import (
 // @Description Provides a simple endpoint to verify the API and database are running
 // @Tags System
 // @Produce json
-// @Success 200 {object} models.SwaggerStandardResponse "API is healthy"
-// @Failure 503 {object} models.SwaggerStandardResponse "Database connection issues"
+// @Success 200 {object} models.StandardResponse "API is healthy"
+// @Failure 503 {object} models.StandardResponse "Database connection issues"
 // @Router /health [get]
 func HealthCheck(c *gin.Context) {
 	// Check database connectivity

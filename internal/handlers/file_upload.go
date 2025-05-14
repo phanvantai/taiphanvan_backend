@@ -33,10 +33,10 @@ var allowedUploadFileTypes = map[string]bool{
 // @Accept multipart/form-data
 // @Produce json
 // @Param file formData file true "File to upload (JPG, JPEG, PNG, WEBP, GIF, SVG, PDF, max 5MB)"
-// @Success 200 {object} models.SwaggerStandardResponse "File uploaded successfully"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.FileUploadResponse "File uploaded successfully"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /files/upload [post]
 func UploadFile(c *gin.Context) {
@@ -95,11 +95,11 @@ func UploadFile(c *gin.Context) {
 // @Tags Files
 // @Accept json
 // @Produce json
-// @Param request body models.SwaggerDeleteFileRequest true "File URL to delete"
-// @Success 200 {object} models.SwaggerStandardResponse "File deleted successfully"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Param request body models.DeleteFileRequest true "File URL to delete"
+// @Success 200 {object} models.StandardResponse "File deleted successfully"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /files/delete [post]
 func DeleteFile(c *gin.Context) {

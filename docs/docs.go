@@ -9,16 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
-        "contact": {
-            "name": "API Support",
-            "url": "https://github.com/phanvantai/taiphanvan_backend",
-            "email": "support@example.com"
-        },
-        "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -58,22 +49,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Authentication failed",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -111,19 +99,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully logged out",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -163,15 +151,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Invalid refresh token",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -205,25 +191,25 @@ const docTemplate = `{
                     "201": {
                         "description": "User registered successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponseUser"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "409": {
                         "description": "Email or username already exists",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -262,15 +248,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Token revoked successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input or token revocation failed",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -316,37 +300,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated comment",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Comment not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -378,37 +362,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Success message",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Comment not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -460,25 +444,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Comment not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -513,19 +497,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Comment not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -556,7 +540,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerDeleteFileRequest"
+                            "$ref": "#/definitions/models.DeleteFileRequest"
                         }
                     }
                 ],
@@ -564,25 +548,25 @@ const docTemplate = `{
                     "200": {
                         "description": "File deleted successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -619,25 +603,25 @@ const docTemplate = `{
                     "200": {
                         "description": "File uploaded successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerFileUploadResponse"
+                            "$ref": "#/definitions/models.FileUploadResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -657,13 +641,13 @@ const docTemplate = `{
                     "200": {
                         "description": "API is healthy",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "503": {
                         "description": "Database connection issues",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -709,13 +693,13 @@ const docTemplate = `{
                     "200": {
                         "description": "List of posts with pagination metadata",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerPostsResponse"
+                            "$ref": "#/definitions/models.PostsResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -758,19 +742,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -809,19 +793,19 @@ const docTemplate = `{
                     "200": {
                         "description": "List of the user's posts with pagination metadata",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerPostsResponse"
+                            "$ref": "#/definitions/models.PostsResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -856,7 +840,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -908,31 +892,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -964,37 +948,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Success message",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1040,31 +1024,31 @@ const docTemplate = `{
                     "201": {
                         "description": "Created comment",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1108,37 +1092,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Cover uploaded successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerPostCoverResponse"
+                            "$ref": "#/definitions/models.PostCoverResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1170,31 +1154,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Cover deleted successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1234,31 +1218,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1310,31 +1294,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1374,31 +1358,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1427,25 +1411,25 @@ const docTemplate = `{
                     "200": {
                         "description": "View count incremented successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerViewCountResponse"
+                            "$ref": "#/definitions/models.ViewCountResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "Post not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1474,19 +1458,19 @@ const docTemplate = `{
                     "200": {
                         "description": "List of comments",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1511,13 +1495,13 @@ const docTemplate = `{
                     "200": {
                         "description": "User profile",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerProfileResponse"
+                            "$ref": "#/definitions/models.SwaggerProfile"
                         }
                     },
                     "404": {
                         "description": "User not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1546,7 +1530,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerUpdateProfileRequest"
+                            "$ref": "#/definitions/models.UpdateProfileRequest"
                         }
                     }
                 ],
@@ -1554,19 +1538,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Profile updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerProfileResponse"
+                            "$ref": "#/definitions/models.SwaggerProfile"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "404": {
                         "description": "User not found",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1603,25 +1587,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Avatar uploaded successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerAvatarResponse"
+                            "$ref": "#/definitions/models.AvatarResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1641,16 +1625,13 @@ const docTemplate = `{
                     "200": {
                         "description": "List of tags with post counts",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.TagWithCount"
-                            }
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1670,16 +1651,13 @@ const docTemplate = `{
                     "200": {
                         "description": "List of popular tags with post counts",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.TagWithCount"
-                            }
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                            "$ref": "#/definitions/models.StandardResponse"
                         }
                     }
                 }
@@ -1687,6 +1665,16 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.AvatarResponse": {
+            "description": "Response model for avatar upload",
+            "type": "object",
+            "properties": {
+                "profile_image": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                }
+            }
+        },
         "models.Comment": {
             "description": "A comment made by a user on a specific post",
             "type": "object",
@@ -1823,6 +1811,26 @@ const docTemplate = `{
                 }
             }
         },
+        "models.DeleteFileRequest": {
+            "description": "Request model for deleting a file",
+            "type": "object",
+            "properties": {
+                "file_url": {
+                    "type": "string",
+                    "example": "https://example.com/file.jpg"
+                }
+            }
+        },
+        "models.FileUploadResponse": {
+            "description": "Response model for editor file upload",
+            "type": "object",
+            "properties": {
+                "file_url": {
+                    "type": "string",
+                    "example": "https://example.com/file.jpg"
+                }
+            }
+        },
         "models.LoginRequest": {
             "type": "object",
             "required": [
@@ -1836,6 +1844,28 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 6
+                }
+            }
+        },
+        "models.PaginationMeta": {
+            "description": "Pagination metadata",
+            "type": "object",
+            "properties": {
+                "last_page": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 50
                 }
             }
         },
@@ -1902,6 +1932,16 @@ const docTemplate = `{
                 }
             }
         },
+        "models.PostCoverResponse": {
+            "description": "Response model for post cover upload",
+            "type": "object",
+            "properties": {
+                "cover": {
+                    "type": "string",
+                    "example": "https://example.com/cover.jpg"
+                }
+            }
+        },
         "models.PostStatus": {
             "type": "string",
             "enum": [
@@ -1916,6 +1956,21 @@ const docTemplate = `{
                 "PostStatusArchived",
                 "PostStatusScheduled"
             ]
+        },
+        "models.PostsResponse": {
+            "description": "Response model for listing blog posts",
+            "type": "object",
+            "properties": {
+                "meta": {
+                    "$ref": "#/definitions/models.PaginationMeta"
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Post"
+                    }
+                }
+            }
         },
         "models.RefreshTokenRequest": {
             "type": "object",
@@ -1977,81 +2032,48 @@ const docTemplate = `{
                 }
             }
         },
-        "models.SwaggerAvatarResponse": {
-            "description": "Response model for avatar upload",
+        "models.StandardResponse": {
+            "description": "A standard API response format with data payload",
             "type": "object",
             "properties": {
-                "profile_image": {
+                "data": {},
+                "error": {
                     "type": "string",
-                    "example": "https://example.com/avatar.jpg"
-                }
-            }
-        },
-        "models.SwaggerDeleteFileRequest": {
-            "description": "Request model for deleting a file",
-            "type": "object",
-            "properties": {
-                "file_url": {
-                    "type": "string",
-                    "example": "https://example.com/file.jpg"
-                }
-            }
-        },
-        "models.SwaggerFileUploadResponse": {
-            "description": "Response model for editor file upload",
-            "type": "object",
-            "properties": {
-                "file_url": {
-                    "type": "string",
-                    "example": "https://example.com/file.jpg"
-                }
-            }
-        },
-        "models.SwaggerPostCoverResponse": {
-            "description": "Response model for post cover upload",
-            "type": "object",
-            "properties": {
-                "cover": {
-                    "type": "string",
-                    "example": "https://example.com/cover.jpg"
-                }
-            }
-        },
-        "models.SwaggerPostsResponse": {
-            "description": "Response model for listing blog posts",
-            "type": "object",
-            "properties": {
-                "meta": {
-                    "type": "object",
-                    "properties": {
-                        "last_page": {
-                            "type": "integer",
-                            "example": 5
-                        },
-                        "limit": {
-                            "type": "integer",
-                            "example": 10
-                        },
-                        "page": {
-                            "type": "integer",
-                            "example": 1
-                        },
-                        "total": {
-                            "type": "integer",
-                            "example": 50
-                        }
-                    }
+                    "example": "Invalid input"
                 },
-                "posts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Post"
-                    }
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
                 }
             }
         },
-        "models.SwaggerProfileResponse": {
-            "description": "Response model for user profile information",
+        "models.StandardResponseUser": {
+            "description": "A standard API response with user data",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.SwaggerProfile"
+                },
+                "error": {
+                    "type": "string",
+                    "example": "Invalid input"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "models.SwaggerProfile": {
+            "description": "User profile information",
             "type": "object",
             "properties": {
                 "bio": {
@@ -2092,70 +2114,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.SwaggerStandardResponse": {
-            "description": "A standard API response format",
-            "type": "object",
-            "properties": {
-                "data": {},
-                "error": {
-                    "type": "string",
-                    "example": "Invalid input"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "Operation completed successfully"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "success"
-                }
-            }
-        },
-        "models.SwaggerUpdateProfileRequest": {
-            "description": "Request model for updating user profile",
-            "type": "object",
-            "properties": {
-                "bio": {
-                    "type": "string",
-                    "example": "Software developer"
-                },
-                "first_name": {
-                    "type": "string",
-                    "example": "John"
-                },
-                "last_name": {
-                    "type": "string",
-                    "example": "Doe"
-                }
-            }
-        },
-        "models.SwaggerViewCountResponse": {
-            "description": "Response model for incrementing a post's view count",
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "object",
-                    "properties": {
-                        "post_id": {
-                            "type": "integer",
-                            "example": 123
-                        },
-                        "view_count": {
-                            "type": "integer",
-                            "example": 42
-                        }
-                    }
-                },
-                "message": {
-                    "type": "string",
-                    "example": "View count incremented successfully"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "success"
-                }
-            }
-        },
         "models.Tag": {
             "description": "A tag that can be associated with multiple posts",
             "type": "object",
@@ -2173,24 +2131,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.Post"
                     }
-                }
-            }
-        },
-        "models.TagWithCount": {
-            "description": "A tag with the count of posts using it",
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "name": {
-                    "type": "string",
-                    "example": "technology"
-                },
-                "post_count": {
-                    "type": "integer",
-                    "example": 5
                 }
             }
         },
@@ -2281,6 +2221,24 @@ const docTemplate = `{
                 }
             }
         },
+        "models.UpdateProfileRequest": {
+            "description": "Request model for updating user profile",
+            "type": "object",
+            "properties": {
+                "bio": {
+                    "type": "string",
+                    "example": "Software developer"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                }
+            }
+        },
         "models.User": {
             "description": "A user account with profile information and relationships",
             "type": "object",
@@ -2339,6 +2297,33 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ViewCountResponse": {
+            "description": "Response model for incrementing a post's view count",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "post_id": {
+                            "type": "integer",
+                            "example": 123
+                        },
+                        "view_count": {
+                            "type": "integer",
+                            "example": 42
+                        }
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "View count incremented successfully"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
         "models.VoteType": {
             "type": "integer",
             "enum": [
@@ -2352,25 +2337,17 @@ const docTemplate = `{
                 "VoteTypeUpvote"
             ]
         }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "description": "Type \"Bearer\" followed by a space and the JWT token.",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:9876",
-	BasePath:         "/api",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "TaiPhanVan Blog API",
-	Description:      "A RESTful API for the TaiPhanVan personal blog platform",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

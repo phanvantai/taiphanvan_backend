@@ -30,10 +30,10 @@ var allowedFileTypes = map[string]bool{
 // @Accept multipart/form-data
 // @Produce json
 // @Param avatar formData file true "Avatar image file (JPG, JPEG, PNG, max 2MB)"
-// @Success 200 {object} models.SwaggerAvatarResponse "Avatar uploaded successfully"
-// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
-// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
-// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Success 200 {object} models.AvatarResponse "Avatar uploaded successfully"
+// @Failure 400 {object} models.StandardResponse "Invalid input"
+// @Failure 401 {object} models.StandardResponse "Unauthorized"
+// @Failure 500 {object} models.StandardResponse "Server error"
 // @Security BearerAuth
 // @Router /profile/avatar [post]
 func UploadAvatar(c *gin.Context) {

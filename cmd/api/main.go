@@ -45,6 +45,24 @@ import (
 // @name Authorization
 // @description Type "Bearer" followed by a space and the JWT token.
 
+// @tag.name Auth
+// @tag.description Authentication operations
+
+// @tag.name Posts
+// @tag.description Blog post operations
+
+// @tag.name Comments
+// @tag.description Comment operations
+
+// @tag.name Tags
+// @tag.description Tag operations
+
+// @tag.name Users
+// @tag.description User operations
+
+// @tag.name Files
+// @tag.description File upload operations
+
 func main() {
 	// Initialize barebones logger for startup errors
 	initStartupLogger()
