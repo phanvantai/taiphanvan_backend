@@ -2,6 +2,14 @@
 
 This is the backend API service for a personal blog built with Go. When generating content or code for this project, please consider the following:
 
+## Development Approach
+1. **Incremental Development**:
+   - Work in small, manageable steps
+   - Implement one feature or fix at a time
+   - Always ask for user guidance before proceeding to next steps
+   - Validate each step works before moving to the next one
+
+## Project Guidelines
 1. Follow idiomatic Go practices and conventions
 2. Maintain the existing project structure:
    - `cmd/api` for application entrypoints
@@ -58,3 +66,12 @@ This is the backend API service for a personal blog built with Go. When generati
     - Protect against common web vulnerabilities (CSRF, XSS, etc.)
     - Implement rate limiting for public endpoints
     - Use HTTPS for all communications
+
+## Implementation Workflow
+1. Start by understanding requirements clearly
+2. Break down tasks into small, manageable subtasks
+3. Implement one subtask at a time
+4. Test each implementation step
+5. Document your changes
+6. Request user feedback before proceeding to the next step
+7. Adjust approach based on feedback
