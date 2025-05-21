@@ -120,7 +120,7 @@ func GetNews(c *gin.Context) {
 // @Tags News
 // @Produce json
 // @Param slug path string true "News article slug"
-// @Success 200 {object} models.News "News article"
+// @Success 200 {object} models.SwaggerNewsWithContentStatus "News article with content status"
 // @Failure 404 {object} models.SwaggerStandardResponse "News article not found"
 // @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Router /news/slug/{slug} [get]
@@ -145,7 +145,21 @@ func GetNewsBySlug(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, news)
+	// Check if content is truncated
+	isTruncated := services.IsTruncated(news.Content)
+	_, truncatedChars, _ := services.ExtractTruncationInfo(news.Content)
+
+	// Add content status information
+	contentStatus := models.ContentStatus{
+		IsTruncated:    isTruncated,
+		TruncatedChars: truncatedChars,
+		HasFullContent: false, // We haven't fetched full content yet
+	}
+
+	c.JSON(http.StatusOK, models.NewsWithContentStatus{
+		News:          news,
+		ContentStatus: contentStatus,
+	})
 }
 
 // GetNewsByID godoc
@@ -154,7 +168,7 @@ func GetNewsBySlug(c *gin.Context) {
 // @Tags News
 // @Produce json
 // @Param id path int true "News article ID"
-// @Success 200 {object} models.News "News article"
+// @Success 200 {object} models.SwaggerNewsWithContentStatus "News article with content status"
 // @Failure 404 {object} models.SwaggerStandardResponse "News article not found"
 // @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Router /news/{id} [get]
@@ -179,7 +193,21 @@ func GetNewsByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, news)
+	// Check if content is truncated
+	isTruncated := services.IsTruncated(news.Content)
+	_, truncatedChars, _ := services.ExtractTruncationInfo(news.Content)
+
+	// Add content status information
+	contentStatus := models.ContentStatus{
+		IsTruncated:    isTruncated,
+		TruncatedChars: truncatedChars,
+		HasFullContent: false, // We haven't fetched full content yet
+	}
+
+	c.JSON(http.StatusOK, models.NewsWithContentStatus{
+		News:          news,
+		ContentStatus: contentStatus,
+	})
 }
 
 // GetNewsCategories godoc
@@ -191,13 +219,13 @@ func GetNewsByID(c *gin.Context) {
 // @Router /news/categories [get]
 func GetNewsCategories(c *gin.Context) {
 	categories := []string{
-		string(models.NewsCategoryGeneral),
-		string(models.NewsCategoryBusiness),
+		// string(models.NewsCategoryGeneral),
+		// string(models.NewsCategoryBusiness),
 		string(models.NewsCategoryTechnology),
 		string(models.NewsCategoryScience),
-		string(models.NewsCategoryHealth),
-		string(models.NewsCategorySports),
-		string(models.NewsCategoryEntertainment),
+		// string(models.NewsCategoryHealth),
+		// string(models.NewsCategorySports),
+		// string(models.NewsCategoryEntertainment),
 	}
 
 	c.JSON(http.StatusOK, categories)
@@ -261,9 +289,9 @@ func CreateNews(c *gin.Context) {
 		PublishDate: publishDate,
 	}
 
-	// If no category is provided, use general
+	// If no category is provided, use technology
 	if news.Category == "" {
-		news.Category = models.NewsCategoryGeneral
+		news.Category = models.NewsCategoryTechnology
 	}
 
 	// If no status is provided, use draft
@@ -670,5 +698,141 @@ func FetchExternalNews(c *gin.Context) {
 		"saved":      savedCount,
 		"categories": requestBody.Categories,
 		"fetch_time": time.Now().Format(time.RFC3339),
+	})
+}
+
+// GetNewsFullContent godoc
+// @Summary Get full content for news article
+// @Description Attempts to fetch and return the full content for a news article
+// @Tags News
+// @Produce json
+// @Param id path int true "News article ID"
+// @Success 200 {object} models.SwaggerNewsWithContentStatus "News article with full content status"
+// @Failure 404 {object} models.SwaggerStandardResponse "News article not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Router /news/{id}/full-content [get]
+func GetNewsFullContent(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		return
+	}
+
+	// Get the news article
+	var news models.News
+	if err := database.DB.
+		Where("id = ? AND status = ? AND published = ?", id, models.NewsStatusPublished, true).
+		Preload("Tags").
+		First(&news).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "News article not found"})
+		} else {
+			log.Error().Err(err).Str("id", id).Msg("Failed to retrieve news article")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve news article"})
+		}
+		return
+	}
+
+	// Check if we already have enriched content in the database
+	var enrichedContent models.EnrichedNewsContent
+	enrichedContentExists := true
+
+	if err := database.DB.Where("news_id = ?", news.ID).First(&enrichedContent).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Error().Err(err).Uint("newsID", news.ID).Msg("Failed to check for enriched content")
+		}
+		enrichedContentExists = false
+	}
+
+	// Prepare content status
+	contentStatus := models.ContentStatus{
+		IsTruncated:    services.IsTruncated(news.Content),
+		TruncatedChars: 0,
+		HasFullContent: false,
+		FetchError:     "",
+	}
+
+	// Update content status based on existing enriched content
+	if enrichedContentExists {
+		contentStatus.IsTruncated = enrichedContent.IsTruncated
+		contentStatus.TruncatedChars = enrichedContent.TruncatedChars
+		contentStatus.HasFullContent = enrichedContent.FullContent != ""
+		contentStatus.FetchError = enrichedContent.FetchError
+
+		// If the enriched content is recent (less than 24 hours old), use it
+		if !enrichedContent.LastFetched.IsZero() && time.Since(enrichedContent.LastFetched) < 24*time.Hour {
+			// If we have full content, use it instead of the original
+			if enrichedContent.FullContent != "" {
+				news.Content = enrichedContent.FullContent
+			}
+
+			c.JSON(http.StatusOK, models.NewsWithContentStatus{
+				News:          news,
+				ContentStatus: contentStatus,
+			})
+			return
+		}
+	}
+
+	// If we don't have recent enriched content or it doesn't exist,
+	// attempt to fetch it now
+	contentScraper := services.NewContentScraper()
+	enriched, err := contentScraper.EnrichNewsContent(c.Request.Context(), &news)
+	if err != nil {
+		log.Error().Err(err).Uint("newsID", news.ID).Msg("Failed to enrich news content")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve full content"})
+		return
+	}
+
+	// Update or create the enriched content record
+	if enrichedContentExists {
+		// Update existing record
+		enrichedContent.FullContent = enriched.FullContent
+		enrichedContent.IsTruncated = enriched.IsTruncated
+		enrichedContent.TruncatedChars = enriched.TruncatedChars
+		enrichedContent.TruncationPattern = enriched.TruncationPattern
+		enrichedContent.LastFetched = time.Now()
+		enrichedContent.FetchError = enriched.FetchError
+		enrichedContent.UpdatedAt = time.Now()
+
+		if err := database.DB.Save(&enrichedContent).Error; err != nil {
+			log.Error().Err(err).Uint("newsID", news.ID).Msg("Failed to update enriched content")
+		}
+	} else {
+		// Create new record
+		enrichedContent = models.EnrichedNewsContent{
+			NewsID:             news.ID,
+			OriginalContent:    news.Content,
+			FullContent:        enriched.FullContent,
+			IsTruncated:        enriched.IsTruncated,
+			TruncatedChars:     enriched.TruncatedChars,
+			TruncationPattern:  enriched.TruncationPattern,
+			SourceURL:          news.SourceURL,
+			LastFetched:        time.Now(),
+			TruncationDetected: time.Now(),
+			FetchError:         enriched.FetchError,
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
+		}
+
+		if err := database.DB.Create(&enrichedContent).Error; err != nil {
+			log.Error().Err(err).Uint("newsID", news.ID).Msg("Failed to save enriched content")
+		}
+	}
+
+	// Update content status
+	contentStatus.IsTruncated = enriched.IsTruncated
+	contentStatus.TruncatedChars = enriched.TruncatedChars
+	contentStatus.HasFullContent = enriched.FullContent != ""
+	contentStatus.FetchError = enriched.FetchError
+
+	// If we have full content, use it instead of the original
+	if enriched.FullContent != "" {
+		news.Content = enriched.FullContent
+	}
+
+	c.JSON(http.StatusOK, models.NewsWithContentStatus{
+		News:          news,
+		ContentStatus: contentStatus,
 	})
 }

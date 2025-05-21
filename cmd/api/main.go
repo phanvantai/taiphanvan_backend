@@ -288,6 +288,7 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 		api.GET("/news", handlers.GetNews)
 		api.GET("/news/slug/:slug", handlers.GetNewsBySlug)
 		api.GET("/news/:id", handlers.GetNewsByID)
+		api.GET("/news/:id/full-content", handlers.GetNewsFullContent)
 		api.GET("/news/categories", handlers.GetNewsCategories)
 
 		// Auth routes - stricter rate limiting for sensitive endpoints

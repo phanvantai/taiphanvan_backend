@@ -958,9 +958,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "News article",
+                        "description": "News article with content status",
                         "schema": {
-                            "$ref": "#/definitions/models.News"
+                            "$ref": "#/definitions/models.SwaggerNewsWithContentStatus"
                         }
                     },
                     "404": {
@@ -999,9 +999,50 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "News article",
+                        "description": "News article with content status",
                         "schema": {
-                            "$ref": "#/definitions/models.News"
+                            "$ref": "#/definitions/models.SwaggerNewsWithContentStatus"
+                        }
+                    },
+                    "404": {
+                        "description": "News article not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/news/{id}/full-content": {
+            "get": {
+                "description": "Attempts to fetch and return the full content for a news article",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Get full content for news article",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "News article ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "News article with full content status",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerNewsWithContentStatus"
                         }
                     },
                     "404": {
@@ -2029,6 +2070,26 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ContentStatus": {
+            "type": "object",
+            "properties": {
+                "fetch_error": {
+                    "type": "string"
+                },
+                "has_full_content": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "is_truncated": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "truncated_chars": {
+                    "type": "integer",
+                    "example": 1281
+                }
+            }
+        },
         "models.CreateCommentRequest": {
             "description": "Request model for creating a new comment on a post",
             "type": "object",
@@ -2553,6 +2614,18 @@ const docTemplate = `{
                 "file_url": {
                     "type": "string",
                     "example": "https://example.com/file.jpg"
+                }
+            }
+        },
+        "models.SwaggerNewsWithContentStatus": {
+            "description": "News article with content status information for Swagger documentation",
+            "type": "object",
+            "properties": {
+                "content_status": {
+                    "$ref": "#/definitions/models.ContentStatus"
+                },
+                "news": {
+                    "$ref": "#/definitions/models.News"
                 }
             }
         },

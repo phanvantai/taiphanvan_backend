@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -71,13 +71,13 @@ func (s *NewsService) FetchNews(ctx context.Context, categories []models.NewsCat
 	// If no categories specified, use all available categories
 	if len(categories) == 0 {
 		categories = []models.NewsCategory{
-			models.NewsCategoryGeneral,
-			models.NewsCategoryBusiness,
+			//models.NewsCategoryGeneral,
+			//models.NewsCategoryBusiness,
 			models.NewsCategoryTechnology,
 			models.NewsCategoryScience,
-			models.NewsCategoryHealth,
-			models.NewsCategorySports,
-			models.NewsCategoryEntertainment,
+			// models.NewsCategoryHealth,
+			// models.NewsCategorySports,
+			// models.NewsCategoryEntertainment,
 		}
 	}
 
@@ -127,7 +127,7 @@ func (s *NewsService) fetchNewsByCategory(ctx context.Context, category string, 
 
 	// Check status code
 	if resp.StatusCode != http.StatusOK {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("API returned non-OK status: %d, body: %s", resp.StatusCode, string(body))
 	}
 
@@ -150,6 +150,28 @@ func (s *NewsService) fetchNewsByCategory(ctx context.Context, category string, 
 		// Generate a unique slug
 		titleSlug := slug.Make(article.Title)
 
+		// Create a more compact external ID that won't exceed 100 chars
+		// Use the source ID (or "unknown" if none) and the last part of the URL
+		sourceId := article.Source.ID
+		if sourceId == "" {
+			sourceId = "unknown"
+		}
+
+		// Extract domain from URL to keep the external ID shorter
+		parsedURL, err := url.Parse(article.URL)
+		urlPart := ""
+		if err == nil {
+			urlPart = parsedURL.Host + parsedURL.Path
+		} else {
+			urlPart = article.URL
+		}
+
+		// Ensure the external ID doesn't exceed 100 characters
+		externalID := fmt.Sprintf("%s-%s", sourceId, urlPart)
+		if len(externalID) > 100 {
+			externalID = externalID[:100]
+		}
+
 		// Create the news article
 		newsArticle := models.News{
 			Title:       article.Title,
@@ -163,7 +185,7 @@ func (s *NewsService) fetchNewsByCategory(ctx context.Context, category string, 
 			Status:      models.NewsStatusPublished,
 			Published:   true,
 			PublishDate: article.PublishedAt,
-			ExternalID:  fmt.Sprintf("%s-%s", article.Source.ID, strings.ReplaceAll(article.URL, "/", "-")),
+			ExternalID:  externalID,
 			CreatedAt:   time.Now(),
 			UpdatedAt:   time.Now(),
 		}
@@ -217,7 +239,7 @@ func (s *NewsService) SearchNews(ctx context.Context, query string, limit int) (
 
 	// Check status code
 	if resp.StatusCode != http.StatusOK {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("API returned non-OK status: %d, body: %s", resp.StatusCode, string(body))
 	}
 
@@ -242,6 +264,27 @@ func (s *NewsService) SearchNews(ctx context.Context, query string, limit int) (
 		// Generate a unique slug
 		titleSlug := slug.Make(article.Title)
 
+		// Create a more compact external ID that won't exceed 100 chars
+		sourceId := article.Source.ID
+		if sourceId == "" {
+			sourceId = "unknown"
+		}
+
+		// Extract domain from URL to keep the external ID shorter
+		parsedURL, err := url.Parse(article.URL)
+		urlPart := ""
+		if err == nil {
+			urlPart = parsedURL.Host + parsedURL.Path
+		} else {
+			urlPart = article.URL
+		}
+
+		// Ensure the external ID doesn't exceed 100 characters
+		externalID := fmt.Sprintf("%s-%s", sourceId, urlPart)
+		if len(externalID) > 100 {
+			externalID = externalID[:100]
+		}
+
 		// Create the news article
 		newsArticle := models.News{
 			Title:       article.Title,
@@ -255,7 +298,7 @@ func (s *NewsService) SearchNews(ctx context.Context, query string, limit int) (
 			Status:      models.NewsStatusPublished,
 			Published:   true,
 			PublishDate: article.PublishedAt,
-			ExternalID:  fmt.Sprintf("%s-%s", article.Source.ID, strings.ReplaceAll(article.URL, "/", "-")),
+			ExternalID:  externalID,
 			CreatedAt:   time.Now(),
 			UpdatedAt:   time.Now(),
 		}
@@ -272,12 +315,12 @@ func determineCategory(title, description string) models.NewsCategory {
 	text := strings.ToLower(title + " " + description)
 
 	categoryKeywords := map[models.NewsCategory][]string{
-		models.NewsCategoryTechnology:    {"tech", "technology", "software", "hardware", "app", "computer", "digital", "cyber", "ai", "artificial intelligence", "machine learning", "robot"},
-		models.NewsCategoryBusiness:      {"business", "company", "economy", "market", "stock", "finance", "investment", "startup", "entrepreneur"},
-		models.NewsCategoryScience:       {"science", "research", "study", "discovery", "space", "physics", "chemistry", "biology", "astronomy"},
-		models.NewsCategoryHealth:        {"health", "medical", "disease", "virus", "doctor", "hospital", "medicine", "covid", "vaccine", "treatment"},
-		models.NewsCategorySports:        {"sport", "game", "team", "player", "football", "soccer", "baseball", "basketball", "tennis", "golf", "olympics"},
-		models.NewsCategoryEntertainment: {"entertainment", "movie", "film", "music", "celebrity", "actor", "actress", "tv", "show", "concert", "festival", "award"},
+		models.NewsCategoryTechnology: {"tech", "technology", "software", "hardware", "app", "computer", "digital", "cyber", "ai", "artificial intelligence", "machine learning", "robot"},
+		//models.NewsCategoryBusiness:      {"business", "company", "economy", "market", "stock", "finance", "investment", "startup", "entrepreneur"},
+		models.NewsCategoryScience: {"science", "research", "study", "discovery", "space", "physics", "chemistry", "biology", "astronomy"},
+		//models.NewsCategoryHealth:        {"health", "medical", "disease", "virus", "doctor", "hospital", "medicine", "covid", "vaccine", "treatment"},
+		//models.NewsCategorySports:        {"sport", "game", "team", "player", "football", "soccer", "baseball", "basketball", "tennis", "golf", "olympics"},
+		//models.NewsCategoryEntertainment: {"entertainment", "movie", "film", "music", "celebrity", "actor", "actress", "tv", "show", "concert", "festival", "award"},
 	}
 
 	// Count keyword matches for each category
@@ -292,7 +335,7 @@ func determineCategory(title, description string) models.NewsCategory {
 	}
 
 	// Find category with highest score
-	var bestCategory models.NewsCategory = models.NewsCategoryGeneral
+	var bestCategory models.NewsCategory = models.NewsCategoryTechnology
 	highestScore := 0
 
 	for category, score := range categoryScores {

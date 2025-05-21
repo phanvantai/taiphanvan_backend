@@ -22,20 +22,20 @@ const (
 type NewsCategory string
 
 const (
-	// NewsCategoryGeneral represents general news
-	NewsCategoryGeneral NewsCategory = "general"
-	// NewsCategoryBusiness represents business news
-	NewsCategoryBusiness NewsCategory = "business"
+	// // NewsCategoryGeneral represents general news
+	// NewsCategoryGeneral NewsCategory = "general"
+	// // NewsCategoryBusiness represents business news
+	// NewsCategoryBusiness NewsCategory = "business"
 	// NewsCategoryTechnology represents technology news
 	NewsCategoryTechnology NewsCategory = "technology"
 	// NewsCategoryScience represents science news
 	NewsCategoryScience NewsCategory = "science"
-	// NewsCategoryHealth represents health news
-	NewsCategoryHealth NewsCategory = "health"
-	// NewsCategorySports represents sports news
-	NewsCategorySports NewsCategory = "sports"
-	// NewsCategoryEntertainment represents entertainment news
-	NewsCategoryEntertainment NewsCategory = "entertainment"
+	// // NewsCategoryHealth represents health news
+	// NewsCategoryHealth NewsCategory = "health"
+	// // NewsCategorySports represents sports news
+	// NewsCategorySports NewsCategory = "sports"
+	// // NewsCategoryEntertainment represents entertainment news
+	// NewsCategoryEntertainment NewsCategory = "entertainment"
 )
 
 // News represents a news article
@@ -121,4 +121,36 @@ type SetNewsStatusRequest struct {
 type FetchNewsRequest struct {
 	Categories []NewsCategory `json:"categories" example:"['technology', 'business']" description:"Categories of news to fetch"`
 	Limit      int            `json:"limit" example:"10" description:"Maximum number of news articles to fetch"`
+}
+
+// EnrichedNewsContent represents additional content information for a news article
+// that has been enriched with full content from its source
+type EnrichedNewsContent struct {
+	ID                 uint      `json:"id" gorm:"primaryKey" example:"1" description:"Unique identifier"`
+	NewsID             uint      `json:"news_id" gorm:"not null;index" example:"1" description:"ID of the associated news article"`
+	OriginalContent    string    `json:"original_content" gorm:"type:text" description:"Original content from the news API"`
+	FullContent        string    `json:"full_content" gorm:"type:text" description:"Full content fetched from the source"`
+	IsTruncated        bool      `json:"is_truncated" gorm:"default:false" example:"true" description:"Whether the original content was truncated"`
+	TruncatedChars     int       `json:"truncated_chars" example:"1281" description:"Number of characters truncated if known"`
+	TruncationPattern  string    `json:"truncation_pattern" gorm:"size:50" example:"[+1281 chars]" description:"The pattern indicating truncation"`
+	SourceURL          string    `json:"source_url" gorm:"size:500" example:"https://news.com/article" description:"URL where full content was fetched from"`
+	LastFetched        time.Time `json:"last_fetched" description:"When the full content was last fetched"`
+	TruncationDetected time.Time `json:"truncation_detected" description:"When truncation was first detected"`
+	FetchError         string    `json:"fetch_error" gorm:"size:255" description:"Error message if fetch failed"`
+	CreatedAt          time.Time `json:"created_at" description:"When this record was created"`
+	UpdatedAt          time.Time `json:"updated_at" description:"When this record was last updated"`
+}
+
+// ContentStatus represents the status of the content
+type ContentStatus struct {
+	IsTruncated    bool   `json:"is_truncated" example:"true" description:"Whether the content is truncated"`
+	TruncatedChars int    `json:"truncated_chars" example:"1281" description:"Number of characters truncated if known"`
+	HasFullContent bool   `json:"has_full_content" example:"true" description:"Whether full content is available"`
+	FetchError     string `json:"fetch_error,omitempty" description:"Error message if fetch failed"`
+}
+
+// NewsWithContentStatus represents a news article with content status information
+type NewsWithContentStatus struct {
+	News          News          `json:"news" description:"The news article"`
+	ContentStatus ContentStatus `json:"content_status" description:"Status of the article content"`
 }

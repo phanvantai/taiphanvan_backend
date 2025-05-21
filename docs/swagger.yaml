@@ -26,6 +26,20 @@ definitions:
         example: 1
         type: integer
     type: object
+  models.ContentStatus:
+    properties:
+      fetch_error:
+        type: string
+      has_full_content:
+        example: true
+        type: boolean
+      is_truncated:
+        example: true
+        type: boolean
+      truncated_chars:
+        example: 1281
+        type: integer
+    type: object
   models.CreateCommentRequest:
     description: Request model for creating a new comment on a post
     properties:
@@ -393,6 +407,14 @@ definitions:
       file_url:
         example: https://example.com/file.jpg
         type: string
+    type: object
+  models.SwaggerNewsWithContentStatus:
+    description: News article with content status information for Swagger documentation
+    properties:
+      content_status:
+        $ref: '#/definitions/models.ContentStatus'
+      news:
+        $ref: '#/definitions/models.News'
     type: object
   models.SwaggerPostCoverResponse:
     description: Response model for post cover upload
@@ -1252,9 +1274,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: News article
+          description: News article with content status
           schema:
-            $ref: '#/definitions/models.News'
+            $ref: '#/definitions/models.SwaggerNewsWithContentStatus'
         "404":
           description: News article not found
           schema:
@@ -1264,6 +1286,33 @@ paths:
           schema:
             $ref: '#/definitions/models.SwaggerStandardResponse'
       summary: Get news article by ID
+      tags:
+      - News
+  /news/{id}/full-content:
+    get:
+      description: Attempts to fetch and return the full content for a news article
+      parameters:
+      - description: News article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: News article with full content status
+          schema:
+            $ref: '#/definitions/models.SwaggerNewsWithContentStatus'
+        "404":
+          description: News article not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      summary: Get full content for news article
       tags:
       - News
   /news/categories:
@@ -1294,9 +1343,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: News article
+          description: News article with content status
           schema:
-            $ref: '#/definitions/models.News'
+            $ref: '#/definitions/models.SwaggerNewsWithContentStatus'
         "404":
           description: News article not found
           schema:

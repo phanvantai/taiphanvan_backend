@@ -54,8 +54,10 @@ func fetchNewsFromAPI(newsConfig services.NewsConfig) {
 	// Define categories to fetch
 	categories := []models.NewsCategory{
 		models.NewsCategoryTechnology,
-		models.NewsCategoryBusiness,
-		models.NewsCategoryGeneral,
+		models.NewsCategoryScience,
+		// models.NewsCategoryBlockchain,
+		// models.NewsCategoryDevelopment,
+		// models.NewsCategoryWeb3,
 	}
 
 	// Fetch news from API
