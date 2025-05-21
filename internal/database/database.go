@@ -99,6 +99,7 @@ func autoMigrate() error {
 		&models.Comment{},
 		&models.BlacklistedToken{},
 		&models.RefreshToken{}, // Add RefreshToken model
+		&models.News{},         // Add News model
 	)
 	if err != nil {
 		return err

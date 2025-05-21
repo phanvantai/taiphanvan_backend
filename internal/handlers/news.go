@@ -1,0 +1,674 @@
+package handlers
+
+import (
+	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gosimple/slug"
+	"github.com/phanvantai/taiphanvan_backend/internal/database"
+	"github.com/phanvantai/taiphanvan_backend/internal/middleware"
+	"github.com/phanvantai/taiphanvan_backend/internal/models"
+	"github.com/phanvantai/taiphanvan_backend/internal/services"
+	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
+)
+
+// Default pagination values
+const (
+	defaultNewsPage    = 1
+	defaultNewsPerPage = 10
+	maxNewsPerPage     = 50
+)
+
+// GetNews godoc
+// @Summary Get news articles
+// @Description Returns paginated news articles with optional filtering
+// @Tags News
+// @Produce json
+// @Param category query string false "Filter by category"
+// @Param tag query string false "Filter by tag"
+// @Param search query string false "Search in title and content"
+// @Param page query int false "Page number, default is 1"
+// @Param per_page query int false "Items per page, default is 10, max is 50"
+// @Success 200 {object} models.NewsResponse "List of news articles with pagination"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Router /news [get]
+func GetNews(c *gin.Context) {
+	var query models.NewsQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})
+		return
+	}
+
+	// Apply default and max values for pagination
+	if query.Page <= 0 {
+		query.Page = defaultNewsPage
+	}
+	if query.PerPage <= 0 {
+		query.PerPage = defaultNewsPerPage
+	}
+	if query.PerPage > maxNewsPerPage {
+		query.PerPage = maxNewsPerPage
+	}
+
+	// Create database query
+	dbQuery := database.DB.Model(&models.News{}).
+		Where("status = ? AND published = ?", models.NewsStatusPublished, true)
+
+	// Apply category filter if provided
+	if query.Category != "" {
+		dbQuery = dbQuery.Where("category = ?", query.Category)
+	}
+
+	// Apply tag filter if provided
+	if query.Tag != "" {
+		dbQuery = dbQuery.Joins("JOIN news_tags ON news_tags.news_id = news.id").
+			Joins("JOIN tags ON tags.id = news_tags.tag_id").
+			Where("tags.name = ?", query.Tag)
+	}
+
+	// Apply search if provided
+	if query.Search != "" {
+		searchTerm := "%" + query.Search + "%"
+		dbQuery = dbQuery.Where("title ILIKE ? OR content ILIKE ? OR summary ILIKE ?", searchTerm, searchTerm, searchTerm)
+	}
+
+	// Count total items for pagination
+	var totalItems int64
+	if err := dbQuery.Count(&totalItems).Error; err != nil {
+		log.Error().Err(err).Msg("Failed to count news articles")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve news articles"})
+		return
+	}
+
+	// Calculate pagination values
+	totalPages := (int(totalItems) + query.PerPage - 1) / query.PerPage
+	offset := (query.Page - 1) * query.PerPage
+
+	// Retrieve news with limit and offset
+	var news []models.News
+	if err := dbQuery.
+		Order("publish_date DESC").
+		Limit(query.PerPage).
+		Offset(offset).
+		Preload("Tags").
+		Find(&news).Error; err != nil {
+		log.Error().Err(err).Msg("Failed to retrieve news articles")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve news articles"})
+		return
+	}
+
+	// Create response
+	response := models.NewsResponse{
+		News:       news,
+		TotalItems: totalItems,
+		Page:       query.Page,
+		PerPage:    query.PerPage,
+		TotalPages: totalPages,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// GetNewsBySlug godoc
+// @Summary Get news article by slug
+// @Description Returns a specific news article by its slug
+// @Tags News
+// @Produce json
+// @Param slug path string true "News article slug"
+// @Success 200 {object} models.News "News article"
+// @Failure 404 {object} models.SwaggerStandardResponse "News article not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Router /news/slug/{slug} [get]
+func GetNewsBySlug(c *gin.Context) {
+	slug := c.Param("slug")
+	if slug == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Slug is required"})
+		return
+	}
+
+	var news models.News
+	if err := database.DB.
+		Where("slug = ? AND status = ? AND published = ?", slug, models.NewsStatusPublished, true).
+		Preload("Tags").
+		First(&news).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "News article not found"})
+		} else {
+			log.Error().Err(err).Str("slug", slug).Msg("Failed to retrieve news article")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve news article"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, news)
+}
+
+// GetNewsByID godoc
+// @Summary Get news article by ID
+// @Description Returns a specific news article by its ID
+// @Tags News
+// @Produce json
+// @Param id path int true "News article ID"
+// @Success 200 {object} models.News "News article"
+// @Failure 404 {object} models.SwaggerStandardResponse "News article not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Router /news/{id} [get]
+func GetNewsByID(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		return
+	}
+
+	var news models.News
+	if err := database.DB.
+		Where("id = ? AND status = ? AND published = ?", id, models.NewsStatusPublished, true).
+		Preload("Tags").
+		First(&news).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "News article not found"})
+		} else {
+			log.Error().Err(err).Str("id", id).Msg("Failed to retrieve news article")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve news article"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, news)
+}
+
+// GetNewsCategories godoc
+// @Summary Get news categories
+// @Description Returns all available news categories
+// @Tags News
+// @Produce json
+// @Success 200 {array} string "List of categories"
+// @Router /news/categories [get]
+func GetNewsCategories(c *gin.Context) {
+	categories := []string{
+		string(models.NewsCategoryGeneral),
+		string(models.NewsCategoryBusiness),
+		string(models.NewsCategoryTechnology),
+		string(models.NewsCategoryScience),
+		string(models.NewsCategoryHealth),
+		string(models.NewsCategorySports),
+		string(models.NewsCategoryEntertainment),
+	}
+
+	c.JSON(http.StatusOK, categories)
+}
+
+// CreateNews godoc
+// @Summary Create a news article
+// @Description Create a new news article (admin only)
+// @Tags News
+// @Accept json
+// @Produce json
+// @Param news body models.CreateNewsRequest true "News article to create"
+// @Success 201 {object} models.News "Created news article"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /admin/news [post]
+func CreateNews(c *gin.Context) {
+	// Parse request body
+	var requestBody models.CreateNewsRequest
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+		return
+	}
+
+	// Generate slug from title
+	newsSlug := slug.Make(requestBody.Title)
+
+	// Check if slug already exists
+	var count int64
+	if err := database.DB.Model(&models.News{}).Where("slug = ?", newsSlug).Count(&count).Error; err != nil {
+		log.Error().Err(err).Str("slug", newsSlug).Msg("Failed to check for existing slug")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create news article"})
+		return
+	}
+
+	// If slug exists, append a timestamp
+	if count > 0 {
+		newsSlug = fmt.Sprintf("%s-%d", newsSlug, time.Now().Unix())
+	}
+
+	// Set publish date to now if not provided
+	publishDate := time.Now()
+	if requestBody.PublishDate != nil {
+		publishDate = *requestBody.PublishDate
+	}
+
+	// Create news object
+	news := models.News{
+		Title:       requestBody.Title,
+		Slug:        newsSlug,
+		Content:     requestBody.Content,
+		Summary:     requestBody.Summary,
+		Source:      requestBody.Source,
+		SourceURL:   requestBody.SourceURL,
+		ImageURL:    requestBody.ImageURL,
+		Category:    requestBody.Category,
+		Status:      requestBody.Status,
+		Published:   requestBody.Status == models.NewsStatusPublished,
+		PublishDate: publishDate,
+	}
+
+	// If no category is provided, use general
+	if news.Category == "" {
+		news.Category = models.NewsCategoryGeneral
+	}
+
+	// If no status is provided, use draft
+	if news.Status == "" {
+		news.Status = models.NewsStatusDraft
+		news.Published = false
+	}
+
+	// Begin transaction
+	tx := database.DB.Begin()
+
+	// Create news article
+	if err := tx.Create(&news).Error; err != nil {
+		tx.Rollback()
+		log.Error().Err(err).Msg("Failed to create news article")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create news article"})
+		return
+	}
+
+	// Add tags if provided
+	if len(requestBody.Tags) > 0 {
+		for _, tagName := range requestBody.Tags {
+			var tag models.Tag
+			tagName = strings.TrimSpace(tagName)
+
+			// Find or create tag
+			if err := tx.Where("name = ?", tagName).FirstOrCreate(&tag, models.Tag{Name: tagName}).Error; err != nil {
+				tx.Rollback()
+				log.Error().Err(err).Str("tag", tagName).Msg("Failed to process tags")
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process tags"})
+				return
+			}
+
+			// Associate tag with news
+			if err := tx.Model(&news).Association("Tags").Append(&tag); err != nil {
+				tx.Rollback()
+				log.Error().Err(err).Str("tag", tagName).Msg("Failed to associate tags")
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to associate tags"})
+				return
+			}
+		}
+	}
+
+	// Commit transaction
+	tx.Commit()
+
+	// Reload news with tags
+	database.DB.Preload("Tags").First(&news, news.ID)
+
+	c.JSON(http.StatusCreated, news)
+}
+
+// UpdateNews godoc
+// @Summary Update a news article
+// @Description Update an existing news article (admin only)
+// @Tags News
+// @Accept json
+// @Produce json
+// @Param id path int true "News article ID"
+// @Param news body models.UpdateNewsRequest true "Updated news article"
+// @Success 200 {object} models.News "Updated news article"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 404 {object} models.SwaggerStandardResponse "News article not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /admin/news/{id} [put]
+func UpdateNews(c *gin.Context) {
+	// Get news ID from path
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid news ID"})
+		return
+	}
+
+	// Find existing news
+	var news models.News
+	if err := database.DB.Preload("Tags").First(&news, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "News article not found"})
+		} else {
+			log.Error().Err(err).Uint64("id", id).Msg("Failed to retrieve news article")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update news article"})
+		}
+		return
+	}
+
+	// Parse request body
+	var requestBody models.UpdateNewsRequest
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+		return
+	}
+
+	// Update news fields if provided
+	if requestBody.Title != "" {
+		// If title is changing, update slug
+		if news.Title != requestBody.Title {
+			newSlug := slug.Make(requestBody.Title)
+
+			// Check if new slug already exists
+			var count int64
+			if err := database.DB.Model(&models.News{}).Where("slug = ? AND id != ?", newSlug, id).Count(&count).Error; err != nil {
+				log.Error().Err(err).Str("slug", newSlug).Msg("Failed to check for existing slug")
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update news article"})
+				return
+			}
+
+			// If slug exists, append a timestamp
+			if count > 0 {
+				newSlug = fmt.Sprintf("%s-%d", newSlug, time.Now().Unix())
+			}
+
+			news.Slug = newSlug
+		}
+		news.Title = requestBody.Title
+	}
+
+	if requestBody.Content != "" {
+		news.Content = requestBody.Content
+	}
+
+	if requestBody.Summary != "" {
+		news.Summary = requestBody.Summary
+	}
+
+	if requestBody.Source != "" {
+		news.Source = requestBody.Source
+	}
+
+	if requestBody.SourceURL != "" {
+		news.SourceURL = requestBody.SourceURL
+	}
+
+	if requestBody.ImageURL != "" {
+		news.ImageURL = requestBody.ImageURL
+	}
+
+	if requestBody.Category != "" {
+		news.Category = requestBody.Category
+	}
+
+	if requestBody.Status != "" {
+		news.Status = requestBody.Status
+		news.Published = requestBody.Status == models.NewsStatusPublished
+	}
+
+	if requestBody.PublishDate != nil {
+		news.PublishDate = *requestBody.PublishDate
+	}
+
+	// Begin transaction
+	tx := database.DB.Begin()
+
+	// Update news
+	if err := tx.Save(&news).Error; err != nil {
+		tx.Rollback()
+		log.Error().Err(err).Uint64("id", id).Msg("Failed to update news article")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update news article"})
+		return
+	}
+
+	// Update tags if provided
+	if len(requestBody.Tags) > 0 {
+		// Clear existing tags
+		if err := tx.Model(&news).Association("Tags").Clear(); err != nil {
+			tx.Rollback()
+			log.Error().Err(err).Uint64("id", id).Msg("Failed to clear existing tags")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update tags"})
+			return
+		}
+
+		// Add new tags
+		for _, tagName := range requestBody.Tags {
+			var tag models.Tag
+			tagName = strings.TrimSpace(tagName)
+
+			// Find or create tag
+			if err := tx.Where("name = ?", tagName).FirstOrCreate(&tag, models.Tag{Name: tagName}).Error; err != nil {
+				tx.Rollback()
+				log.Error().Err(err).Str("tag", tagName).Msg("Failed to process tags")
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process tags"})
+				return
+			}
+
+			// Associate tag with news
+			if err := tx.Model(&news).Association("Tags").Append(&tag); err != nil {
+				tx.Rollback()
+				log.Error().Err(err).Str("tag", tagName).Msg("Failed to associate tags")
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to associate tags"})
+				return
+			}
+		}
+	}
+
+	// Commit transaction
+	tx.Commit()
+
+	// Reload news with tags
+	database.DB.Preload("Tags").First(&news, news.ID)
+
+	c.JSON(http.StatusOK, news)
+}
+
+// DeleteNews godoc
+// @Summary Delete a news article
+// @Description Delete a news article (admin only)
+// @Tags News
+// @Produce json
+// @Param id path int true "News article ID"
+// @Success 200 {object} models.SwaggerDeleteNewsResponse "News article deleted"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 404 {object} models.SwaggerStandardResponse "News article not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /admin/news/{id} [delete]
+func DeleteNews(c *gin.Context) {
+	// Get news ID from path
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid news ID"})
+		return
+	}
+
+	// Check if news exists
+	var news models.News
+	if err := database.DB.First(&news, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "News article not found"})
+		} else {
+			log.Error().Err(err).Uint64("id", id).Msg("Failed to retrieve news article")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete news article"})
+		}
+		return
+	}
+
+	// Begin transaction
+	tx := database.DB.Begin()
+
+	// Clear associations
+	if err := tx.Model(&news).Association("Tags").Clear(); err != nil {
+		tx.Rollback()
+		log.Error().Err(err).Uint64("id", id).Msg("Failed to clear tags")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete news article"})
+		return
+	}
+
+	// Delete news
+	if err := tx.Delete(&news).Error; err != nil {
+		tx.Rollback()
+		log.Error().Err(err).Uint64("id", id).Msg("Failed to delete news article")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete news article"})
+		return
+	}
+
+	// Commit transaction
+	tx.Commit()
+
+	c.JSON(http.StatusOK, gin.H{"message": "News article deleted successfully"})
+}
+
+// SetNewsStatus godoc
+// @Summary Set news article status
+// @Description Update the status of a news article (admin only)
+// @Tags News
+// @Accept json
+// @Produce json
+// @Param id path int true "News article ID"
+// @Param status body models.SetNewsStatusRequest true "New status"
+// @Success 200 {object} models.News "Updated news article"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 404 {object} models.SwaggerStandardResponse "News article not found"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /admin/news/{id}/status [post]
+func SetNewsStatus(c *gin.Context) {
+	// Get news ID from path
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid news ID"})
+		return
+	}
+
+	// Parse request body
+	var requestBody models.SetNewsStatusRequest
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+		return
+	}
+
+	// Find news
+	var news models.News
+	if err := database.DB.First(&news, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "News article not found"})
+		} else {
+			log.Error().Err(err).Uint64("id", id).Msg("Failed to retrieve news article")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update news status"})
+		}
+		return
+	}
+
+	// Update status
+	news.Status = requestBody.Status
+	news.Published = requestBody.Status == models.NewsStatusPublished
+	news.UpdatedAt = time.Now()
+
+	// If setting to published, set publish date to now if not already set
+	if news.Status == models.NewsStatusPublished && news.PublishDate.Before(time.Now().AddDate(0, 0, -1)) {
+		news.PublishDate = time.Now()
+	}
+
+	// Save changes
+	if err := database.DB.Save(&news).Error; err != nil {
+		log.Error().Err(err).Uint64("id", id).Msg("Failed to update news status")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update news status"})
+		return
+	}
+
+	// Reload news with tags
+	database.DB.Preload("Tags").First(&news, news.ID)
+
+	c.JSON(http.StatusOK, news)
+}
+
+// FetchExternalNews godoc
+// @Summary Fetch news from external API
+// @Description Fetch and store news from external API (admin only)
+// @Tags News
+// @Accept json
+// @Produce json
+// @Param fetch_request body models.FetchNewsRequest true "Fetch request parameters"
+// @Success 200 {object} models.SwaggerFetchNewsResponse "News articles fetched"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /admin/news/fetch [post]
+func FetchExternalNews(c *gin.Context) {
+	// Parse request body
+	var requestBody models.FetchNewsRequest
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+		return
+	}
+
+	// Initialize News API service
+	newsService, err := services.NewNewsService(middleware.AppConfig.NewsAPI)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to initialize NewsAPI service")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize news service"})
+		return
+	}
+
+	// Fetch news
+	news, err := newsService.FetchNews(c.Request.Context(), requestBody.Categories, requestBody.Limit)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to fetch news")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch news from external API"})
+		return
+	}
+
+	if len(news) == 0 {
+		c.JSON(http.StatusOK, gin.H{"message": "No news articles found"})
+		return
+	}
+
+	// Begin transaction
+	tx := database.DB.Begin()
+
+	// Store each news article
+	var savedCount int
+	for _, article := range news {
+		// Check if article already exists by external ID
+		var existingCount int64
+		if err := tx.Model(&models.News{}).Where("external_id = ?", article.ExternalID).Count(&existingCount).Error; err != nil {
+			log.Error().Err(err).Str("external_id", article.ExternalID).Msg("Failed to check existing news")
+			continue
+		}
+
+		if existingCount > 0 {
+			continue // Skip existing articles
+		}
+
+		// Save article
+		if err := tx.Create(&article).Error; err != nil {
+			log.Error().Err(err).Str("title", article.Title).Msg("Failed to save news article")
+			continue
+		}
+
+		savedCount++
+	}
+
+	// Commit transaction
+	tx.Commit()
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "News articles fetched successfully",
+		"total":      len(news),
+		"saved":      savedCount,
+		"categories": requestBody.Categories,
+		"fetch_time": time.Now().Format(time.RFC3339),
+	})
+}

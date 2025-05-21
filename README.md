@@ -32,6 +32,8 @@ taiphanvan_backend/
 - API documentation with Swagger
 - Security features (rate limiting, input sanitization, CORS support)
 - Cloudinary integration for image uploads
+- News integration with external API providers
+- Automatic news fetching and categorization
 - Containerization with Docker
 - Support for multiple deployment environments (local, Docker, Railway)
 
@@ -139,6 +141,13 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 CLOUDINARY_UPLOAD_FOLDER=blog_images
+
+# NewsAPI Configuration
+NEWS_API_KEY=your_newsapi_key
+NEWS_API_BASE_URL=https://newsapi.org/v2
+NEWS_API_DEFAULT_LIMIT=10
+NEWS_API_FETCH_INTERVAL=1h
+NEWS_API_ENABLE_AUTO_FETCH=false
 ```
 
 ## API Documentation

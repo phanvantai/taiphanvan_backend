@@ -22,6 +22,7 @@ type Config struct {
 	Admin      AdminConfig
 	Editor     EditorConfig
 	Cloudinary CloudinaryConfig
+	NewsAPI    NewsAPIConfig
 }
 
 // ServerConfig holds all server-related configuration
@@ -88,6 +89,15 @@ type CloudinaryConfig struct {
 	APIKey       string
 	APISecret    string
 	UploadFolder string
+}
+
+// NewsAPIConfig holds configuration for NewsAPI
+type NewsAPIConfig struct {
+	BaseURL         string
+	APIKey          string
+	DefaultLimit    int
+	FetchInterval   time.Duration
+	EnableAutoFetch bool
 }
 
 // Load loads the configuration from environment variables or .env file
@@ -204,6 +214,25 @@ func Load(_ string) (*Config, error) {
 		APIKey:       getEnv("CLOUDINARY_API_KEY", ""),
 		APISecret:    getEnv("CLOUDINARY_API_SECRET", ""),
 		UploadFolder: getEnv("CLOUDINARY_UPLOAD_FOLDER", "blog_images"),
+	}
+
+	// Load NewsAPI config
+	fetchInterval, err := time.ParseDuration(getEnv("NEWS_API_FETCH_INTERVAL", "1h"))
+	if err != nil {
+		fetchInterval = 1 * time.Hour // Default to 1 hour if invalid
+	}
+
+	defaultLimit, err := strconv.Atoi(getEnv("NEWS_API_DEFAULT_LIMIT", "10"))
+	if err != nil {
+		defaultLimit = 10 // Default to 10 if invalid
+	}
+
+	config.NewsAPI = NewsAPIConfig{
+		BaseURL:         getEnv("NEWS_API_BASE_URL", "https://newsapi.org/v2"),
+		APIKey:          getEnv("NEWS_API_KEY", ""),
+		DefaultLimit:    defaultLimit,
+		FetchInterval:   fetchInterval,
+		EnableAutoFetch: GetEnvBool("NEWS_API_ENABLE_AUTO_FETCH", false),
 	}
 
 	// Validate configuration and apply environment-specific fallbacks
