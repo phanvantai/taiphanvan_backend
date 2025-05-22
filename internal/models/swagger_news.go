@@ -12,6 +12,16 @@ type SwaggerFetchNewsResponse struct {
 	FetchTime  string         `json:"fetch_time" example:"2023-01-01T12:00:00Z" description:"When the fetch operation was performed"`
 }
 
+// SwaggerFetchRSSNewsResponse represents the response for fetching news from RSS feeds
+// @Description Response format for fetching news from RSS feeds
+type SwaggerFetchRSSNewsResponse struct {
+	Message    string         `json:"message" example:"RSS news articles fetched successfully" description:"Status message"`
+	Total      int            `json:"total" example:"15" description:"Total number of news articles fetched from RSS feeds"`
+	Saved      int            `json:"saved" example:"12" description:"Number of new articles saved"`
+	Categories []NewsCategory `json:"categories" example:"[\"technology\",\"science\"]" description:"Categories of the fetched articles"`
+	FetchTime  string         `json:"fetch_time" example:"2023-01-01T12:00:00Z" description:"When the fetch operation was performed"`
+}
+
 // SwaggerDeleteNewsResponse represents the response for deleting a news article
 // @Description Response format for deleting a news article
 type SwaggerDeleteNewsResponse struct {

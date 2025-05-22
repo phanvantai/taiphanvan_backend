@@ -119,7 +119,7 @@ type SetNewsStatusRequest struct {
 // FetchNewsRequest represents the request body for fetching news from external API
 // @Description Request model for fetching news from external API
 type FetchNewsRequest struct {
-	Categories []NewsCategory `json:"categories" example:"['technology', 'business']" description:"Categories of news to fetch"`
+	Categories []NewsCategory `json:"categories,omitempty" example:"['technology', 'business']" description:"Categories of news to fetch (for API-based fetching)"`
 	Limit      int            `json:"limit" example:"10" description:"Maximum number of news articles to fetch"`
 }
 

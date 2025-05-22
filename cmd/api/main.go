@@ -120,12 +120,16 @@ func main() {
 	rateLimiter.CleanupTask()                                  // Start the cleanup task
 
 	// Start the news fetcher in background if enabled
-	newsConfig := services.NewNewsConfig(cfg.NewsAPI)
+	newsConfig := services.NewNewsConfig(cfg.NewsAPI, cfg.RSS)
 	log.Info().
-		Bool("enable_auto_fetch", newsConfig.EnableAutoFetch).
-		Dur("fetch_interval", newsConfig.FetchInterval).
-		Int("default_limit", newsConfig.DefaultLimit).
+		Bool("api_auto_fetch_enabled", newsConfig.EnableAutoFetch).
+		Bool("rss_auto_fetch_enabled", newsConfig.RSSConfig.EnableAutoFetch).
+		Dur("api_fetch_interval", newsConfig.FetchInterval).
+		Dur("rss_fetch_interval", newsConfig.RSSConfig.FetchInterval).
+		Int("api_default_limit", newsConfig.DefaultLimit).
+		Int("rss_default_limit", newsConfig.RSSConfig.DefaultLimit).
 		Str("api_key_set", map[bool]string{true: "yes", false: "no"}[newsConfig.APIConfig.APIKey != ""]).
+		Int("rss_feeds_configured", len(newsConfig.RSSConfig.Feeds)).
 		Msg("News fetcher configuration")
 	utils.StartNewsFetcher(newsConfig)
 
@@ -347,6 +351,7 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 			admin.DELETE("/news/:id", handlers.DeleteNews)
 			admin.POST("/news/:id/status", handlers.SetNewsStatus)
 			admin.POST("/news/fetch", handlers.FetchExternalNews)
+			admin.POST("/news/fetch-rss", handlers.FetchRSSNews)
 		}
 	}
 

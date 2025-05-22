@@ -701,6 +701,98 @@ func FetchExternalNews(c *gin.Context) {
 	})
 }
 
+// FetchRSSNews godoc
+// @Summary Fetch news from RSS feeds
+// @Description Fetch and store news from configured RSS feeds (admin only)
+// @Tags News
+// @Accept json
+// @Produce json
+// @Param fetch_request body models.FetchNewsRequest true "Fetch request parameters (only limit is used for RSS feeds)"
+// @Success 200 {object} models.SwaggerFetchRSSNewsResponse "News articles fetched from RSS feeds"
+// @Failure 400 {object} models.SwaggerStandardResponse "Invalid input"
+// @Failure 401 {object} models.SwaggerStandardResponse "Unauthorized"
+// @Failure 500 {object} models.SwaggerStandardResponse "Server error"
+// @Security BearerAuth
+// @Router /admin/news/fetch-rss [post]
+func FetchRSSNews(c *gin.Context) {
+	// Parse request body
+	var requestBody models.FetchNewsRequest
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+		return
+	}
+
+	// Initialize RSS service
+	rssService, err := services.NewRSSService(middleware.AppConfig.RSS)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to initialize RSS service")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize RSS service"})
+		return
+	}
+
+	// Fetch news from RSS feeds
+	news, err := rssService.FetchNews(c.Request.Context(), requestBody.Limit)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to fetch news from RSS feeds")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch news from RSS feeds"})
+		return
+	}
+
+	if len(news) == 0 {
+		c.JSON(http.StatusOK, gin.H{"message": "No news articles found in RSS feeds"})
+		return
+	}
+
+	// Begin transaction
+	tx := database.DB.Begin()
+
+	// Store each news article
+	var savedCount int
+	for _, article := range news {
+		// Check if article already exists by external ID
+		var existingCount int64
+		if err := tx.Model(&models.News{}).Where("external_id = ?", article.ExternalID).Count(&existingCount).Error; err != nil {
+			log.Error().Err(err).Str("external_id", article.ExternalID).Msg("Failed to check existing news")
+			continue
+		}
+
+		if existingCount > 0 {
+			continue // Skip existing articles
+		}
+
+		// Save article
+		if err := tx.Create(&article).Error; err != nil {
+			log.Error().Err(err).Str("title", article.Title).Msg("Failed to save news article")
+			continue
+		}
+
+		savedCount++
+	}
+
+	// Commit transaction
+	tx.Commit()
+
+	// Collect all unique categories from the fetched news
+	categories := make(map[models.NewsCategory]bool)
+	for _, article := range news {
+		categories[article.Category] = true
+	}
+
+	// Convert categories map to slice for response
+	var categoriesSlice []models.NewsCategory
+	for category := range categories {
+		categoriesSlice = append(categoriesSlice, category)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "RSS news articles fetched successfully",
+		"total":      len(news),
+		"saved":      savedCount,
+		"categories": categoriesSlice,
+		"fetch_time": time.Now().Format(time.RFC3339),
+	})
+}
+
 // GetNewsFullContent godoc
 // @Summary Get full content for news article
 // @Description Attempts to fetch and return the full content for a news article

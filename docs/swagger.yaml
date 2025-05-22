@@ -208,22 +208,12 @@ definitions:
     type: object
   models.NewsCategory:
     enum:
-    - general
-    - business
     - technology
     - science
-    - health
-    - sports
-    - entertainment
     type: string
     x-enum-varnames:
-    - NewsCategoryGeneral
-    - NewsCategoryBusiness
     - NewsCategoryTechnology
     - NewsCategoryScience
-    - NewsCategoryHealth
-    - NewsCategorySports
-    - NewsCategoryEntertainment
   models.NewsResponse:
     description: Response model for news list with pagination information
     properties:
@@ -399,6 +389,29 @@ definitions:
         type: integer
       total:
         example: 10
+        type: integer
+    type: object
+  models.SwaggerFetchRSSNewsResponse:
+    description: Response format for fetching news from RSS feeds
+    properties:
+      categories:
+        example:
+        - '["technology"'
+        - '"science"]'
+        items:
+          $ref: '#/definitions/models.NewsCategory'
+        type: array
+      fetch_time:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      message:
+        example: RSS news articles fetched successfully
+        type: string
+      saved:
+        example: 12
+        type: integer
+      total:
+        example: 15
         type: integer
     type: object
   models.SwaggerFileUploadResponse:
@@ -879,6 +892,42 @@ paths:
       security:
       - BearerAuth: []
       summary: Fetch news from external API
+      tags:
+      - News
+  /admin/news/fetch-rss:
+    post:
+      consumes:
+      - application/json
+      description: Fetch and store news from configured RSS feeds (admin only)
+      parameters:
+      - description: Fetch request parameters (only limit is used for RSS feeds)
+        in: body
+        name: fetch_request
+        required: true
+        schema:
+          $ref: '#/definitions/models.FetchNewsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: News articles fetched from RSS feeds
+          schema:
+            $ref: '#/definitions/models.SwaggerFetchRSSNewsResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Fetch news from RSS feeds
       tags:
       - News
   /auth/login:

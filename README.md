@@ -148,6 +148,13 @@ NEWS_API_BASE_URL=https://newsapi.org/v2
 NEWS_API_DEFAULT_LIMIT=10
 NEWS_API_FETCH_INTERVAL=1h
 NEWS_API_ENABLE_AUTO_FETCH=false
+
+# RSS Feed Configuration
+# Format: NAME=URL=CATEGORY,NAME2=URL2=CATEGORY2,...
+RSS_FEEDS=TechCrunch=https://techcrunch.com/feed/=technology,TheVerge=https://www.theverge.com/rss/index.xml=technology
+RSS_DEFAULT_LIMIT=10
+RSS_FETCH_INTERVAL=1h
+RSS_ENABLE_AUTO_FETCH=false
 ```
 
 ## API Documentation
@@ -199,6 +206,23 @@ http://localhost:9876/swagger/index.html
 
 - `GET /api/tags` - Get all tags
 - `GET /api/tags/popular` - Get popular tags
+
+### News
+
+- `GET /api/news` - Get all news articles (with pagination and filtering)
+- `GET /api/news/slug/:slug` - Get a specific news article by slug
+- `GET /api/news/:id` - Get a specific news article by ID
+- `GET /api/news/:id/full-content` - Get the full content of a news article
+- `GET /api/news/categories` - Get all news categories
+
+#### Admin News Management
+
+- `POST /api/admin/news` - Create a new news article (requires admin)
+- `PUT /api/admin/news/:id` - Update a news article (requires admin)
+- `DELETE /api/admin/news/:id` - Delete a news article (requires admin)
+- `POST /api/admin/news/:id/status` - Change news article status (requires admin)
+- `POST /api/admin/news/fetch` - Fetch news articles from external API (requires admin)
+- `POST /api/admin/news/fetch-rss` - Fetch news articles from RSS feeds (requires admin)
 
 ### Health Check
 

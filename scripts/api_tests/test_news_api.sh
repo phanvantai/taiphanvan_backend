@@ -46,6 +46,13 @@ curl -s -X POST ${BASE_URL}/admin/news/fetch \
   -H "Authorization: Bearer ${ADMIN_TOKEN}" \
   -d '{"categories":["technology", "business"], "limit":10}' | jq
 
+# Test fetching news from RSS feeds
+print_message "Testing news fetch from RSS feeds..."
+curl -s -X POST ${BASE_URL}/admin/news/fetch-rss \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+  -d '{"limit":10}' | jq
+
 # Test getting news articles
 print_message "Testing get news articles..."
 curl -s -X GET "${BASE_URL}/news?page=1&per_page=5" | jq

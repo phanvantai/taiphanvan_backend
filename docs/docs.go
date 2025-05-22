@@ -138,6 +138,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/news/fetch-rss": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch and store news from configured RSS feeds (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Fetch news from RSS feeds",
+                "parameters": [
+                    {
+                        "description": "Fetch request parameters (only limit is used for RSS feeds)",
+                        "name": "fetch_request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FetchNewsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "News articles fetched from RSS feeds",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerFetchRSSNewsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/news/{id}": {
             "put": {
                 "security": [
@@ -2335,22 +2392,12 @@ const docTemplate = `{
         "models.NewsCategory": {
             "type": "string",
             "enum": [
-                "general",
-                "business",
                 "technology",
-                "science",
-                "health",
-                "sports",
-                "entertainment"
+                "science"
             ],
             "x-enum-varnames": [
-                "NewsCategoryGeneral",
-                "NewsCategoryBusiness",
                 "NewsCategoryTechnology",
-                "NewsCategoryScience",
-                "NewsCategoryHealth",
-                "NewsCategorySports",
-                "NewsCategoryEntertainment"
+                "NewsCategoryScience"
             ]
         },
         "models.NewsResponse": {
@@ -2604,6 +2651,38 @@ const docTemplate = `{
                 "total": {
                     "type": "integer",
                     "example": 10
+                }
+            }
+        },
+        "models.SwaggerFetchRSSNewsResponse": {
+            "description": "Response format for fetching news from RSS feeds",
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.NewsCategory"
+                    },
+                    "example": [
+                        "[\"technology\"",
+                        "\"science\"]"
+                    ]
+                },
+                "fetch_time": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "RSS news articles fetched successfully"
+                },
+                "saved": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 15
                 }
             }
         },

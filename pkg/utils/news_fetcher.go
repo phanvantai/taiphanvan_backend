@@ -13,21 +13,34 @@ import (
 // StartNewsFetcher starts the background process to automatically fetch news
 func StartNewsFetcher(newsConfig services.NewsConfig) {
 	log.Info().
-		Bool("auto_fetch_enabled", newsConfig.EnableAutoFetch).
+		Bool("api_auto_fetch_enabled", newsConfig.EnableAutoFetch).
+		Bool("rss_auto_fetch_enabled", newsConfig.RSSConfig.EnableAutoFetch).
 		Dur("fetch_interval", newsConfig.FetchInterval).
 		Msg("News fetcher configuration check")
 
-	if !newsConfig.EnableAutoFetch {
-		log.Info().Msg("Automatic news fetching is disabled")
-		return
+	// Start API fetcher if enabled
+	if newsConfig.EnableAutoFetch {
+		startAPIFetcher(newsConfig)
+	} else {
+		log.Info().Msg("Automatic news API fetching is disabled")
 	}
 
+	// Start RSS fetcher if enabled
+	if newsConfig.RSSConfig.EnableAutoFetch {
+		startRSSFetcher(newsConfig)
+	} else {
+		log.Info().Msg("Automatic RSS fetching is disabled")
+	}
+}
+
+// startAPIFetcher starts the background process to fetch news from the NewsAPI
+func startAPIFetcher(newsConfig services.NewsConfig) {
 	ticker := time.NewTicker(newsConfig.FetchInterval)
 
 	go func() {
 		log.Info().
 			Dur("interval", newsConfig.FetchInterval).
-			Msg("Starting automatic news fetcher background process")
+			Msg("Starting automatic news API fetcher background process")
 
 		// Run immediately on startup
 		fetchNewsFromAPI(newsConfig)
@@ -35,6 +48,25 @@ func StartNewsFetcher(newsConfig services.NewsConfig) {
 		// Then run on the scheduled interval
 		for range ticker.C {
 			fetchNewsFromAPI(newsConfig)
+		}
+	}()
+}
+
+// startRSSFetcher starts the background process to fetch news from RSS feeds
+func startRSSFetcher(newsConfig services.NewsConfig) {
+	ticker := time.NewTicker(newsConfig.RSSConfig.FetchInterval)
+
+	go func() {
+		log.Info().
+			Dur("interval", newsConfig.RSSConfig.FetchInterval).
+			Msg("Starting automatic RSS fetcher background process")
+
+		// Run immediately on startup
+		fetchNewsFromRSS(newsConfig)
+
+		// Then run on the scheduled interval
+		for range ticker.C {
+			fetchNewsFromRSS(newsConfig)
 		}
 	}()
 }
@@ -73,6 +105,41 @@ func fetchNewsFromAPI(newsConfig services.NewsConfig) {
 		return
 	}
 
+	// Store the fetched news articles
+	saveNewsArticles(news)
+}
+
+// fetchNewsFromRSS fetches news articles from RSS feeds and stores them in the database
+func fetchNewsFromRSS(newsConfig services.NewsConfig) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Initialize RSS service
+	rssService, err := services.NewRSSService(newsConfig.RSSConfig)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to initialize RSS service for background fetching")
+		return
+	}
+
+	// Fetch news from RSS feeds
+	log.Info().Msg("Fetching news from RSS feeds")
+	news, err := rssService.FetchNews(ctx, newsConfig.RSSConfig.DefaultLimit)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to fetch news from RSS feeds")
+		return
+	}
+
+	if len(news) == 0 {
+		log.Info().Msg("No news articles found in RSS feeds to import")
+		return
+	}
+
+	// Store the fetched news articles
+	saveNewsArticles(news)
+}
+
+// saveNewsArticles saves the news articles to the database
+func saveNewsArticles(news []models.News) {
 	// Begin transaction
 	tx := database.DB.Begin()
 

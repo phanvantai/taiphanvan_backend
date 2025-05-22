@@ -51,6 +51,11 @@ services:
       - NEWS_API_DEFAULT_LIMIT=${NEWS_API_DEFAULT_LIMIT}
       - NEWS_API_FETCH_INTERVAL=${NEWS_API_FETCH_INTERVAL}
       - NEWS_API_ENABLE_AUTO_FETCH=${NEWS_API_ENABLE_AUTO_FETCH}
+      # RSS Feed configuration
+      - RSS_FEEDS=${RSS_FEEDS}
+      - RSS_DEFAULT_LIMIT=${RSS_DEFAULT_LIMIT}
+      - RSS_FETCH_INTERVAL=${RSS_FETCH_INTERVAL}
+      - RSS_ENABLE_AUTO_FETCH=${RSS_ENABLE_AUTO_FETCH}
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:${API_PORT}/api/health"]
       interval: 30s

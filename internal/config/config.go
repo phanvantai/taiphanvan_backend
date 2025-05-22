@@ -23,6 +23,7 @@ type Config struct {
 	Editor     EditorConfig
 	Cloudinary CloudinaryConfig
 	NewsAPI    NewsAPIConfig
+	RSS        RSSConfig
 }
 
 // ServerConfig holds all server-related configuration
@@ -95,6 +96,21 @@ type CloudinaryConfig struct {
 type NewsAPIConfig struct {
 	BaseURL         string
 	APIKey          string
+	DefaultLimit    int
+	FetchInterval   time.Duration
+	EnableAutoFetch bool
+}
+
+// RSSFeed holds configuration for a single RSS feed
+type RSSFeed struct {
+	Name     string
+	URL      string
+	Category string
+}
+
+// RSSConfig holds configuration for RSS feeds
+type RSSConfig struct {
+	Feeds           []RSSFeed
 	DefaultLimit    int
 	FetchInterval   time.Duration
 	EnableAutoFetch bool
@@ -233,6 +249,47 @@ func Load(_ string) (*Config, error) {
 		DefaultLimit:    defaultLimit,
 		FetchInterval:   fetchInterval,
 		EnableAutoFetch: GetEnvBool("NEWS_API_ENABLE_AUTO_FETCH", false),
+	}
+
+	// Load RSS config
+	rssFetchInterval, err := time.ParseDuration(getEnv("RSS_FETCH_INTERVAL", "1h"))
+	if err != nil {
+		rssFetchInterval = 1 * time.Hour // Default to 1 hour if invalid
+	}
+
+	rssDefaultLimit, err := strconv.Atoi(getEnv("RSS_DEFAULT_LIMIT", "10"))
+	if err != nil {
+		rssDefaultLimit = 10 // Default to 10 if invalid
+	}
+
+	// Parse RSS feeds from environment variable
+	// Format: NAME1=URL1=CATEGORY1,NAME2=URL2=CATEGORY2,...
+	var rssFeeds []RSSFeed
+	rssEnv := getEnv("RSS_FEEDS", "")
+	if rssEnv != "" {
+		feedsStr := strings.Split(rssEnv, ",")
+		for _, feedStr := range feedsStr {
+			parts := strings.Split(feedStr, "=")
+			if len(parts) >= 2 {
+				feed := RSSFeed{
+					Name: parts[0],
+					URL:  parts[1],
+				}
+				if len(parts) >= 3 {
+					feed.Category = parts[2]
+				} else {
+					feed.Category = "technology" // Default category
+				}
+				rssFeeds = append(rssFeeds, feed)
+			}
+		}
+	}
+
+	config.RSS = RSSConfig{
+		Feeds:           rssFeeds,
+		DefaultLimit:    rssDefaultLimit,
+		FetchInterval:   rssFetchInterval,
+		EnableAutoFetch: GetEnvBool("RSS_ENABLE_AUTO_FETCH", false),
 	}
 
 	// Validate configuration and apply environment-specific fallbacks
