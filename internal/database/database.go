@@ -98,7 +98,9 @@ func autoMigrate() error {
 		&models.Tag{},
 		&models.Comment{},
 		&models.BlacklistedToken{},
-		&models.RefreshToken{}, // Add RefreshToken model
+		&models.RefreshToken{},        // Add RefreshToken model
+		&models.News{},                // Add News model
+		&models.EnrichedNewsContent{}, // Add EnrichedNewsContent model
 	)
 	if err != nil {
 		return err

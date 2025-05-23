@@ -26,6 +26,20 @@ definitions:
         example: 1
         type: integer
     type: object
+  models.ContentStatus:
+    properties:
+      fetch_error:
+        type: string
+      has_full_content:
+        example: true
+        type: boolean
+      is_truncated:
+        example: true
+        type: boolean
+      truncated_chars:
+        example: 1281
+        type: integer
+    type: object
   models.CreateCommentRequest:
     description: Request model for creating a new comment on a post
     properties:
@@ -34,6 +48,50 @@ definitions:
         type: string
     required:
     - content
+    type: object
+  models.CreateNewsRequest:
+    description: Request model for creating a news article
+    properties:
+      category:
+        allOf:
+        - $ref: '#/definitions/models.NewsCategory'
+        example: technology
+      content:
+        example: Scientists announced a major breakthrough in quantum computing...
+        type: string
+      image_url:
+        example: https://res.cloudinary.com/demo/image/upload/v1234567890/news/article1.jpg
+        type: string
+      publish_date:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      source:
+        example: TechNews
+        type: string
+      source_url:
+        example: https://technews.com/article/12345
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.NewsStatus'
+        example: published
+      summary:
+        example: A brief summary of the quantum computing breakthrough
+        type: string
+      tags:
+        example:
+        - '[''technology'''
+        - ' ''quantum computing'']'
+        items:
+          type: string
+        type: array
+      title:
+        example: Major Technology Breakthrough Announced
+        type: string
+    required:
+    - content
+    - source
+    - title
     type: object
   models.CreatePostRequest:
     description: Request model for creating a new blog post
@@ -68,6 +126,20 @@ definitions:
     - content
     - title
     type: object
+  models.FetchNewsRequest:
+    description: Request model for fetching news from external API
+    properties:
+      categories:
+        example:
+        - '[''technology'''
+        - ' ''business'']'
+        items:
+          $ref: '#/definitions/models.NewsCategory'
+        type: array
+      limit:
+        example: 10
+        type: integer
+    type: object
   models.LoginRequest:
     properties:
       email:
@@ -78,6 +150,135 @@ definitions:
     required:
     - email
     - password
+    type: object
+  models.News:
+    description: A news article with content, metadata, and relationships
+    properties:
+      category:
+        allOf:
+        - $ref: '#/definitions/models.NewsCategory'
+        example: technology
+      content:
+        example: Scientists announced a major breakthrough in quantum computing...
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      external_id:
+        example: ext-12345
+        type: string
+      id:
+        example: 1
+        type: integer
+      image_url:
+        example: https://res.cloudinary.com/demo/image/upload/v1234567890/news/article1.jpg
+        type: string
+      publish_date:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      published:
+        example: true
+        type: boolean
+      slug:
+        example: major-technology-breakthrough-announced
+        type: string
+      source:
+        example: TechNews
+        type: string
+      source_url:
+        example: https://technews.com/article/12345
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.NewsStatus'
+        example: published
+      summary:
+        example: A brief summary of the quantum computing breakthrough
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/models.Tag'
+        type: array
+      title:
+        example: Major Technology Breakthrough Announced
+        type: string
+      updated_at:
+        example: "2023-01-02T12:00:00Z"
+        type: string
+    type: object
+  models.NewsCategory:
+    enum:
+    - technology
+    - science
+    type: string
+    x-enum-varnames:
+    - NewsCategoryTechnology
+    - NewsCategoryScience
+  models.NewsStatus:
+    enum:
+    - published
+    - draft
+    - archived
+    type: string
+    x-enum-varnames:
+    - NewsStatusPublished
+    - NewsStatusDraft
+    - NewsStatusArchived
+  models.NewsWithoutContent:
+    properties:
+      category:
+        $ref: '#/definitions/models.NewsCategory'
+      created_at:
+        type: string
+      external_id:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      publish_date:
+        type: string
+      published:
+        type: boolean
+      slug:
+        type: string
+      source:
+        type: string
+      source_url:
+        type: string
+      status:
+        $ref: '#/definitions/models.NewsStatus'
+      summary:
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/models.Tag'
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.NewsWithoutContentResponse:
+    description: Response model for news list with pagination information and without
+      content
+    properties:
+      news:
+        items:
+          $ref: '#/definitions/models.NewsWithoutContent'
+        type: array
+      page:
+        example: 1
+        type: integer
+      per_page:
+        example: 10
+        type: integer
+      total_items:
+        example: 100
+        type: integer
+      total_pages:
+        example: 10
+        type: integer
     type: object
   models.Post:
     description: A blog post with content, metadata, and relationships
@@ -159,6 +360,16 @@ definitions:
     - password
     - username
     type: object
+  models.SetNewsStatusRequest:
+    description: Request model for changing a news article's status
+    properties:
+      status:
+        allOf:
+        - $ref: '#/definitions/models.NewsStatus'
+        example: published
+    required:
+    - status
+    type: object
   models.SetPostStatusRequest:
     description: Request model for changing a post's status
     properties:
@@ -186,12 +397,73 @@ definitions:
         example: https://example.com/file.jpg
         type: string
     type: object
+  models.SwaggerDeleteNewsResponse:
+    description: Response format for deleting a news article
+    properties:
+      message:
+        example: News article deleted successfully
+        type: string
+    type: object
+  models.SwaggerFetchNewsResponse:
+    description: Response format for fetching news from external API
+    properties:
+      categories:
+        example:
+        - '["technology"'
+        - '"business"]'
+        items:
+          $ref: '#/definitions/models.NewsCategory'
+        type: array
+      fetch_time:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      message:
+        example: News articles fetched successfully
+        type: string
+      saved:
+        example: 8
+        type: integer
+      total:
+        example: 10
+        type: integer
+    type: object
+  models.SwaggerFetchRSSNewsResponse:
+    description: Response format for fetching news from RSS feeds
+    properties:
+      categories:
+        example:
+        - '["technology"'
+        - '"science"]'
+        items:
+          $ref: '#/definitions/models.NewsCategory'
+        type: array
+      fetch_time:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      message:
+        example: RSS news articles fetched successfully
+        type: string
+      saved:
+        example: 12
+        type: integer
+      total:
+        example: 15
+        type: integer
+    type: object
   models.SwaggerFileUploadResponse:
     description: Response model for editor file upload
     properties:
       file_url:
         example: https://example.com/file.jpg
         type: string
+    type: object
+  models.SwaggerNewsWithContentStatus:
+    description: News article with content status information for Swagger documentation
+    properties:
+      content_status:
+        $ref: '#/definitions/models.ContentStatus'
+      news:
+        $ref: '#/definitions/models.News'
     type: object
   models.SwaggerPostCoverResponse:
     description: Response model for post cover upload
@@ -336,6 +608,46 @@ definitions:
     required:
     - content
     type: object
+  models.UpdateNewsRequest:
+    description: Request model for updating a news article
+    properties:
+      category:
+        allOf:
+        - $ref: '#/definitions/models.NewsCategory'
+        example: technology
+      content:
+        example: Scientists announced a major breakthrough in quantum computing...
+        type: string
+      image_url:
+        example: https://res.cloudinary.com/demo/image/upload/v1234567890/news/article1.jpg
+        type: string
+      publish_date:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      source:
+        example: TechNews
+        type: string
+      source_url:
+        example: https://technews.com/article/12345
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.NewsStatus'
+        example: published
+      summary:
+        example: A brief summary of the quantum computing breakthrough
+        type: string
+      tags:
+        example:
+        - '[''technology'''
+        - ' ''quantum computing'']'
+        items:
+          type: string
+        type: array
+      title:
+        example: Updated Technology Breakthrough Announced
+        type: string
+    type: object
   models.UpdatePostRequest:
     description: Request model for updating an existing blog post
     properties:
@@ -412,17 +724,248 @@ definitions:
 host: localhost:9876
 info:
   contact:
-    email: support@example.com
+    email: taipv.swe@gmail.com
     name: API Support
     url: https://github.com/phanvantai/taiphanvan_backend
-  description: A RESTful API for the TaiPhanVan personal blog platform
+  description: A RESTful API for the TaiPhanVan personal blog platform with blog posts,
+    user authentication, file management, and news features
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   termsOfService: http://swagger.io/terms/
-  title: TaiPhanVan Blog API
+  title: TaiPhanVan API
   version: "1.0"
 paths:
+  /admin/news:
+    post:
+      consumes:
+      - application/json
+      description: Create a new news article (admin only)
+      parameters:
+      - description: News article to create
+        in: body
+        name: news
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateNewsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created news article
+          schema:
+            $ref: '#/definitions/models.News'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a news article
+      tags:
+      - News
+  /admin/news/{id}:
+    delete:
+      description: Delete a news article (admin only)
+      parameters:
+      - description: News article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: News article deleted
+          schema:
+            $ref: '#/definitions/models.SwaggerDeleteNewsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "404":
+          description: News article not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a news article
+      tags:
+      - News
+    put:
+      consumes:
+      - application/json
+      description: Update an existing news article (admin only)
+      parameters:
+      - description: News article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated news article
+        in: body
+        name: news
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateNewsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated news article
+          schema:
+            $ref: '#/definitions/models.News'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "404":
+          description: News article not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a news article
+      tags:
+      - News
+  /admin/news/{id}/status:
+    post:
+      consumes:
+      - application/json
+      description: Update the status of a news article (admin only)
+      parameters:
+      - description: News article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New status
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/models.SetNewsStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated news article
+          schema:
+            $ref: '#/definitions/models.News'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "404":
+          description: News article not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Set news article status
+      tags:
+      - News
+  /admin/news/fetch:
+    post:
+      consumes:
+      - application/json
+      description: Fetch and store news from external API (admin only)
+      parameters:
+      - description: Fetch request parameters
+        in: body
+        name: fetch_request
+        required: true
+        schema:
+          $ref: '#/definitions/models.FetchNewsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: News articles fetched
+          schema:
+            $ref: '#/definitions/models.SwaggerFetchNewsResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Fetch news from external API
+      tags:
+      - News
+  /admin/news/fetch-rss:
+    post:
+      consumes:
+      - application/json
+      description: Fetch and store news from configured RSS feeds (admin only)
+      parameters:
+      - description: Fetch request parameters (only limit is used for RSS feeds)
+        in: body
+        name: fetch_request
+        required: true
+        schema:
+          $ref: '#/definitions/models.FetchNewsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: News articles fetched from RSS feeds
+          schema:
+            $ref: '#/definitions/models.SwaggerFetchRSSNewsResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      security:
+      - BearerAuth: []
+      summary: Fetch news from RSS feeds
+      tags:
+      - News
   /auth/login:
     post:
       consumes:
@@ -765,6 +1308,140 @@ paths:
       summary: Check API health
       tags:
       - System
+  /news:
+    get:
+      description: Returns paginated news articles with optional filtering
+      parameters:
+      - description: Filter by category
+        in: query
+        name: category
+        type: string
+      - description: Filter by tag
+        in: query
+        name: tag
+        type: string
+      - description: Search in title and content
+        in: query
+        name: search
+        type: string
+      - description: Page number, default is 1
+        in: query
+        name: page
+        type: integer
+      - description: Items per page, default is 10, max is 50
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of news articles with pagination (without content)
+          schema:
+            $ref: '#/definitions/models.NewsWithoutContentResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      summary: Get news articles
+      tags:
+      - News
+  /news/{id}:
+    get:
+      description: Returns a specific news article by its ID
+      parameters:
+      - description: News article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: News article with content status
+          schema:
+            $ref: '#/definitions/models.SwaggerNewsWithContentStatus'
+        "404":
+          description: News article not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      summary: Get news article by ID
+      tags:
+      - News
+  /news/{id}/full-content:
+    get:
+      description: Attempts to fetch and return the full content for a news article
+      parameters:
+      - description: News article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: News article with full content status
+          schema:
+            $ref: '#/definitions/models.SwaggerNewsWithContentStatus'
+        "404":
+          description: News article not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      summary: Get full content for news article
+      tags:
+      - News
+  /news/categories:
+    get:
+      description: Returns all available news categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of categories
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get news categories
+      tags:
+      - News
+  /news/slug/{slug}:
+    get:
+      description: Returns a specific news article by its slug
+      parameters:
+      - description: News article slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: News article with content status
+          schema:
+            $ref: '#/definitions/models.SwaggerNewsWithContentStatus'
+        "404":
+          description: News article not found
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/models.SwaggerStandardResponse'
+      summary: Get news article by slug
+      tags:
+      - News
   /posts:
     get:
       description: Returns a paginated list of blog posts with optional tag and status

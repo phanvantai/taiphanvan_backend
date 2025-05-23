@@ -19,20 +19,21 @@ import (
 	"github.com/phanvantai/taiphanvan_backend/internal/handlers"
 	"github.com/phanvantai/taiphanvan_backend/internal/logger"
 	"github.com/phanvantai/taiphanvan_backend/internal/middleware"
+	"github.com/phanvantai/taiphanvan_backend/internal/services"
 	"github.com/phanvantai/taiphanvan_backend/pkg/utils"
 	"github.com/rs/zerolog/log"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title           TaiPhanVan Blog API
+// @title           TaiPhanVan API
 // @version         1.0
-// @description     A RESTful API for the TaiPhanVan personal blog platform
+// @description     A RESTful API for the TaiPhanVan personal blog platform with blog posts, user authentication, file management, and news features
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   API Support
 // @contact.url    https://github.com/phanvantai/taiphanvan_backend
-// @contact.email  support@example.com
+// @contact.email  taipv.swe@gmail.com
 
 // @license.name  MIT
 // @license.url   https://opensource.org/licenses/MIT
@@ -117,6 +118,20 @@ func main() {
 	// Initialize and apply rate limiter
 	rateLimiter := middleware.NewRateLimiter(100, time.Minute) // 100 requests per minute per IP
 	rateLimiter.CleanupTask()                                  // Start the cleanup task
+
+	// Start the news fetcher in background if enabled
+	newsConfig := services.NewNewsConfig(cfg.NewsAPI, cfg.RSS)
+	log.Info().
+		Bool("api_auto_fetch_enabled", newsConfig.EnableAutoFetch).
+		Bool("rss_auto_fetch_enabled", newsConfig.RSSConfig.EnableAutoFetch).
+		Dur("api_fetch_interval", newsConfig.FetchInterval).
+		Dur("rss_fetch_interval", newsConfig.RSSConfig.FetchInterval).
+		Int("api_default_limit", newsConfig.DefaultLimit).
+		Int("rss_default_limit", newsConfig.RSSConfig.DefaultLimit).
+		Str("api_key_set", map[bool]string{true: "yes", false: "no"}[newsConfig.APIConfig.APIKey != ""]).
+		Int("rss_feeds_configured", len(newsConfig.RSSConfig.Feeds)).
+		Msg("News fetcher configuration")
+	utils.StartNewsFetcher(newsConfig)
 
 	// Define API routes with rate limiting
 	setupRoutes(r, rateLimiter)
@@ -273,6 +288,13 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 		api.GET("/tags", handlers.GetAllTags)
 		api.GET("/tags/popular", handlers.GetPopularTags)
 
+		// News routes
+		api.GET("/news", handlers.GetNews)
+		api.GET("/news/slug/:slug", handlers.GetNewsBySlug)
+		api.GET("/news/:id", handlers.GetNewsByID)
+		api.GET("/news/:id/full-content", handlers.GetNewsFullContent)
+		api.GET("/news/categories", handlers.GetNewsCategories)
+
 		// Auth routes - stricter rate limiting for sensitive endpoints
 		auth := api.Group("/auth")
 		{
@@ -322,6 +344,14 @@ func setupRoutes(r *gin.Engine, rateLimiter *middleware.RateLimiter) {
 		admin.Use(middleware.AdminMiddleware())
 		{
 			// Admin-specific routes can be added here
+
+			// News management routes
+			admin.POST("/news", handlers.CreateNews)
+			admin.PUT("/news/:id", handlers.UpdateNews)
+			admin.DELETE("/news/:id", handlers.DeleteNews)
+			admin.POST("/news/:id/status", handlers.SetNewsStatus)
+			admin.POST("/news/fetch", handlers.FetchExternalNews)
+			admin.POST("/news/fetch-rss", handlers.FetchRSSNews)
 		}
 	}
 

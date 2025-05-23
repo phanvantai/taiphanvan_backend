@@ -13,7 +13,7 @@ const docTemplate = `{
         "contact": {
             "name": "API Support",
             "url": "https://github.com/phanvantai/taiphanvan_backend",
-            "email": "support@example.com"
+            "email": "taipv.swe@gmail.com"
         },
         "license": {
             "name": "MIT",
@@ -24,6 +24,367 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/news": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new news article (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Create a news article",
+                "parameters": [
+                    {
+                        "description": "News article to create",
+                        "name": "news",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateNewsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created news article",
+                        "schema": {
+                            "$ref": "#/definitions/models.News"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/news/fetch": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch and store news from external API (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Fetch news from external API",
+                "parameters": [
+                    {
+                        "description": "Fetch request parameters",
+                        "name": "fetch_request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FetchNewsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "News articles fetched",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerFetchNewsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/news/fetch-rss": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch and store news from configured RSS feeds (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Fetch news from RSS feeds",
+                "parameters": [
+                    {
+                        "description": "Fetch request parameters (only limit is used for RSS feeds)",
+                        "name": "fetch_request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FetchNewsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "News articles fetched from RSS feeds",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerFetchRSSNewsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/news/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing news article (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Update a news article",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "News article ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated news article",
+                        "name": "news",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateNewsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated news article",
+                        "schema": {
+                            "$ref": "#/definitions/models.News"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "News article not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a news article (admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Delete a news article",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "News article ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "News article deleted",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerDeleteNewsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "News article not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/news/{id}/status": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the status of a news article (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Set news article status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "News article ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New status",
+                        "name": "status",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SetNewsStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated news article",
+                        "schema": {
+                            "$ref": "#/definitions/models.News"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "News article not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Authenticate a user and return JWT tokens",
@@ -545,6 +906,210 @@ const docTemplate = `{
                     },
                     "503": {
                         "description": "Database connection issues",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/news": {
+            "get": {
+                "description": "Returns paginated news articles with optional filtering",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Get news articles",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by category",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by tag",
+                        "name": "tag",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search in title and content",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number, default is 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page, default is 10, max is 50",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of news articles with pagination (without content)",
+                        "schema": {
+                            "$ref": "#/definitions/models.NewsWithoutContentResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/news/categories": {
+            "get": {
+                "description": "Returns all available news categories",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Get news categories",
+                "responses": {
+                    "200": {
+                        "description": "List of categories",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/news/slug/{slug}": {
+            "get": {
+                "description": "Returns a specific news article by its slug",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Get news article by slug",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "News article slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "News article with content status",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerNewsWithContentStatus"
+                        }
+                    },
+                    "404": {
+                        "description": "News article not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/news/{id}": {
+            "get": {
+                "description": "Returns a specific news article by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Get news article by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "News article ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "News article with content status",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerNewsWithContentStatus"
+                        }
+                    },
+                    "404": {
+                        "description": "News article not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/news/{id}/full-content": {
+            "get": {
+                "description": "Attempts to fetch and return the full content for a news article",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "Get full content for news article",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "News article ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "News article with full content status",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerNewsWithContentStatus"
+                        }
+                    },
+                    "404": {
+                        "description": "News article not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.SwaggerStandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
                         "schema": {
                             "$ref": "#/definitions/models.SwaggerStandardResponse"
                         }
@@ -1562,6 +2127,26 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ContentStatus": {
+            "type": "object",
+            "properties": {
+                "fetch_error": {
+                    "type": "string"
+                },
+                "has_full_content": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "is_truncated": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "truncated_chars": {
+                    "type": "integer",
+                    "example": 1281
+                }
+            }
+        },
         "models.CreateCommentRequest": {
             "description": "Request model for creating a new comment on a post",
             "type": "object",
@@ -1572,6 +2157,71 @@ const docTemplate = `{
                 "content": {
                     "type": "string",
                     "example": "This is a great post!"
+                }
+            }
+        },
+        "models.CreateNewsRequest": {
+            "description": "Request model for creating a news article",
+            "type": "object",
+            "required": [
+                "content",
+                "source",
+                "title"
+            ],
+            "properties": {
+                "category": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.NewsCategory"
+                        }
+                    ],
+                    "example": "technology"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Scientists announced a major breakthrough in quantum computing..."
+                },
+                "image_url": {
+                    "type": "string",
+                    "example": "https://res.cloudinary.com/demo/image/upload/v1234567890/news/article1.jpg"
+                },
+                "publish_date": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "TechNews"
+                },
+                "source_url": {
+                    "type": "string",
+                    "example": "https://technews.com/article/12345"
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.NewsStatus"
+                        }
+                    ],
+                    "example": "published"
+                },
+                "summary": {
+                    "type": "string",
+                    "example": "A brief summary of the quantum computing breakthrough"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['technology'",
+                        " 'quantum computing']"
+                    ]
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Major Technology Breakthrough Announced"
                 }
             }
         },
@@ -1623,6 +2273,26 @@ const docTemplate = `{
                 }
             }
         },
+        "models.FetchNewsRequest": {
+            "description": "Request model for fetching news from external API",
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.NewsCategory"
+                    },
+                    "example": [
+                        "['technology'",
+                        " 'business']"
+                    ]
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
         "models.LoginRequest": {
             "type": "object",
             "required": [
@@ -1636,6 +2306,191 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 6
+                }
+            }
+        },
+        "models.News": {
+            "description": "A news article with content, metadata, and relationships",
+            "type": "object",
+            "properties": {
+                "category": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.NewsCategory"
+                        }
+                    ],
+                    "example": "technology"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Scientists announced a major breakthrough in quantum computing..."
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "external_id": {
+                    "type": "string",
+                    "example": "ext-12345"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "image_url": {
+                    "type": "string",
+                    "example": "https://res.cloudinary.com/demo/image/upload/v1234567890/news/article1.jpg"
+                },
+                "publish_date": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "published": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "slug": {
+                    "type": "string",
+                    "example": "major-technology-breakthrough-announced"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "TechNews"
+                },
+                "source_url": {
+                    "type": "string",
+                    "example": "https://technews.com/article/12345"
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.NewsStatus"
+                        }
+                    ],
+                    "example": "published"
+                },
+                "summary": {
+                    "type": "string",
+                    "example": "A brief summary of the quantum computing breakthrough"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Tag"
+                    }
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Major Technology Breakthrough Announced"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2023-01-02T12:00:00Z"
+                }
+            }
+        },
+        "models.NewsCategory": {
+            "type": "string",
+            "enum": [
+                "technology",
+                "science"
+            ],
+            "x-enum-varnames": [
+                "NewsCategoryTechnology",
+                "NewsCategoryScience"
+            ]
+        },
+        "models.NewsStatus": {
+            "type": "string",
+            "enum": [
+                "published",
+                "draft",
+                "archived"
+            ],
+            "x-enum-varnames": [
+                "NewsStatusPublished",
+                "NewsStatusDraft",
+                "NewsStatusArchived"
+            ]
+        },
+        "models.NewsWithoutContent": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/models.NewsCategory"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "external_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "publish_date": {
+                    "type": "string"
+                },
+                "published": {
+                    "type": "boolean"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "source_url": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.NewsStatus"
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Tag"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NewsWithoutContentResponse": {
+            "description": "Response model for news list with pagination information and without content",
+            "type": "object",
+            "properties": {
+                "news": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.NewsWithoutContent"
+                    }
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "per_page": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total_items": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "total_pages": {
+                    "type": "integer",
+                    "example": 10
                 }
             }
         },
@@ -1752,6 +2607,23 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SetNewsStatusRequest": {
+            "description": "Request model for changing a news article's status",
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.NewsStatus"
+                        }
+                    ],
+                    "example": "published"
+                }
+            }
+        },
         "models.SetPostStatusRequest": {
             "description": "Request model for changing a post's status",
             "type": "object",
@@ -1793,6 +2665,80 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SwaggerDeleteNewsResponse": {
+            "description": "Response format for deleting a news article",
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "News article deleted successfully"
+                }
+            }
+        },
+        "models.SwaggerFetchNewsResponse": {
+            "description": "Response format for fetching news from external API",
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.NewsCategory"
+                    },
+                    "example": [
+                        "[\"technology\"",
+                        "\"business\"]"
+                    ]
+                },
+                "fetch_time": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "News articles fetched successfully"
+                },
+                "saved": {
+                    "type": "integer",
+                    "example": 8
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
+        "models.SwaggerFetchRSSNewsResponse": {
+            "description": "Response format for fetching news from RSS feeds",
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.NewsCategory"
+                    },
+                    "example": [
+                        "[\"technology\"",
+                        "\"science\"]"
+                    ]
+                },
+                "fetch_time": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "RSS news articles fetched successfully"
+                },
+                "saved": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 15
+                }
+            }
+        },
         "models.SwaggerFileUploadResponse": {
             "description": "Response model for editor file upload",
             "type": "object",
@@ -1800,6 +2746,18 @@ const docTemplate = `{
                 "file_url": {
                     "type": "string",
                     "example": "https://example.com/file.jpg"
+                }
+            }
+        },
+        "models.SwaggerNewsWithContentStatus": {
+            "description": "News article with content status information for Swagger documentation",
+            "type": "object",
+            "properties": {
+                "content_status": {
+                    "$ref": "#/definitions/models.ContentStatus"
+                },
+                "news": {
+                    "$ref": "#/definitions/models.News"
                 }
             }
         },
@@ -2005,6 +2963,66 @@ const docTemplate = `{
                 }
             }
         },
+        "models.UpdateNewsRequest": {
+            "description": "Request model for updating a news article",
+            "type": "object",
+            "properties": {
+                "category": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.NewsCategory"
+                        }
+                    ],
+                    "example": "technology"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Scientists announced a major breakthrough in quantum computing..."
+                },
+                "image_url": {
+                    "type": "string",
+                    "example": "https://res.cloudinary.com/demo/image/upload/v1234567890/news/article1.jpg"
+                },
+                "publish_date": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "TechNews"
+                },
+                "source_url": {
+                    "type": "string",
+                    "example": "https://technews.com/article/12345"
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.NewsStatus"
+                        }
+                    ],
+                    "example": "published"
+                },
+                "summary": {
+                    "type": "string",
+                    "example": "A brief summary of the quantum computing breakthrough"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['technology'",
+                        " 'quantum computing']"
+                    ]
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Updated Technology Breakthrough Announced"
+                }
+            }
+        },
         "models.UpdatePostRequest": {
             "description": "Request model for updating an existing blog post",
             "type": "object",
@@ -2125,8 +3143,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:9876",
 	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "TaiPhanVan Blog API",
-	Description:      "A RESTful API for the TaiPhanVan personal blog platform",
+	Title:            "TaiPhanVan API",
+	Description:      "A RESTful API for the TaiPhanVan personal blog platform with blog posts, user authentication, file management, and news features",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
