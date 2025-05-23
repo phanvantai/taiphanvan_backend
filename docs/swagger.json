@@ -2,12 +2,12 @@
     "swagger": "2.0",
     "info": {
         "description": "A RESTful API for the TaiPhanVan personal blog platform with blog posts, user authentication, file management, and news features",
-        "title": "TaiPhanVan Blog API",
+        "title": "TaiPhanVan API",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
             "url": "https://github.com/phanvantai/taiphanvan_backend",
-            "email": "support@example.com"
+            "email": "taipv.swe@gmail.com"
         },
         "license": {
             "name": "MIT",

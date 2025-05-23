@@ -26,14 +26,14 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title           TaiPhanVan Blog API
+// @title           TaiPhanVan API
 // @version         1.0
 // @description     A RESTful API for the TaiPhanVan personal blog platform with blog posts, user authentication, file management, and news features
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   API Support
 // @contact.url    https://github.com/phanvantai/taiphanvan_backend
-// @contact.email  support@example.com
+// @contact.email  taipv.swe@gmail.com
 
 // @license.name  MIT
 // @license.url   https://opensource.org/licenses/MIT

@@ -13,7 +13,7 @@ const docTemplate = `{
         "contact": {
             "name": "API Support",
             "url": "https://github.com/phanvantai/taiphanvan_backend",
-            "email": "support@example.com"
+            "email": "taipv.swe@gmail.com"
         },
         "license": {
             "name": "MIT",
@@ -3090,7 +3090,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:9876",
 	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "TaiPhanVan Blog API",
+	Title:            "TaiPhanVan API",
 	Description:      "A RESTful API for the TaiPhanVan personal blog platform with blog posts, user authentication, file management, and news features",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

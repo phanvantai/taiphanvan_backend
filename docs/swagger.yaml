@@ -688,7 +688,7 @@ definitions:
 host: localhost:9876
 info:
   contact:
-    email: support@example.com
+    email: taipv.swe@gmail.com
     name: API Support
     url: https://github.com/phanvantai/taiphanvan_backend
   description: A RESTful API for the TaiPhanVan personal blog platform with blog posts,
@@ -697,7 +697,7 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
   termsOfService: http://swagger.io/terms/
-  title: TaiPhanVan Blog API
+  title: TaiPhanVan API
   version: "1.0"
 paths:
   /admin/news:
