@@ -274,6 +274,54 @@ Example request body for scheduling a post:
 }
 ```
 
+## RSS Feed Integration
+
+The backend supports automatic fetching and integration of content from multiple RSS feeds, allowing the blog to aggregate news and articles from various trusted sources across the web.
+
+### Supported RSS Sources
+
+The application comes pre-configured with several high-quality RSS sources for technology news:
+
+1. **The Next Web (AI)** - AI-focused content from The Next Web **Not working right now**
+   - Source: `https://thenextweb.com/tag/artificial-intelligence/feed/`
+   - Category: Technology
+
+2. **The Verge** - Technology news and media from The Verge
+   - Source: `https://www.theverge.com/rss/index.xml`
+   - Category: Technology
+
+3. **MIT Technology Review** - Technology insights from MIT Technology Review
+   - Source: `https://www.technologyreview.com/feed/`
+   - Category: Technology
+
+### Adding Custom RSS Sources
+
+You can easily add your own RSS sources by updating the `RSS_FEEDS` environment variable:
+
+```bash
+# Format: NAME=URL=CATEGORY,NAME2=URL2=CATEGORY2,...
+RSS_FEEDS=TechCrunch=https://techcrunch.com/feed/=technology,Wired=https://www.wired.com/feed/category/science/latest/rss=science
+```
+
+Each feed uses the format `NAME=URL=CATEGORY` where:
+
+- `NAME`: A display name for the feed source
+- `URL`: The full RSS feed URL
+- `CATEGORY`: The category to assign articles from this feed
+
+Multiple feeds are separated by commas.
+
+### Configuration Options
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `RSS_FEEDS` | RSS feed sources (format above) | Predefined tech sources |
+| `RSS_DEFAULT_LIMIT` | Default articles to fetch per feed | 20 |
+| `RSS_FETCH_INTERVAL` | Auto-fetch interval | 1h |
+| `RSS_ENABLE_AUTO_FETCH` | Enable background fetching | true |
+
+For detailed documentation on the RSS integration, see [RSS Feed Guide](docs/rss_feed_guide.md).
+
 ## Development
 
 ### Testing

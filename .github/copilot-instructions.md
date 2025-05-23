@@ -2,6 +2,8 @@
 
 This is the backend API service for a personal blog built with Go. When generating content or code for this project, please consider the following:
 
+IMPORTANT: Always ask for permission before editing or creating any files. Present proposed changes and wait for explicit approval before implementing them.
+
 1. Follow idiomatic Go practices and conventions
 2. Maintain the existing project structure:
    - `cmd/api` for application entrypoints
@@ -54,7 +56,10 @@ This is the backend API service for a personal blog built with Go. When generati
     - Consider structured logging for better analysis
 
 11. Security:
-    - Sanitize all user inputs
-    - Protect against common web vulnerabilities (CSRF, XSS, etc.)
-    - Implement rate limiting for public endpoints
     - Use HTTPS for all communications
+
+12. Workflow:
+    - Always request explicit confirmation before modifying any existing files
+    - Provide code suggestions and wait for approval before implementation
+    - When suggesting new files, present complete content for review
+    - Document any assumptions made when proposing changes
