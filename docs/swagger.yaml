@@ -214,12 +214,58 @@ definitions:
     x-enum-varnames:
     - NewsCategoryTechnology
     - NewsCategoryScience
-  models.NewsResponse:
-    description: Response model for news list with pagination information
+  models.NewsStatus:
+    enum:
+    - published
+    - draft
+    - archived
+    type: string
+    x-enum-varnames:
+    - NewsStatusPublished
+    - NewsStatusDraft
+    - NewsStatusArchived
+  models.NewsWithoutContent:
+    properties:
+      category:
+        $ref: '#/definitions/models.NewsCategory'
+      created_at:
+        type: string
+      external_id:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      publish_date:
+        type: string
+      published:
+        type: boolean
+      slug:
+        type: string
+      source:
+        type: string
+      source_url:
+        type: string
+      status:
+        $ref: '#/definitions/models.NewsStatus'
+      summary:
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/models.Tag'
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.NewsWithoutContentResponse:
+    description: Response model for news list with pagination information and without
+      content
     properties:
       news:
         items:
-          $ref: '#/definitions/models.News'
+          $ref: '#/definitions/models.NewsWithoutContent'
         type: array
       page:
         example: 1
@@ -234,16 +280,6 @@ definitions:
         example: 10
         type: integer
     type: object
-  models.NewsStatus:
-    enum:
-    - published
-    - draft
-    - archived
-    type: string
-    x-enum-varnames:
-    - NewsStatusPublished
-    - NewsStatusDraft
-    - NewsStatusArchived
   models.Post:
     description: A blog post with content, metadata, and relationships
     properties:
@@ -1300,9 +1336,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: List of news articles with pagination
+          description: List of news articles with pagination (without content)
           schema:
-            $ref: '#/definitions/models.NewsResponse'
+            $ref: '#/definitions/models.NewsWithoutContentResponse'
         "500":
           description: Server error
           schema:

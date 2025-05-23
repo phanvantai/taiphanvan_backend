@@ -957,9 +957,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of news articles with pagination",
+                        "description": "List of news articles with pagination (without content)",
                         "schema": {
-                            "$ref": "#/definitions/models.NewsResponse"
+                            "$ref": "#/definitions/models.NewsWithoutContentResponse"
                         }
                     },
                     "500": {
@@ -2400,14 +2400,80 @@ const docTemplate = `{
                 "NewsCategoryScience"
             ]
         },
-        "models.NewsResponse": {
-            "description": "Response model for news list with pagination information",
+        "models.NewsStatus": {
+            "type": "string",
+            "enum": [
+                "published",
+                "draft",
+                "archived"
+            ],
+            "x-enum-varnames": [
+                "NewsStatusPublished",
+                "NewsStatusDraft",
+                "NewsStatusArchived"
+            ]
+        },
+        "models.NewsWithoutContent": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/models.NewsCategory"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "external_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "publish_date": {
+                    "type": "string"
+                },
+                "published": {
+                    "type": "boolean"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "source_url": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.NewsStatus"
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Tag"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NewsWithoutContentResponse": {
+            "description": "Response model for news list with pagination information and without content",
             "type": "object",
             "properties": {
                 "news": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.News"
+                        "$ref": "#/definitions/models.NewsWithoutContent"
                     }
                 },
                 "page": {
@@ -2427,19 +2493,6 @@ const docTemplate = `{
                     "example": 10
                 }
             }
-        },
-        "models.NewsStatus": {
-            "type": "string",
-            "enum": [
-                "published",
-                "draft",
-                "archived"
-            ],
-            "x-enum-varnames": [
-                "NewsStatusPublished",
-                "NewsStatusDraft",
-                "NewsStatusArchived"
-            ]
         },
         "models.Post": {
             "description": "A blog post with content, metadata, and relationships",

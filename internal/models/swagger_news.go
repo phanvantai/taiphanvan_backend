@@ -58,3 +58,32 @@ type SwaggerContentStatus struct {
 	HasFullContent bool   `json:"has_full_content" example:"true" description:"Whether full content is available"`
 	FetchError     string `json:"fetch_error,omitempty" example:"" description:"Error message if fetch failed"`
 }
+
+// SwaggerNewsWithoutContent represents a news article without content field
+// @Description A news article without the content field for improved performance
+type SwaggerNewsWithoutContent struct {
+	ID          uint         `json:"id" example:"1" description:"Unique identifier"`
+	Title       string       `json:"title" example:"Major Technology Breakthrough Announced" description:"News title"`
+	Slug        string       `json:"slug" example:"major-technology-breakthrough-announced" description:"URL-friendly version of the title"`
+	Summary     string       `json:"summary" example:"A brief summary of the quantum computing breakthrough" description:"Short summary of the news article"`
+	Source      string       `json:"source" example:"TechNews" description:"Original source of the news"`
+	SourceURL   string       `json:"source_url" example:"https://technews.com/article/12345" description:"URL to the original news article"`
+	ImageURL    string       `json:"image_url" example:"https://res.cloudinary.com/demo/image/upload/v1234567890/news/article1.jpg" description:"URL to the news article's image"`
+	Category    NewsCategory `json:"category" example:"technology" description:"Category of the news article"`
+	Status      NewsStatus   `json:"status" example:"published" description:"Publication status of the news article"`
+	Published   bool         `json:"published" example:"true" description:"Whether the news is published and visible"`
+	PublishDate time.Time    `json:"publish_date" example:"2023-01-01T12:00:00Z" description:"When the news was/will be published"`
+	CreatedAt   time.Time    `json:"created_at" example:"2023-01-01T12:00:00Z" description:"When the news article was created"`
+	UpdatedAt   time.Time    `json:"updated_at" example:"2023-01-02T12:00:00Z" description:"When the news article was last updated"`
+	Tags        []Tag        `json:"tags" description:"Tags associated with the news article"`
+}
+
+// SwaggerNewsWithoutContentResponse represents a response with news articles without content
+// @Description Response model for news list with pagination and without content fields
+type SwaggerNewsWithoutContentResponse struct {
+	News       []SwaggerNewsWithoutContent `json:"news" description:"List of news articles without content"`
+	TotalItems int64                       `json:"total_items" example:"100" description:"Total number of news articles"`
+	Page       int                         `json:"page" example:"1" description:"Current page number"`
+	PerPage    int                         `json:"per_page" example:"10" description:"Number of items per page"`
+	TotalPages int                         `json:"total_pages" example:"10" description:"Total number of pages"`
+}

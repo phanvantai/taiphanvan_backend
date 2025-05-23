@@ -154,3 +154,56 @@ type NewsWithContentStatus struct {
 	News          News          `json:"news" description:"The news article"`
 	ContentStatus ContentStatus `json:"content_status" description:"Status of the article content"`
 }
+
+// NewsWithoutContent represents a news article with the content field excluded
+// to improve performance for listing endpoints
+type NewsWithoutContent struct {
+	ID          uint           `json:"id"`
+	Title       string         `json:"title"`
+	Slug        string         `json:"slug"`
+	Summary     string         `json:"summary"`
+	Source      string         `json:"source"`
+	SourceURL   string         `json:"source_url"`
+	ImageURL    string         `json:"image_url"`
+	Category    NewsCategory   `json:"category"`
+	Status      NewsStatus     `json:"status"`
+	Published   bool           `json:"published"`
+	PublishDate time.Time      `json:"publish_date"`
+	ExternalID  string         `json:"external_id"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `json:"-"`
+	Tags        []Tag          `json:"tags"`
+}
+
+// ToNewsWithoutContent converts a News object to NewsWithoutContent
+func (n *News) ToNewsWithoutContent() NewsWithoutContent {
+	return NewsWithoutContent{
+		ID:          n.ID,
+		Title:       n.Title,
+		Slug:        n.Slug,
+		Summary:     n.Summary,
+		Source:      n.Source,
+		SourceURL:   n.SourceURL,
+		ImageURL:    n.ImageURL,
+		Category:    n.Category,
+		Status:      n.Status,
+		Published:   n.Published,
+		PublishDate: n.PublishDate,
+		ExternalID:  n.ExternalID,
+		CreatedAt:   n.CreatedAt,
+		UpdatedAt:   n.UpdatedAt,
+		DeletedAt:   n.DeletedAt,
+		Tags:        n.Tags,
+	}
+}
+
+// NewsWithoutContentResponse represents a news response with pagination and without content
+// @Description Response model for news list with pagination information and without content
+type NewsWithoutContentResponse struct {
+	News       []NewsWithoutContent `json:"news" description:"List of news articles without content"`
+	TotalItems int64                `json:"total_items" example:"100" description:"Total number of news articles"`
+	Page       int                  `json:"page" example:"1" description:"Current page number"`
+	PerPage    int                  `json:"per_page" example:"10" description:"Number of items per page"`
+	TotalPages int                  `json:"total_pages" example:"10" description:"Total number of pages"`
+}

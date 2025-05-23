@@ -34,7 +34,7 @@ const (
 // @Param search query string false "Search in title and content"
 // @Param page query int false "Page number, default is 1"
 // @Param per_page query int false "Items per page, default is 10, max is 50"
-// @Success 200 {object} models.NewsResponse "List of news articles with pagination"
+// @Success 200 {object} models.NewsWithoutContentResponse "List of news articles with pagination (without content)"
 // @Failure 500 {object} models.SwaggerStandardResponse "Server error"
 // @Router /news [get]
 func GetNews(c *gin.Context) {
@@ -102,9 +102,14 @@ func GetNews(c *gin.Context) {
 		return
 	}
 
-	// Create response
-	response := models.NewsResponse{
-		News:       news,
+	// Create response without content to improve performance
+	var newsWithoutContent []models.NewsWithoutContent
+	for _, article := range news {
+		newsWithoutContent = append(newsWithoutContent, article.ToNewsWithoutContent())
+	}
+
+	response := models.NewsWithoutContentResponse{
+		News:       newsWithoutContent,
 		TotalItems: totalItems,
 		Page:       query.Page,
 		PerPage:    query.PerPage,
