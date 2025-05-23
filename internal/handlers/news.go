@@ -668,34 +668,54 @@ func FetchExternalNews(c *gin.Context) {
 		return
 	}
 
-	// Begin transaction
-	tx := database.DB.Begin()
-
-	// Store each news article
+	// Store each news article in separate transactions to avoid
+	// aborting the entire batch if one fails
 	var savedCount int
 	for _, article := range news {
+		// Start a new transaction for each article
+		tx := database.DB.Begin()
+
 		// Check if article already exists by external ID
 		var existingCount int64
 		if err := tx.Model(&models.News{}).Where("external_id = ?", article.ExternalID).Count(&existingCount).Error; err != nil {
 			log.Error().Err(err).Str("external_id", article.ExternalID).Msg("Failed to check existing news")
+			tx.Rollback()
 			continue
 		}
 
 		if existingCount > 0 {
-			continue // Skip existing articles
+			tx.Rollback() // Clean rollback for skipped articles
+			continue      // Skip existing articles
+		}
+
+		// Check if slug already exists
+		var slugCount int64
+		if err := tx.Model(&models.News{}).Where("slug = ?", article.Slug).Count(&slugCount).Error; err != nil {
+			log.Error().Err(err).Str("slug", article.Slug).Msg("Failed to check existing slug")
+			tx.Rollback()
+			continue
+		}
+
+		// If slug exists, make it unique by adding a timestamp
+		if slugCount > 0 {
+			article.Slug = fmt.Sprintf("%s-%d", article.Slug, time.Now().Unix())
 		}
 
 		// Save article
 		if err := tx.Create(&article).Error; err != nil {
 			log.Error().Err(err).Str("title", article.Title).Msg("Failed to save news article")
+			tx.Rollback()
+			continue
+		}
+
+		// Commit the transaction
+		if err := tx.Commit().Error; err != nil {
+			log.Error().Err(err).Str("title", article.Title).Msg("Failed to commit transaction")
 			continue
 		}
 
 		savedCount++
 	}
-
-	// Commit transaction
-	tx.Commit()
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":    "News articles fetched successfully",
@@ -748,34 +768,54 @@ func FetchRSSNews(c *gin.Context) {
 		return
 	}
 
-	// Begin transaction
-	tx := database.DB.Begin()
-
-	// Store each news article
+	// Store each news article in separate transactions to avoid
+	// aborting the entire batch if one fails
 	var savedCount int
 	for _, article := range news {
+		// Start a new transaction for each article
+		tx := database.DB.Begin()
+
 		// Check if article already exists by external ID
 		var existingCount int64
 		if err := tx.Model(&models.News{}).Where("external_id = ?", article.ExternalID).Count(&existingCount).Error; err != nil {
 			log.Error().Err(err).Str("external_id", article.ExternalID).Msg("Failed to check existing news")
+			tx.Rollback()
 			continue
 		}
 
 		if existingCount > 0 {
-			continue // Skip existing articles
+			tx.Rollback() // Clean rollback for skipped articles
+			continue      // Skip existing articles
+		}
+
+		// Check if slug already exists
+		var slugCount int64
+		if err := tx.Model(&models.News{}).Where("slug = ?", article.Slug).Count(&slugCount).Error; err != nil {
+			log.Error().Err(err).Str("slug", article.Slug).Msg("Failed to check existing slug")
+			tx.Rollback()
+			continue
+		}
+
+		// If slug exists, make it unique by adding a timestamp
+		if slugCount > 0 {
+			article.Slug = fmt.Sprintf("%s-%d", article.Slug, time.Now().Unix())
 		}
 
 		// Save article
 		if err := tx.Create(&article).Error; err != nil {
 			log.Error().Err(err).Str("title", article.Title).Msg("Failed to save news article")
+			tx.Rollback()
+			continue
+		}
+
+		// Commit the transaction
+		if err := tx.Commit().Error; err != nil {
+			log.Error().Err(err).Str("title", article.Title).Msg("Failed to commit transaction")
 			continue
 		}
 
 		savedCount++
 	}
-
-	// Commit transaction
-	tx.Commit()
 
 	// Collect all unique categories from the fetched news
 	categories := make(map[models.NewsCategory]bool)

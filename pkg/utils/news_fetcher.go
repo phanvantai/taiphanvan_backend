@@ -140,34 +140,58 @@ func fetchNewsFromRSS(newsConfig services.NewsConfig) {
 
 // saveNewsArticles saves the news articles to the database
 func saveNewsArticles(news []models.News) {
-	// Begin transaction
-	tx := database.DB.Begin()
+	// Don't use a single transaction for all articles to avoid
+	// aborting the entire batch on a single error
 
 	// Store each news article
 	var savedCount int
 	for _, article := range news {
+		// Use a separate transaction for each article
+		tx := database.DB.Begin()
+
 		// Check if article already exists by external ID
 		var existingCount int64
 		if err := tx.Model(&models.News{}).Where("external_id = ?", article.ExternalID).Count(&existingCount).Error; err != nil {
 			log.Error().Err(err).Str("external_id", article.ExternalID).Msg("Failed to check existing news")
+			tx.Rollback()
 			continue
 		}
 
 		if existingCount > 0 {
-			continue // Skip existing articles
+			tx.Rollback() // Clean rollback for skipped articles
+			continue      // Skip existing articles
+		}
+
+		// Check if slug already exists
+		var slugCount int64
+		if err := tx.Model(&models.News{}).Where("slug = ?", article.Slug).Count(&slugCount).Error; err != nil {
+			log.Error().Err(err).Str("slug", article.Slug).Msg("Failed to check existing slug")
+			tx.Rollback()
+			continue
+		}
+
+		// If slug exists, skip this article
+		if slugCount > 0 {
+			log.Info().Str("slug", article.Slug).Msg("Skipping article with duplicate slug")
+			tx.Rollback() // Clean rollback for skipped articles
+			continue      // Skip articles with duplicate slugs
 		}
 
 		// Save article
 		if err := tx.Create(&article).Error; err != nil {
 			log.Error().Err(err).Str("title", article.Title).Msg("Failed to save news article")
+			tx.Rollback()
+			continue
+		}
+
+		// Commit the transaction
+		if err := tx.Commit().Error; err != nil {
+			log.Error().Err(err).Str("title", article.Title).Msg("Failed to commit transaction")
 			continue
 		}
 
 		savedCount++
 	}
-
-	// Commit transaction
-	tx.Commit()
 
 	log.Info().
 		Int("total_fetched", len(news)).

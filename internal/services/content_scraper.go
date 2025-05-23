@@ -36,6 +36,8 @@ func IsTruncated(content string) bool {
 		"...",       // Common ellipsis
 		"…",         // Unicode ellipsis
 		"Read more", // Common text
+		"&#8230;",   // HTML entity for ellipsis
+		"[&#8230;]", // HTML entity for ellipsis in brackets
 	}
 
 	for _, pattern := range truncationPatterns {
@@ -59,6 +61,14 @@ func ExtractTruncationInfo(content string) (bool, int, string) {
 		charCount := 0
 		fmt.Sscanf(match[1], "%d", &charCount)
 		return true, charCount, match[0]
+	}
+
+	// Check for HTML entity ellipsis
+	if strings.Contains(content, "&#8230;") {
+		if strings.Contains(content, "[&#8230;]") {
+			return true, 0, "[&#8230;]"
+		}
+		return true, 0, "&#8230;"
 	}
 
 	// Check for other truncation patterns

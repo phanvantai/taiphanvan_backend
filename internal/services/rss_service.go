@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"crypto/md5"
 	"fmt"
 	"io"
 	"net/http"
@@ -107,12 +108,9 @@ func (s *RSSService) fetchFromFeed(ctx context.Context, feed config.RSSFeed, lim
 	newsCategory := mapCategoryString(feed.Category)
 
 	// Cap the number of items to process
-	itemCount := len(parsedFeed.Items)
-	if itemCount > limit {
-		itemCount = limit
-	}
+	itemCount := min(len(parsedFeed.Items), limit)
 
-	for i := 0; i < itemCount; i++ {
+	for i := range itemCount {
 		item := parsedFeed.Items[i]
 		// Generate a unique slug
 		titleSlug := slug.Make(item.Title)
@@ -124,13 +122,34 @@ func (s *RSSService) fetchFromFeed(ctx context.Context, feed config.RSSFeed, lim
 			itemID = item.Link
 		}
 
-		// Create a compact itemID based on the URL path
+		// Create a unique itemID that includes more identifying parts
 		if strings.Contains(itemID, "http") {
 			parsedURL, urlErr := url.Parse(itemID)
 			if urlErr == nil {
-				itemID = parsedURL.Path
+				// Include path, query parameters, and fragment if available
+				uniqueURLParts := parsedURL.Path
+				if parsedURL.RawQuery != "" {
+					uniqueURLParts += "-" + parsedURL.RawQuery
+				}
+				if parsedURL.Fragment != "" {
+					uniqueURLParts += "-" + parsedURL.Fragment
+				}
+				itemID = uniqueURLParts
 			}
 		}
+
+		// Add timestamp for extra uniqueness if available
+		if item.PublishedParsed != nil {
+			publishTimestamp := item.PublishedParsed.Unix()
+			itemID = fmt.Sprintf("%s-%d", itemID, publishTimestamp)
+		} else if item.UpdatedParsed != nil {
+			updateTimestamp := item.UpdatedParsed.Unix()
+			itemID = fmt.Sprintf("%s-%d", itemID, updateTimestamp)
+		}
+
+		// As a last resort, add a hash of the title for uniqueness
+		titleHash := fmt.Sprintf("-%x", md5.Sum([]byte(item.Title)))[0:8]
+		itemID += titleHash
 
 		// Ensure the external ID doesn't exceed 100 characters
 		externalID := fmt.Sprintf("rss-%s-%s", feedName, itemID)
@@ -143,6 +162,9 @@ func (s *RSSService) fetchFromFeed(ctx context.Context, feed config.RSSFeed, lim
 		if content == "" {
 			content = item.Description
 		}
+
+		// Decode HTML entities in content
+		content = DecodeHTMLEntities(content)
 
 		// Create the news article
 		publishDate := time.Now()
@@ -162,6 +184,26 @@ func (s *RSSService) fetchFromFeed(ctx context.Context, feed config.RSSFeed, lim
 				if strings.HasPrefix(enclosure.Type, "image/") && enclosure.URL != "" {
 					imageURL = enclosure.URL
 					break
+				}
+			}
+
+			// If still no image found, try to extract from content
+			if imageURL == "" && (item.Content != "" || item.Description != "") {
+				// Try content first, then description
+				contentToSearch := item.Content
+				if contentToSearch == "" {
+					contentToSearch = item.Description
+				}
+
+				// Extract image from HTML content
+				imageURL = ExtractFirstImageFromHTML(contentToSearch)
+
+				if imageURL != "" {
+					log.Debug().
+						Str("feed", feed.Name).
+						Str("title", item.Title).
+						Str("image", imageURL).
+						Msg("Extracted image URL from content")
 				}
 			}
 		}
