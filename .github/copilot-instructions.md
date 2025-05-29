@@ -2,8 +2,6 @@
 
 This is the backend API service for a personal blog built with Go. When generating content or code for this project, please consider the following:
 
-IMPORTANT: Always ask for permission before editing or creating any files. Present proposed changes and wait for explicit approval before implementing them.
-
 1. Follow idiomatic Go practices and conventions
 2. Maintain the existing project structure:
    - `cmd/api` for application entrypoints
