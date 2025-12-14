@@ -54,3 +54,5 @@ tmp/
 *.db
 
 .auth_token
+
+api

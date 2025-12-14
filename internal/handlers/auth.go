@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/phanvantai/taiphanvan_backend/internal/database"
 	"github.com/phanvantai/taiphanvan_backend/internal/middleware"
 	"github.com/phanvantai/taiphanvan_backend/internal/models"
